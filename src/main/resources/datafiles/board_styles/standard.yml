@@ -1,0 +1,37 @@
+# Checkers board style definition
+
+# Materials can be specified as plain integer (e.g. '0' - air), material name
+#  (e.g. 'sandstone'), or material plus data (e.g. '35:0' or 'wool:white')
+# If you use plain integers, they must be quoted, or the style will not load!
+# If you use material names, they must match the org.bukkit.Material definitions exactly
+#  - see http://jd.bukkit.org/apidocs/org/bukkit/Material.html
+
+# Overall height of the board bounding box will be <height> + 2
+# Overall width/length of the board bounding box will be <square_size> * 8 + <frame_width> * 2
+
+# width/length of the board squares, in blocks
+square_size: 4
+# width in blocks of the frame surrounding the board
+frame_width: 3
+# height of the board - number of squares of clear air between board and enclosure roof
+height: 8
+# material/data for the white squares
+white_square: wool:white
+# material/data for the black squares
+black_square: wool:black
+# material/data for the white pieces
+white_piece: redstone_block
+# material/data for the black pieces
+black_square: obsidian
+# material/data for the frame
+frame: wood
+# material/data for the enclosure
+enclosure: air
+# material/data for the enclosure struts
+struts: wood
+# the board's light level
+light_level: 15
+# highlight material for the selected square
+highlight_selected: wool:cyan
+# highlight material for legal move squares
+highlight_selected: wool:yellow

@@ -1,0 +1,32 @@
+name: ${project.name}
+description: Play Checkers
+author: desht
+website: http://dev.bukkit.org/server-mods/checkers
+main: me.desht.checkers.CheckersPlugin
+version: ${project.version}
+
+commands:
+  checkers:
+    description: A Command
+    usage: |
+      /<command> create board <board-name>
+      /<command> delete board <board-name>
+
+permissions:
+  checkers.player:
+    description: Gives access to the commands needs to play
+    default: true
+    children: [ ]
+  checkers.admin:
+    description: Gives access to all commands
+    default: op
+    children:
+      checkers.commands.create.board: true
+      checkers.commands.delete.board: true
+  checkers.commands.create.board:
+    description: Allow board creation
+    default: op
+  checkers.commands.delete.board:
+    description: Allow board deletion
+    default: op
+

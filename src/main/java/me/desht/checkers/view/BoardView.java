@@ -1,0 +1,227 @@
+package me.desht.checkers.view;
+
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import me.desht.checkers.CheckersException;
+import me.desht.checkers.CheckersGame;
+import me.desht.checkers.CheckersPersistable;
+import me.desht.checkers.CheckersPlugin;
+import me.desht.checkers.DirectoryStructure;
+import me.desht.checkers.Messages;
+import me.desht.checkers.model.Move;
+import me.desht.checkers.model.PieceType;
+import me.desht.checkers.model.Position;
+import me.desht.checkers.model.PositionListener;
+import me.desht.checkers.util.TerrainBackup;
+import me.desht.checkers.view.controlpanel.ControlPanel;
+import me.desht.dhutils.AttributeCollection;
+import me.desht.dhutils.ConfigurationListener;
+import me.desht.dhutils.ConfigurationManager;
+import me.desht.dhutils.PersistableLocation;
+import me.desht.dhutils.block.CraftMassBlockUpdate;
+import me.desht.dhutils.block.MassBlockUpdate;
+
+import org.bukkit.Location;
+import org.bukkit.World;
+import org.bukkit.configuration.Configuration;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.MemoryConfiguration;
+
+public class BoardView implements PositionListener, ConfigurationListener, CheckersPersistable {
+	private static final String BOARD_STYLE = "boardstyle";
+	private static final String DEFAULT_STAKE = "defaultstake";
+	private static final String LOCK_STAKE = "lockstake";
+
+	private final String name;
+	private final CheckersBoard checkersBoard;
+	private final ControlPanel controlPanel;
+	private final String savedGameName;
+	private final String worldName;
+	private final AttributeCollection attributes;
+
+	private CheckersGame game;
+
+	public BoardView(String name, Location loc, BoardRotation rot, String boardStyle) {
+		this.name = name;
+		this.game = null;
+		this.savedGameName = "";
+		this.attributes = new AttributeCollection(this);
+		registerAttributes();
+		attributes.set(BOARD_STYLE, boardStyle);
+		this.checkersBoard = new CheckersBoard(loc, rot, boardStyle);
+		this.worldName = checkersBoard.getWorld().getName();
+		this.controlPanel = new ControlPanel(this);
+	}
+
+	public BoardView(ConfigurationSection conf) {
+		this.name = conf.getString("name");
+		if (BoardViewManager.getManager().boardViewExists(name)) {
+			throw new CheckersException(Messages.getString("BoardView.boardExists"));
+		}
+		PersistableLocation where = (PersistableLocation) conf.get("origin");
+
+		this.attributes = new AttributeCollection(this);
+		registerAttributes();
+		for (String attr : attributes.listAttributeKeys(false)) {
+			attributes.set(attr, conf.getString(attr));
+		}
+
+		this.savedGameName = conf.getString("game", "");
+		BoardRotation dir = BoardRotation.getRotation(conf.getString("rotation"));
+		this.checkersBoard = new CheckersBoard(where.getLocation(), dir, (String)attributes.get(BOARD_STYLE));
+		this.controlPanel = new ControlPanel(this);
+		this.worldName = checkersBoard.getWorld().getName();
+	}
+
+	private void registerAttributes() {
+		attributes.registerAttribute(BOARD_STYLE, "", "Board style for this board");
+		attributes.registerAttribute(DEFAULT_STAKE, 0.0, "Default stake for games on this board");
+		attributes.registerAttribute(LOCK_STAKE, false, "Disallow changing of stake by players");
+	}
+
+	@Override
+	public Map<String, Object> serialize() {
+		Map<String, Object> result = new HashMap<String, Object>();
+		result.put("name", name);
+		result.put("game", game == null ? "" : game.getName()); 
+		result.put("origin", checkersBoard.getA1Center());
+		result.put("rotation", checkersBoard.getRotation().name());
+		for (String k : attributes.listAttributeKeys(false)) {
+			result.put(k, attributes.get(k));
+		}
+		return result;
+	}
+
+	public static BoardView deserialize(Map<String, Object> map) {
+		Configuration conf = new MemoryConfiguration();
+
+		for (Entry<String, Object> e : map.entrySet()) {
+			if (!conf.contains(e.getKey())) {
+				conf.set(e.getKey(), e.getValue());
+			}
+		}
+
+		return new BoardView(conf);
+	}
+
+	@Override
+	public File getSaveDirectory() {
+		return DirectoryStructure.getBoardPersistDirectory();
+	}
+
+	public void save() {
+		CheckersPlugin.getInstance().getPersistenceHandler().savePersistable("board", this);
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public String getWorldName() {
+		return worldName;
+	}
+
+	public CheckersGame getGame() {
+		return game;
+	}
+
+	public void setGame(CheckersGame game) {
+		if (game != null) {
+			game.getPosition().addPositionListener(this);
+		} else {
+		}
+	}
+
+	public String getSavedGameName() {
+		return savedGameName;
+	}
+
+	public World getWorld() {
+		return getBoard().getWorld();
+	}
+
+	public CheckersBoard getBoard() {
+		return checkersBoard;
+	}
+
+	public ControlPanel getControlPanel() {
+		return controlPanel;
+	}
+
+	public void repaint() {
+		MassBlockUpdate mbu = CraftMassBlockUpdate.createMassBlockUpdater(CheckersPlugin.getInstance(), getWorld());
+		checkersBoard.repaint(mbu);
+		controlPanel.repaint(mbu);
+		if (game != null) {
+			checkersBoard.paintPieces(game.getPosition());
+		}
+		mbu.notifyClients();
+	}
+
+	@Override
+	public void moveMade(Position position, Move move) {
+		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public void squareChanged(int row, int col, PieceType piece) {
+		checkersBoard.paintPiece(row, col, piece);
+	}
+
+	/**
+	 * Permanently delete a board, purging its data from disk and restoring the terrain behind it.
+	 */
+	public void deletePermanently() {
+		if (getGame() != null) {
+			throw new CheckersException(Messages.getString("ChessCommandExecutor.boardCantBeDeleted", getName(), getGame().getName()));
+		}
+		deleteCommon();
+		restoreTerrain();
+		CheckersPlugin.getInstance().getPersistenceHandler().unpersist(this);
+	}
+
+	/**
+	 * Temporarily delete a board; called when reloading saved data.
+	 */
+	public void deleteTemporary() {
+		deleteCommon();
+	}
+
+	private void deleteCommon() {
+		BoardViewManager.getManager().unregisterBoardView(getName());
+	}
+
+	private void restoreTerrain() {
+		boolean restored = false;
+
+		// signs can get dropped otherwise
+		getControlPanel().removeSigns();
+
+		if (CheckersPlugin.getInstance().getWorldEdit() != null) {
+			// WorldEdit will take care of changes being pushed to client
+			restored = TerrainBackup.reload(this);
+		}
+
+		if (!restored) {
+			// we couldn't restore the original terrain - just set the board to air
+			checkersBoard.clearAll();
+		}
+	}
+
+	@Override
+	public void onConfigurationValidate(ConfigurationManager configurationManager, String key, Object oldVal,
+			Object newVal) {
+		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public void onConfigurationChanged(ConfigurationManager configurationManager, String key, Object oldVal,
+			Object newVal) {
+		if (key.equals(BOARD_STYLE) && checkersBoard != null) {
+			checkersBoard.setBoardStyle(newVal.toString());
+		}
+	}
+}
