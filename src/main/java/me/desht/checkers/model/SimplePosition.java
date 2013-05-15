@@ -10,10 +10,11 @@ import java.util.List;
  */
 public class SimplePosition implements Position {
 	private final PieceType[][] board;
-	private CheckersPlayer toMove;
+	private PlayerColour toMove;
 	private Move[] legalMoves;
 	private boolean jumpInProgress;
 	private final List<PositionListener> listeners = new ArrayList<PositionListener>();
+	private List<Move> moveHistory = new ArrayList<Move>();
 
 	public SimplePosition() {
 		board = new PieceType[8][8];
@@ -47,7 +48,7 @@ public class SimplePosition implements Position {
 				}
 			}
 		}
-		toMove = CheckersPlayer.WHITE;
+		toMove = PlayerColour.WHITE;
 		legalMoves = calculateLegalMoves(toMove, false);
 		jumpInProgress = false;
 	}
@@ -122,19 +123,26 @@ public class SimplePosition implements Position {
 			jumpInProgress = false;
 		}
 
+		moveHistory.add(move);
+
 		for (PositionListener l : listeners) {
 			l.moveMade(this, move);
 		}
 	}
 
 	@Override
-	public CheckersPlayer getToMove() {
+	public PlayerColour getToMove() {
 		return toMove;
 	}
 
 	@Override
 	public boolean isJumpInProgress() {
 		return jumpInProgress;
+	}
+
+	@Override
+	public Move getLastMove() {
+		return moveHistory.get(moveHistory.size() - 1);
 	}
 
 	private void setPieceAt(int row, int col, PieceType piece) {
@@ -144,7 +152,7 @@ public class SimplePosition implements Position {
 		}
 	}
 
-	private Move[] calculateLegalMoves(CheckersPlayer who, boolean jumpsOnly) {
+	private Move[] calculateLegalMoves(PlayerColour who, boolean jumpsOnly) {
 		List<Move> moves = new ArrayList<Move>();
 
 		// get all the possible jumps that can be made
@@ -176,7 +184,7 @@ public class SimplePosition implements Position {
 		return moves.toArray(new Move[moves.size()]);
 	}
 
-	private boolean canMove(CheckersPlayer who, int fromRow, int fromCol, MoveDirection direction) {
+	private boolean canMove(PlayerColour who, int fromRow, int fromCol, MoveDirection direction) {
 		int toRow = fromRow + direction.getRowOffset();
 		int toCol = fromCol + direction.getColOffset();
 		if (toRow < 0 || toRow > 7 || toCol < 0 || toCol > 7) {
@@ -196,7 +204,7 @@ public class SimplePosition implements Position {
 		return true;
 	}
 
-	private boolean canJump(CheckersPlayer who, int fromRow, int fromCol, MoveDirection direction) {
+	private boolean canJump(PlayerColour who, int fromRow, int fromCol, MoveDirection direction) {
 		int overRow = fromRow + direction.getRowOffset();
 		int overCol = fromCol + direction.getColOffset();
 		int toRow = fromRow + direction.getRowOffset(2);

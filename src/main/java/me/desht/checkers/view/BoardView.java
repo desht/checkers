@@ -36,6 +36,7 @@ import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemoryConfiguration;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.bukkit.entity.Player;
 
 public class BoardView implements PositionListener, ConfigurationListener, CheckersPersistable, ConfigurationSerializable {
 	private static final String BOARD_STYLE = "boardstyle";
@@ -258,5 +259,10 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 //		res.add(bullet + Messages.getString("ChessCommandExecutor.boardDetail.teleportDest", dest));
 
 		return res;
+	}
+
+	public void summonPlayer(Player p) {
+		// TODO Auto-generated method stub
+		
 	}
 }

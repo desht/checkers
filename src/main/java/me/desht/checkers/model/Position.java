@@ -5,7 +5,8 @@ public interface Position {
 	public Move[] getLegalMoves();
 	public Move[] getLegalMoves(int row, int col);
 	public void makeMove(Move moves);
-	public CheckersPlayer getToMove();
+	public Move getLastMove();
+	public PlayerColour getToMove();
 	public void newGame();
 	public boolean isJumpInProgress();
 	public void addPositionListener(PositionListener listener);

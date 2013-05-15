@@ -3,11 +3,11 @@ package me.desht.checkers.model;
 public enum PieceType {
 	NONE, WHITE, WHITE_KING, BLACK, BLACK_KING;
 
-	public CheckersPlayer getColour() {
+	public PlayerColour getColour() {
 		switch (this) {
-		case WHITE: case WHITE_KING: return CheckersPlayer.WHITE;
-		case BLACK: case BLACK_KING: return CheckersPlayer.BLACK;
-		default: case NONE: return CheckersPlayer.NONE;
+		case WHITE: case WHITE_KING: return PlayerColour.WHITE;
+		case BLACK: case BLACK_KING: return PlayerColour.BLACK;
+		default: case NONE: return PlayerColour.NONE;
 		}
 	}
 
