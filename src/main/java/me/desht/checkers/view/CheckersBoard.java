@@ -54,19 +54,25 @@ public class CheckersBoard {
 		aboveFullBoard = frameBoard.shift(CuboidDirection.Up, 1).expand(CuboidDirection.Up, boardStyle.getHeight() - 1);
 		fullBoard = frameBoard.expand(CuboidDirection.Up, boardStyle.getHeight() + 1);
 		validateBoardPosition();
+		System.out.println("board: " + board);
+		System.out.println("fullBoard: " + fullBoard);
 	}
 
 	private PersistableLocation initA1Corner(Location origin) {
 		Location a1 = new Location(origin.getWorld(), origin.getBlockX(), origin.getBlockY(), origin.getBlockZ());
 		int offset = -boardStyle.getSquareSize() / 2;
-		a1.add(rotation.getXadjustment(offset), 0, rotation.getRight().getXadjustment(offset));
+		BoardRotation toRight = rotation.getRight();
+		a1.add(rotation.getXadjustment(offset), 0, rotation.getZadjustment(offset));
+		a1.add(toRight.getXadjustment(offset), 0, toRight.getZadjustment(offset));
 		return new PersistableLocation(a1);
 	}
 
 	private PersistableLocation initH8Corner(Location a1) {
 		Location h8 = new Location(a1.getWorld(), a1.getBlockX(), a1.getBlockY(), a1.getBlockZ());
 		int size = (boardStyle.getSquareSize() * 8) - 1;
-		h8.add(rotation.getXadjustment(size), 0, rotation.getRight().getXadjustment(size));
+		BoardRotation toRight = rotation.getRight();
+		h8.add(rotation.getXadjustment(size), 0, rotation.getZadjustment(size));
+		h8.add(toRight.getXadjustment(size), 0, toRight.getZadjustment(size));
 		return new PersistableLocation(h8);
 	}
 
@@ -74,7 +80,7 @@ public class CheckersBoard {
 		Cuboid bounds = getFullBoard();
 
 		if (bounds.getUpperSW().getBlock().getLocation().getY() > bounds.getUpperSW().getWorld().getMaxHeight()) {
-			throw new CheckersException(Messages.getString("BoardView.boardTooHigh"));
+			throw new CheckersException(Messages.getString("Board.boardTooHigh"));
 		}
 		for (BoardView bv : BoardViewManager.getManager().listBoardViews()) {
 			if (bv.getBoard().getWorld() != bounds.getWorld()) {
@@ -82,7 +88,7 @@ public class CheckersBoard {
 			}
 			for (Block b : bounds.corners()) {
 				if (bv.getBoard().getFullBoard().contains(b)) {
-					throw new CheckersException(Messages.getString("BoardView.boardWouldIntersect", bv.getName()));
+					throw new CheckersException(Messages.getString("Board.boardWouldIntersect", bv.getName()));
 				}
 			}
 		}
@@ -272,6 +278,7 @@ public class CheckersBoard {
 	}
 
 	void repaint(MassBlockUpdate mbu) {
+		fullBoard.fill(0, (byte)0, mbu);
 		paintEnclosure(mbu);
 		paintFrame(mbu);
 		paintBoard(mbu);
@@ -309,6 +316,12 @@ public class CheckersBoard {
 		c.fill(mat);
 	}
 
+	public void reloadBoardStyle() {
+		if (boardStyle != null) {
+			setBoardStyle(boardStyle.getName());
+		}
+	}
+
 	private void highlightSquare(int row, int col, MaterialWithData mat) {
 		if (row >= 0 && row <= 7 && col >= 0 && col <= 7) {
 			Cuboid sq = getSquare(row, col);
@@ -320,8 +333,8 @@ public class CheckersBoard {
 	}
 
 	private void paintBoard(MassBlockUpdate mbu) {
-		for (int row = 0; row < 7; row++) {
-			for (int col = 0; col < 7; col++) {
+		for (int row = 0; row < 8; row++) {
+			for (int col = 0; col < 8; col++) {
 				paintBoardSquare(row, col, mbu);
 			}
 		}

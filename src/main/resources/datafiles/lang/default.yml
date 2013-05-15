@@ -1,0 +1,40 @@
+Game:
+  gameCreated: Checkers game &6{0}&- has been created on board &6{1}&-.
+  noActiveGame: You don't have an active game right now.
+  noSuchGame: No such game &6{0}&-.
+  noGame: (none)
+
+Board:
+  boardCantBeDeleted: Board &6{0}&- cannot be deleted because it has a game (&6{1}&-).
+  boardCreated: Board &6{0}&- has been created at &f{1}&-.
+  boardCreationPrompt: Left-click a block to create board &6{0}&-.  Right-click to cancel.
+  boardDeleted: Board &6{0}&- has been deleted.
+  boardExists: A board by that name already exists.
+  boardTooHigh: This board would be too high for this world.
+  boardWouldIntersect: This board would intersect another board (&6{1}&-).
+  goingToSpawn: Sending you to spawn point.
+  noFreeBoards: There are no free boards to create a game on right now.
+  noSuchBoard: No such board &6{0}&-.
+  notOnBoard: You are not standing on a board right now.
+  boardCreationCancelled: Board creation has been cancelled.
+  boardRedrawn: Board &6{0}&- has been redrawn.
+  allBoardsRedrawn: All boards have been redrawn.
+  noBoards: There are currently no boards.
+  boardList: "&6{0}&-: loc=&6{1}&- style=&6{2}&- game=&6{3}&-"
+  boardDetail:
+    board: "Board &6{0}:"
+    boardStyle: "Board Style: &f{0}"
+    enclosure: "Enclosure: &f{0}"
+    frameWidth: "Frame width: &f{0,number,integer} ({1})"
+    game: "Game: &f{0}"
+    height: "Height: &f{0,number,integer}"
+    lightLevel: "Light level: &f{0,number,integer}"
+    boardExtents: "Board Extents: &f{0} - {1}"
+    pieces: "Pieces: &f{0}&- (white), &f{1}&- (black), "
+    squareSize: "Square size: &f{0,number,integer} ({1}/{2})"
+    struts: "Enclosure struts: &f{0}"
+    boardOrientation: "Board Orientation: &f{0}"
+    defaultStake: "Default Stake: &f{0} {1}"
+    defaultTimeControl: "Default Time Control: &f{0} {1}"
+    locked: (locked)
+    teleportDest: "Teleport-out destination: &f{0}"

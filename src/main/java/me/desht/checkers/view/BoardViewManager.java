@@ -91,7 +91,7 @@ public class BoardViewManager {
 
 	public BoardView getBoardView(String name) throws CheckersException {
 		if (!chessBoards.containsKey(name)) {
-			throw new CheckersException(Messages.getString("BoardView.noSuchBoard", name));
+			throw new CheckersException(Messages.getString("Board.noSuchBoard", name));
 		}
 		return chessBoards.get(name);
 	}
@@ -121,7 +121,7 @@ public class BoardViewManager {
 				return bv;
 			}
 		}
-		throw new CheckersException(Messages.getString("BoardView.noFreeBoards")); //$NON-NLS-1$
+		throw new CheckersException(Messages.getString("Board.noFreeBoards")); //$NON-NLS-1$
 	}
 
 	/**
@@ -198,13 +198,13 @@ public class BoardViewManager {
 		//				CheckersPlugin.getInstance().getPlayerTracker().teleportPlayer(player, loc);
 		//			} else {
 		//				CheckersPlugin.getInstance().getPlayerTracker().teleportPlayer(player, player.getWorld().getSpawnLocation());
-		//				MiscUtil.errorMessage(player, Messages.getString("ChessCommandExecutor.goingToSpawn")); //$NON-NLS-1$
+		//				MiscUtil.errorMessage(player, Messages.getString("Board.goingToSpawn")); //$NON-NLS-1$
 		//			}
 		//		} else if (prev != null) {
 		//			// go back to previous location
 		//			CheckersPlugin.getInstance().getPlayerTracker().teleportPlayer(player, prev);
 		//		} else {
-		//			throw new CheckersException(Messages.getString("ChessCommandExecutor.notOnChessboard")); //$NON-NLS-1$
+		//			throw new CheckersException(Messages.getString("Board.notOnChessboard")); //$NON-NLS-1$
 		//		}
 	}
 

@@ -18,15 +18,21 @@ package me.desht.checkers;
  */
 
 import java.util.List;
+import java.util.logging.Level;
 
 import me.desht.checkers.commands.CreateBoardCommand;
 import me.desht.checkers.commands.DeleteBoardCommand;
+import me.desht.checkers.commands.ListBoardCommand;
+import me.desht.checkers.commands.RedrawCommand;
+import me.desht.checkers.listeners.BlockListener;
 import me.desht.checkers.listeners.PlayerListener;
+import me.desht.checkers.view.BoardView;
 import me.desht.dhutils.ConfigurationListener;
 import me.desht.dhutils.ConfigurationManager;
 import me.desht.dhutils.LogUtils;
+import me.desht.dhutils.MessagePager;
 import me.desht.dhutils.MiscUtil;
-import me.desht.dhutils.PluginVersionChecker;
+import me.desht.dhutils.PersistableLocation;
 import me.desht.dhutils.PluginVersionListener;
 import me.desht.dhutils.commands.CommandManager;
 import me.desht.dhutils.nms.NMSHelper;
@@ -35,6 +41,7 @@ import net.milkbowl.vault.economy.Economy;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
@@ -55,6 +62,12 @@ public class CheckersPlugin extends JavaPlugin implements ConfigurationListener,
 	private final ResponseHandler responseHandler = new ResponseHandler(this);
 
 	@Override
+	public void onLoad() {
+		ConfigurationSerialization.registerClass(BoardView.class);
+		ConfigurationSerialization.registerClass(PersistableLocation.class);
+	}
+
+	@Override
 	public void onEnable() {
 		instance = this;
 
@@ -70,8 +83,9 @@ public class CheckersPlugin extends JavaPlugin implements ConfigurationListener,
 		MiscUtil.setColouredConsole(getConfig().getBoolean("coloured_console"));
 
 		LogUtils.setLogLevel(getConfig().getString("log_level", "INFO"));
+		LogUtils.setLogLevel(Level.FINE);  // TODO - temporary
 
-//		new PluginVersionChecker(this, this);
+		//		new PluginVersionChecker(this, this);
 
 		DirectoryStructure.setup();
 
@@ -81,22 +95,31 @@ public class CheckersPlugin extends JavaPlugin implements ConfigurationListener,
 
 		PluginManager pm = this.getServer().getPluginManager();
 		pm.registerEvents(new PlayerListener(this), this);
+		pm.registerEvents(new BlockListener(this), this);
 
 		registerCommands();
+
+		MessagePager.setPageCmd("/checkers page [#|n|p]");
+		MessagePager.setDefaultPageSize(getConfig().getInt("pager.lines", 0));
 
 		setupVault(pm);
 		setupWorldEdit(pm);
 
+		persistenceHandler.reload();
 	}
 
 	private void registerCommands() {
 		cmds.registerCommand(new CreateBoardCommand());
 		cmds.registerCommand(new DeleteBoardCommand());
+		cmds.registerCommand(new RedrawCommand());
+		cmds.registerCommand(new ListBoardCommand());
 	}
 
 	@Override
 	public void onDisable() {
 		if (startupFailed) return;
+
+		persistenceHandler.save();
 
 		instance = null;
 	}

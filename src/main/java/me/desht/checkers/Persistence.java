@@ -23,6 +23,21 @@ public class Persistence {
 		loadPersistedData();
 	}
 
+	public void save() {
+		saveGames();
+		saveBoards();
+	}
+
+	private void saveBoards() {
+		for (BoardView b : BoardViewManager.getManager().listBoardViews()) {
+			savePersistable("board", b);
+		}
+	}
+
+	private void saveGames() {
+		// TODO Auto-generated method stub
+	}
+
 	private void loadPersistedData() {
 		int nLoaded = 0;
 

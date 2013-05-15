@@ -175,7 +175,7 @@ public class CheckersGameManager {
 
 		game.save();
 
-		MiscUtil.statusMessage(player, Messages.getString("CheckersCommandExecutor.gameCreated", game.getName(), game.getView().getName()));
+		MiscUtil.statusMessage(player, Messages.getString("Game.gameCreated", game.getName(), game.getView().getName()));
 
 		return game;
 	}

@@ -37,7 +37,7 @@ public class BoardCreationHandler extends ExpectBase {
 
 		BoardView view = BoardViewManager.getManager().createBoard(boardName, loc, BoardRotation.getRotation(player), boardStyle);
 
-		MiscUtil.statusMessage(player, Messages.getString("ExpectBoardCreation.boardCreated", //$NON-NLS-1$
+		MiscUtil.statusMessage(player, Messages.getString("Board.boardCreated", //$NON-NLS-1$
 		                                                  view.getName(), MiscUtil.formatLocation(view.getBoard().getA1Center().getLocation())));
 	}
 }

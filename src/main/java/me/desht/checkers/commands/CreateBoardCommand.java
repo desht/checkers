@@ -13,7 +13,7 @@ import org.bukkit.plugin.Plugin;
 public class CreateBoardCommand extends AbstractCheckersCommand {
 
 	public CreateBoardCommand() {
-		super("create board", 1);
+		super("checkers create board", 1);
 		setUsage("/checkers create board <board-name> [-style <board-style>]");
 		setOptions(new String[] { "style:s" });
 		setPermissionNode("checkers.commands.create.board");
@@ -32,7 +32,7 @@ public class CreateBoardCommand extends AbstractCheckersCommand {
 
 		String boardStyleName = getStringOption("style", "Standard");
 
-		MiscUtil.statusMessage(sender, Messages.getString("ChessCommandExecutor.boardCreationPrompt", name)); //$NON-NLS-1$
+		MiscUtil.statusMessage(sender, Messages.getString("Board.boardCreationPrompt", name)); //$NON-NLS-1$
 		CheckersPlugin.getInstance().getResponseHandler().expect(sender.getName(), new BoardCreationHandler(name, boardStyleName));
 
 		return true;

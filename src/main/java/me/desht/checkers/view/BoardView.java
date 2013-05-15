@@ -1,7 +1,9 @@
 package me.desht.checkers.view;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -20,17 +22,22 @@ import me.desht.checkers.view.controlpanel.ControlPanel;
 import me.desht.dhutils.AttributeCollection;
 import me.desht.dhutils.ConfigurationListener;
 import me.desht.dhutils.ConfigurationManager;
+import me.desht.dhutils.MessagePager;
+import me.desht.dhutils.MiscUtil;
 import me.desht.dhutils.PersistableLocation;
 import me.desht.dhutils.block.CraftMassBlockUpdate;
 import me.desht.dhutils.block.MassBlockUpdate;
+import me.desht.dhutils.cuboid.Cuboid;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemoryConfiguration;
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
 
-public class BoardView implements PositionListener, ConfigurationListener, CheckersPersistable {
+public class BoardView implements PositionListener, ConfigurationListener, CheckersPersistable, ConfigurationSerializable {
 	private static final String BOARD_STYLE = "boardstyle";
 	private static final String DEFAULT_STAKE = "defaultstake";
 	private static final String LOCK_STAKE = "lockstake";
@@ -59,7 +66,7 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 	public BoardView(ConfigurationSection conf) {
 		this.name = conf.getString("name");
 		if (BoardViewManager.getManager().boardViewExists(name)) {
-			throw new CheckersException(Messages.getString("BoardView.boardExists"));
+			throw new CheckersException(Messages.getString("Board.boardExists"));
 		}
 		PersistableLocation where = (PersistableLocation) conf.get("origin");
 
@@ -176,7 +183,7 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 	 */
 	public void deletePermanently() {
 		if (getGame() != null) {
-			throw new CheckersException(Messages.getString("ChessCommandExecutor.boardCantBeDeleted", getName(), getGame().getName()));
+			throw new CheckersException(Messages.getString("Board.boardCantBeDeleted", getName(), getGame().getName()));
 		}
 		deleteCommon();
 		restoreTerrain();
@@ -223,5 +230,33 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 		if (key.equals(BOARD_STYLE) && checkersBoard != null) {
 			checkersBoard.setBoardStyle(newVal.toString());
 		}
+	}
+
+	public List<String> getBoardDetail() {
+		List<String> res = new ArrayList<String>();
+
+		String bullet = MessagePager.BULLET + ChatColor.YELLOW;
+		Cuboid bounds = checkersBoard.getFullBoard();
+		BoardStyle style = checkersBoard.getBoardStyle();
+		String gameName = getGame() != null ? getGame().getName() : Messages.getString("Game.noGame");
+
+		res.add(Messages.getString("Board.boardDetail.board", getName()));
+		res.add(bullet + Messages.getString("Board.boardDetail.boardExtents", MiscUtil.formatLocation(bounds.getLowerNE()), MiscUtil.formatLocation(bounds.getUpperSW())));
+		res.add(bullet + Messages.getString("Board.boardDetail.game", gameName));
+		res.add(bullet + Messages.getString("Board.boardDetail.boardOrientation", checkersBoard.getRotation().toString()));
+		res.add(bullet + Messages.getString("Board.boardDetail.boardStyle", style.getName()));
+		res.add(bullet + Messages.getString("Board.boardDetail.pieces", style.getWhitePieceMaterial(), style.getBlackPieceMaterial()));
+		res.add(bullet + Messages.getString("Board.boardDetail.squareSize", style.getSquareSize(), style.getWhiteSquareMaterial(), style.getBlackSquareMaterial()));
+		res.add(bullet + Messages.getString("Board.boardDetail.frameWidth", style.getFrameWidth(), style.getFrameMaterial()));
+		res.add(bullet + Messages.getString("Board.boardDetail.enclosure", style.getEnclosureMaterial()));
+		res.add(bullet + Messages.getString("Board.boardDetail.struts", style.getStrutsMaterial()));
+		res.add(bullet + Messages.getString("Board.boardDetail.height", style.getHeight()));
+		res.add(bullet + Messages.getString("Board.boardDetail.lightLevel", style.getLightLevel()));
+//		String lockStakeStr = getLockStake() ? Messages.getString("ChessCommandExecutor.boardDetail.locked") : "";
+//		res.add(bullet + Messages.getString("ChessCommandExecutor.boardDetail.defaultStake", ChessUtils.formatStakeStr(getDefaultStake()), lockStakeStr));
+//		String dest = hasTeleportDestination() ? MiscUtil.formatLocation(getTeleportDestination()) : "-";
+//		res.add(bullet + Messages.getString("ChessCommandExecutor.boardDetail.teleportDest", dest));
+
+		return res;
 	}
 }

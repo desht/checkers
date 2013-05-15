@@ -65,30 +65,30 @@ public enum BoardRotation {
 	public CuboidDirection getDirection() {
 		switch (this) {
 		case NORTH:
-			return CuboidDirection.North;
-		case EAST:
 			return CuboidDirection.East;
-		case SOUTH:
+		case EAST:
 			return CuboidDirection.South;
-		case WEST:
+		case SOUTH:
 			return CuboidDirection.West;
+		case WEST:
+			return CuboidDirection.North;
 		}
 		return null; // should not get here..
 	}
 
-	public float getYaw() {
-		switch (this) {
-		case NORTH:
-			return 90;
-		case EAST:
-			return 180;
-		case SOUTH:
-			return 270;
-		case WEST:
-			return 0;
-		}
-		return 0;
-	}
+//	public float getYaw() {
+//		switch (this) {
+//		case NORTH:
+//			return 90;
+//		case EAST:
+//			return 180;
+//		case SOUTH:
+//			return 270;
+//		case WEST:
+//			return 0;
+//		}
+//		return 0;
+//	}
 
 	public static BoardRotation getRotation(Location loc) {
 		double rot = loc.getYaw() % 360;

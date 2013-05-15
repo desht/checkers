@@ -90,6 +90,15 @@
 			</plugin>
 		</plugins>
 		<resources>
+			<resource>
+                                <directory>src/main/resources</directory>
+                                <includes>
+                                        <include>**/*</include>
+                                </includes>
+                                <excludes>
+                                        <exclude>plugin.yml</exclude>
+                                </excludes>
+                        </resource>
 		    <resource>
 			<directory>${basedir}/src/main/resources</directory>
 			<filtering>true</filtering>

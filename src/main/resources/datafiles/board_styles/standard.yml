@@ -20,9 +20,9 @@ white_square: wool:white
 # material/data for the black squares
 black_square: wool:black
 # material/data for the white pieces
-white_piece: redstone_block
+white_piece: blockofredstone
 # material/data for the black pieces
-black_square: obsidian
+black_piece: obsidian
 # material/data for the frame
 frame: wood
 # material/data for the enclosure
