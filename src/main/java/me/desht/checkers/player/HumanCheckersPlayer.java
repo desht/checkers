@@ -3,9 +3,9 @@ package me.desht.checkers.player;
 import java.lang.ref.WeakReference;
 
 import me.desht.checkers.CheckersException;
-import me.desht.checkers.CheckersGame;
 import me.desht.checkers.CheckersPlugin;
 import me.desht.checkers.Messages;
+import me.desht.checkers.game.CheckersGame;
 import me.desht.checkers.model.Move;
 import me.desht.checkers.model.PlayerColour;
 import me.desht.checkers.responses.DrawResponse;
@@ -23,7 +23,7 @@ public class HumanCheckersPlayer extends CheckersPlayer {
 
 	private WeakReference<Player> player;
 
-	protected HumanCheckersPlayer(String name, CheckersGame game, PlayerColour colour) {
+	public HumanCheckersPlayer(String name, CheckersGame game, PlayerColour colour) {
 		super(name, game, colour);
 
 		Player p = Bukkit.getPlayerExact(name);
@@ -120,13 +120,13 @@ public class HumanCheckersPlayer extends CheckersPlayer {
 		economy.depositPlayer(getName(), amount);
 	}
 
-	@Override
-	public void summonToGame() {
-		Player p = getBukkitPlayer();
-		if (p != null) {
-			getGame().getView().summonPlayer(p);
-		}
-	}
+//	@Override
+//	public void summonToGame() {
+//		Player p = getBukkitPlayer();
+//		if (p != null) {
+//			getGame().getView().summonPlayer(p);
+//		}
+//	}
 
 	@Override
 	public void cancelOffers() {

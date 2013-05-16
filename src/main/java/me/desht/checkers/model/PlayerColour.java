@@ -1,5 +1,7 @@
 package me.desht.checkers.model;
 
+import me.desht.checkers.Messages;
+
 import org.bukkit.ChatColor;
 
 public enum PlayerColour {
@@ -21,10 +23,18 @@ public enum PlayerColour {
 		}
 	}
 
+	public String getColour() {
+		switch (this) {
+		case WHITE: return Messages.getString("Game.white");
+		case BLACK: return Messages.getString("Game.black");
+		default: throw new IllegalArgumentException("unexpected colour");
+		}
+	}
+
 	public String getDisplayColour() {
 		switch (this) {
-		case WHITE: return ChatColor.WHITE.toString();
-		case BLACK: return ChatColor.BLACK.toString();
+		case WHITE: return ChatColor.WHITE + this.getColour();
+		case BLACK: return ChatColor.BLACK + this.getColour();
 		default: throw new IllegalArgumentException("unexpected colour");
 		}
 	}

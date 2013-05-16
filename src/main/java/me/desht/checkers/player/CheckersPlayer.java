@@ -1,6 +1,6 @@
 package me.desht.checkers.player;
 
-import me.desht.checkers.CheckersGame;
+import me.desht.checkers.game.CheckersGame;
 import me.desht.checkers.model.PlayerColour;
 
 public abstract class CheckersPlayer {
@@ -65,7 +65,7 @@ public abstract class CheckersPlayer {
 	public abstract void withdrawFunds(double amount);
 	public abstract void depositFunds(double amount);
 
-	public abstract void summonToGame();
+//	public abstract void summonToGame();
 
 	public abstract void cancelOffers();
 

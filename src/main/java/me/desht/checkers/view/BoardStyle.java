@@ -188,11 +188,11 @@ public class BoardStyle implements Comparable<BoardStyle>, ConfigurationListener
 	}
 
 	public MaterialWithData getBlackPieceMaterial() {
-		return (MaterialWithData) attributes.get(WHITE_PIECE);
+		return (MaterialWithData) attributes.get(BLACK_PIECE);
 	}
 
 	public MaterialWithData getWhitePieceMaterial() {
-		return (MaterialWithData) attributes.get(BLACK_PIECE);
+		return (MaterialWithData) attributes.get(WHITE_PIECE);
 	}
 
 	@Override

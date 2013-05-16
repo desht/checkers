@@ -3,6 +3,8 @@ package me.desht.checkers;
 import java.io.File;
 import java.io.IOException;
 
+import me.desht.checkers.game.CheckersGame;
+import me.desht.checkers.game.CheckersGameManager;
 import me.desht.checkers.view.BoardView;
 import me.desht.checkers.view.BoardViewManager;
 import me.desht.dhutils.LogUtils;
@@ -65,7 +67,10 @@ public class Persistence {
 				// load the board's game too, if there is one
 				if (!bv.getSavedGameName().isEmpty()) {
 					File gameFile = new File(DirectoryStructure.getGamesPersistDirectory(), bv.getSavedGameName() + ".yml");
-					loadGame(gameFile);
+					CheckersGame game = loadGame(gameFile);
+					if (game != null) {
+						bv.setGame(game);
+					}
 				}
 			} else {
 				return false;
@@ -78,8 +83,7 @@ public class Persistence {
 		return true;
 	}
 
-	private void loadGame(File gameFile) {
-		// TODO Auto-generated method stub
+	private CheckersGame loadGame(File gameFile) {
 		LogUtils.fine("loading game: " + gameFile);
 		try {
 			Configuration conf = MiscUtil.loadYamlUTF8(gameFile);
@@ -87,12 +91,14 @@ public class Persistence {
 			if (conf.contains("game")) {
 				game = (CheckersGame) conf.get("game");
 				CheckersGameManager.getManager().registerGame(game);
+				return game;
 			} else {
-
+				LogUtils.severe("invalid game save file " + gameFile);
 			}
 		} catch (Exception e) {
 			LogUtils.severe("can't load saved game from " + gameFile.getName() + ": " + e.getMessage(), e);
 		}
+		return null;
 	}
 
 	public void savePersistable(String tag, CheckersPersistable object) {

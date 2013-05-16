@@ -1,6 +1,6 @@
 package me.desht.checkers.event;
 
-import me.desht.checkers.CheckersGame;
+import me.desht.checkers.game.CheckersGame;
 
 public abstract class CheckersGameEvent extends CheckersEvent {
 

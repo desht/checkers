@@ -38,4 +38,11 @@ public class CheckersUtils {
 
 		return id < 0 ? Messages.getString("Misc.anything") : MaterialWithData.get(id).toString();
 	}
+	
+	private static final String rows = "ABCDEFGH";
+	private static final String cols = "12345678";
+
+	public static String rowColToString(int row, int col) {
+		return rows.substring(row, row) + cols.substring(col, col);
+	}
 }

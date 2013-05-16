@@ -8,11 +8,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import me.desht.checkers.CheckersException;
-import me.desht.checkers.CheckersGame;
 import me.desht.checkers.CheckersPersistable;
 import me.desht.checkers.CheckersPlugin;
 import me.desht.checkers.DirectoryStructure;
 import me.desht.checkers.Messages;
+import me.desht.checkers.game.CheckersGame;
+import me.desht.checkers.game.GameListener;
 import me.desht.checkers.model.Move;
 import me.desht.checkers.model.PieceType;
 import me.desht.checkers.model.Position;
@@ -38,7 +39,7 @@ import org.bukkit.configuration.MemoryConfiguration;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.Player;
 
-public class BoardView implements PositionListener, ConfigurationListener, CheckersPersistable, ConfigurationSerializable {
+public class BoardView implements PositionListener, ConfigurationListener, CheckersPersistable, ConfigurationSerializable, GameListener {
 	private static final String BOARD_STYLE = "boardstyle";
 	private static final String DEFAULT_STAKE = "defaultstake";
 	private static final String LOCK_STAKE = "lockstake";
@@ -137,10 +138,18 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 	}
 
 	public void setGame(CheckersGame game) {
+		this.game = game;
+
 		if (game != null) {
 			game.getPosition().addPositionListener(this);
+			game.addGameListener(this);
 		} else {
+			getBoard().reset();
 		}
+
+		getControlPanel().repaintControls();
+
+		save();
 	}
 
 	public String getSavedGameName() {
@@ -167,16 +176,6 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 			checkersBoard.paintPieces(game.getPosition());
 		}
 		mbu.notifyClients();
-	}
-
-	@Override
-	public void moveMade(Position position, Move move) {
-		// TODO Auto-generated method stub
-	}
-
-	@Override
-	public void squareChanged(int row, int col, PieceType piece) {
-		checkersBoard.paintPiece(row, col, piece);
 	}
 
 	/**
@@ -219,20 +218,6 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 		}
 	}
 
-	@Override
-	public void onConfigurationValidate(ConfigurationManager configurationManager, String key, Object oldVal,
-			Object newVal) {
-		// TODO Auto-generated method stub
-	}
-
-	@Override
-	public void onConfigurationChanged(ConfigurationManager configurationManager, String key, Object oldVal,
-			Object newVal) {
-		if (key.equals(BOARD_STYLE) && checkersBoard != null) {
-			checkersBoard.setBoardStyle(newVal.toString());
-		}
-	}
-
 	public List<String> getBoardDetail() {
 		List<String> res = new ArrayList<String>();
 
@@ -264,5 +249,34 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 	public void summonPlayer(Player p) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public void onConfigurationValidate(ConfigurationManager configurationManager, String key, Object oldVal,
+			Object newVal) {
+		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public void onConfigurationChanged(ConfigurationManager configurationManager, String key, Object oldVal,
+			Object newVal) {
+		if (key.equals(BOARD_STYLE) && checkersBoard != null) {
+			checkersBoard.setBoardStyle(newVal.toString());
+		}
+	}
+
+	@Override
+	public void moveMade(Position position, Move move) {
+		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public void squareChanged(int row, int col, PieceType piece) {
+		checkersBoard.paintPiece(row, col, piece);
+	}
+
+	@Override
+	public void gameDeleted(CheckersGame game) {
+		setGame(null);
 	}
 }

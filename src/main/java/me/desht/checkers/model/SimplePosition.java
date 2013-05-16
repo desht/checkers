@@ -141,6 +141,11 @@ public class SimplePosition implements Position {
 	}
 
 	@Override
+	public Move[] getMoveHistory() {
+		return moveHistory.toArray(new Move[moveHistory.size()]);
+	}
+
+	@Override
 	public Move getLastMove() {
 		return moveHistory.get(moveHistory.size() - 1);
 	}

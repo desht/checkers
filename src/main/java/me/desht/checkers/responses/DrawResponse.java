@@ -1,8 +1,8 @@
 package me.desht.checkers.responses;
 
-import me.desht.checkers.CheckersGame;
 import me.desht.checkers.Messages;
-import me.desht.checkers.CheckersGame.GameResult;
+import me.desht.checkers.game.CheckersGame;
+import me.desht.checkers.game.CheckersGame.GameResult;
 import me.desht.dhutils.MiscUtil;
 
 import org.bukkit.Bukkit;
@@ -17,7 +17,7 @@ public class DrawResponse extends YesNoResponse {
 	@Override
 	public void doResponse(final String offeree) {
 
-		deferTask(Bukkit.getPlayer(offerer), new Runnable() {
+		deferTask(Bukkit.getPlayerExact(offerer), new Runnable() {
 			@Override
 			public void run() {
 				if (accepted) {

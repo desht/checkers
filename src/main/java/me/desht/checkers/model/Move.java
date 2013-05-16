@@ -1,5 +1,7 @@
 package me.desht.checkers.model;
 
+import me.desht.checkers.util.CheckersUtils;
+
 import org.apache.commons.lang.Validate;
 
 public class Move {
@@ -17,6 +19,10 @@ public class Move {
 		this.fromCol = fromCol;
 		this.toRow = toRow;
 		this.toCol = toCol;
+	}
+
+	public Move(int encoded) {
+		this(encoded & 0x7, (encoded >> 3) & 0x7, (encoded >> 6) & 0x7, (encoded >> 9) & 0x7);
 	}
 
 	public boolean isJump() {
@@ -49,5 +55,14 @@ public class Move {
 	 */
 	public int getToCol() {
 		return toCol;
+	}
+
+	public int encode() {
+		return fromRow + (fromCol << 3) + (toRow << 6) + (toCol << 9);
+	}
+
+	@Override
+	public String toString() {
+		return CheckersUtils.rowColToString(fromRow, fromCol) + "-" + CheckersUtils.rowColToString(toRow, toCol);
 	}
 }

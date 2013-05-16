@@ -1,10 +1,12 @@
 package me.desht.checkers.view;
 
 import me.desht.checkers.CheckersException;
+import me.desht.checkers.CheckersPlugin;
 import me.desht.checkers.Messages;
 import me.desht.checkers.model.PieceType;
 import me.desht.checkers.model.Position;
 import me.desht.dhutils.PersistableLocation;
+import me.desht.dhutils.block.CraftMassBlockUpdate;
 import me.desht.dhutils.block.MassBlockUpdate;
 import me.desht.dhutils.block.MaterialWithData;
 import me.desht.dhutils.cuboid.Cuboid;
@@ -54,8 +56,6 @@ public class CheckersBoard {
 		aboveFullBoard = frameBoard.shift(CuboidDirection.Up, 1).expand(CuboidDirection.Up, boardStyle.getHeight() - 1);
 		fullBoard = frameBoard.expand(CuboidDirection.Up, boardStyle.getHeight() + 1);
 		validateBoardPosition();
-		System.out.println("board: " + board);
-		System.out.println("fullBoard: " + fullBoard);
 	}
 
 	private PersistableLocation initA1Corner(Location origin) {
@@ -287,6 +287,13 @@ public class CheckersBoard {
 		redrawNeeded = false;
 	}
 
+	void reset() {
+		MassBlockUpdate mbu = CraftMassBlockUpdate.createMassBlockUpdater(CheckersPlugin.getInstance(), getWorld());
+		paintBoard(mbu);
+		getBoard().shift(CuboidDirection.Up, 1).expand(CuboidDirection.Up, getBoardStyle().getHeight() - 1).fill(0, (byte)0, mbu);
+		mbu.notifyClients();
+	}
+
 	public void paintPieces(Position position) {
 		for (int row = 0; row < 8; ++row) {
 			for (int col = 0; col < 8; ++col) {
@@ -306,13 +313,13 @@ public class CheckersBoard {
 		case BLACK: mat = boardStyle.getBlackPieceMaterial(); break;
 		default: mat = MaterialWithData.get(0); break;
 		}
-		// TODO: simple algorithm just draws cubic pieces; should be disks!
+		// TODO: simple algorithm just draws square pieces; should be disks!
 		Cuboid c = getSquare(row, col).inset(CuboidDirection.Horizontal, 1).shift(CuboidDirection.Up, 1);
-		int height = boardStyle.getHeight();
+		int height = boardStyle.getSquareSize() / 5 + 1;
 		if (piece.isKing()) {
 			height *= 2;
 		}
-		c = c.expand(CuboidDirection.Up, height);
+		c = c.expand(CuboidDirection.Up, height - 1);
 		c.fill(mat);
 	}
 

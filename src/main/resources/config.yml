@@ -1,3 +1,4 @@
 protection:
   no_building: true
   no_burning: true
+coloured_console: true

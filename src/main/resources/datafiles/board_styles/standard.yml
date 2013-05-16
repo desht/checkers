@@ -18,9 +18,9 @@ height: 8
 # material/data for the white squares
 white_square: wool:white
 # material/data for the black squares
-black_square: wool:black
+black_square: wool:grey
 # material/data for the white pieces
-white_piece: blockofredstone
+white_piece: 152
 # material/data for the black pieces
 black_piece: obsidian
 # material/data for the frame

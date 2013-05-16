@@ -1,4 +1,4 @@
-package me.desht.checkers;
+package me.desht.checkers.game;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -8,8 +8,11 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import me.desht.checkers.CheckersException;
+import me.desht.checkers.Messages;
 import me.desht.checkers.event.CheckersGameCreatedEvent;
 import me.desht.checkers.event.CheckersGameDeletedEvent;
+import me.desht.checkers.model.PlayerColour;
 import me.desht.checkers.view.BoardView;
 import me.desht.checkers.view.BoardViewManager;
 import me.desht.dhutils.MiscUtil;
@@ -20,8 +23,10 @@ import org.bukkit.entity.Player;
 public class CheckersGameManager {
 	private static CheckersGameManager instance = null;
 
-	private final Map<String,CheckersGame> chessGames = new HashMap<String,CheckersGame>();
-	private final Map<String,CheckersGame> currentGame = new HashMap<String, CheckersGame>();
+	// map game name to game
+	private final Map<String,CheckersGame> checkersGames = new HashMap<String,CheckersGame>();
+	// map player name to player's active game
+	private final Map<String,CheckersGame> activeGame = new HashMap<String, CheckersGame>();
 
 	private CheckersGameManager() {
 
@@ -41,8 +46,9 @@ public class CheckersGameManager {
 
 	public void registerGame(CheckersGame game) {
 		String gameName = game.getName();
-		if (!chessGames.containsKey(gameName)) {
-			chessGames.put(gameName, game);
+		if (!checkersGames.containsKey(gameName)) {
+			checkersGames.put(gameName, game);
+			game.save();
 			Bukkit.getPluginManager().callEvent(new CheckersGameCreatedEvent(game));
 		} else {
 			throw new CheckersException("trying to register duplicate game " + gameName);
@@ -53,44 +59,44 @@ public class CheckersGameManager {
 		CheckersGame game = getGame(gameName);
 
 		List<String> toRemove = new ArrayList<String>();
-		for (String playerName : currentGame.keySet()) {
-			if (currentGame.get(playerName) == game) {
+		for (String playerName : activeGame.keySet()) {
+			if (activeGame.get(playerName) == game) {
 				toRemove.add(playerName);
 			}
 		}
 		for (String p : toRemove) {
-			currentGame.remove(p);
+			activeGame.remove(p);
 		}
-		chessGames.remove(gameName);
+		checkersGames.remove(gameName);
 		Bukkit.getPluginManager().callEvent(new CheckersGameDeletedEvent(game));
 	}
 
 	public boolean checkGame(String gameName) {
-		return chessGames.containsKey(gameName);
+		return checkersGames.containsKey(gameName);
 	}
 
 	public Collection<CheckersGame> listGamesSorted() {
-		SortedSet<String> sorted = new TreeSet<String>(chessGames.keySet());
+		SortedSet<String> sorted = new TreeSet<String>(checkersGames.keySet());
 		List<CheckersGame> res = new ArrayList<CheckersGame>();
 		for (String name : sorted) {
-			res.add(chessGames.get(name));
+			res.add(checkersGames.get(name));
 		}
 		return res;
 	}
 
 	public Collection<CheckersGame> listGames() {
-		return chessGames.values();
+		return checkersGames.values();
 	}
 
 	public CheckersGame getGame(String name) {
 		return getGame(name, true);
 	}
-	
+
 	public CheckersGame getGame(String name, boolean fuzzy) {
-		if (!chessGames.containsKey(name)) {
+		if (!checkersGames.containsKey(name)) {
 			throw new CheckersException(Messages.getString("Game.noSuchGame", name));
 		}
-		return chessGames.get(name);
+		return checkersGames.get(name);
 	}
 
 	public void setCurrentGame(String playerName, String gameName) {
@@ -99,7 +105,7 @@ public class CheckersGameManager {
 	}
 
 	public void setCurrentGame(String playerName, CheckersGame game) {
-		currentGame.put(playerName, game);
+		activeGame.put(playerName, game);
 	}
 
 	public CheckersGame getCurrentGame(String playerName) {
@@ -107,7 +113,7 @@ public class CheckersGameManager {
 	}
 
 	public CheckersGame getCurrentGame(String playerName, boolean verify) {
-		CheckersGame game = currentGame.get(playerName);
+		CheckersGame game = activeGame.get(playerName);
 		if (verify && game == null) {
 			throw new CheckersException(Messages.getString("Game.noActiveGame")); //$NON-NLS-1$
 		}
@@ -116,8 +122,8 @@ public class CheckersGameManager {
 
 	public Map<String, String> getCurrentGames() {
 		Map<String, String> res = new HashMap<String, String>();
-		for (String s : currentGame.keySet()) {
-			CheckersGame game = currentGame.get(s);
+		for (String s : activeGame.keySet()) {
+			CheckersGame game = activeGame.get(s);
 			if (game != null) {
 				res.put(s, game.getName());
 			}
@@ -143,14 +149,14 @@ public class CheckersGameManager {
 
 	/**
 	 * Convenience method to create a new chess game.
-	 * 
+	 *
 	 * @param player		The player who is creating the game
 	 * @param gameName		Name of the game - may be null, in which case a name will be generated
 	 * @param boardName		Name of the board for the game - may be null, in which case a free board will be picked
 	 * @return	The game object
 	 * @throws CheckersException	if there is any problem creating the game
 	 */
-	public CheckersGame createGame(Player player, String gameName, String boardName, int colour) {
+	public CheckersGame createGame(Player player, String gameName, String boardName, PlayerColour colour) {
 		BoardView bv;
 		if (boardName == null) {
 			bv = BoardViewManager.getManager().getFreeBoard();
@@ -161,21 +167,19 @@ public class CheckersGameManager {
 		return createGame(player, gameName, bv, colour);
 	}
 
-	public CheckersGame createGame(Player player, String gameName, BoardView bv, int colour) {
+	public CheckersGame createGame(Player player, String gameName, BoardView bv, PlayerColour colour) {
 		String playerName = player.getName();
 
 		if (gameName == null || gameName.equals("-")) {
 			gameName = makeGameName(playerName);
 		}
 
-		CheckersGame game = new CheckersGame(gameName, bv, playerName, colour);
+		CheckersGame game = new CheckersGame(gameName, playerName, colour);
 		registerGame(game);
 		setCurrentGame(playerName, game);
-		bv.getControlPanel().repaintControls();
 
-		game.save();
-
-		MiscUtil.statusMessage(player, Messages.getString("Game.gameCreated", game.getName(), game.getView().getName()));
+		bv.setGame(game);
+		MiscUtil.statusMessage(player, Messages.getString("Game.gameCreated", game.getName(), bv.getName()));
 
 		return game;
 	}

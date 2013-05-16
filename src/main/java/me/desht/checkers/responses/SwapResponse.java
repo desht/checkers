@@ -1,7 +1,7 @@
 package me.desht.checkers.responses;
 
-import me.desht.checkers.CheckersGame;
 import me.desht.checkers.Messages;
+import me.desht.checkers.game.CheckersGame;
 import me.desht.dhutils.MiscUtil;
 
 import org.bukkit.Bukkit;

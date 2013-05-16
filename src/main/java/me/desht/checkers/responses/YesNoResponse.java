@@ -1,7 +1,7 @@
 package me.desht.checkers.responses;
 
-import me.desht.checkers.CheckersGame;
 import me.desht.checkers.CheckersPlugin;
+import me.desht.checkers.game.CheckersGame;
 import me.desht.dhutils.responsehandler.ExpectBase;
 import me.desht.dhutils.responsehandler.ResponseHandler;
 
@@ -52,7 +52,7 @@ public abstract class YesNoResponse extends ExpectBase {
 		YesNoResponse response = (YesNoResponse) respHandler.getAction(player.getName(), c);
 		response.setResponse(isAccepted);
 		response.handleAction();
-		response.getGame().getView().getControlPanel().repaintControls();
+//		response.getGame().getView().getControlPanel().repaintControls();
 	}
 
 }

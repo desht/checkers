@@ -1,6 +1,6 @@
 package me.desht.checkers.event;
 
-import me.desht.checkers.CheckersGame;
+import me.desht.checkers.game.CheckersGame;
 
 import org.bukkit.event.HandlerList;
 

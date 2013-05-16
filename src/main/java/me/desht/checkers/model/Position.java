@@ -5,6 +5,7 @@ public interface Position {
 	public Move[] getLegalMoves();
 	public Move[] getLegalMoves(int row, int col);
 	public void makeMove(Move moves);
+	public Move[] getMoveHistory();
 	public Move getLastMove();
 	public PlayerColour getToMove();
 	public void newGame();

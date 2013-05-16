@@ -21,8 +21,11 @@ import java.util.List;
 import java.util.logging.Level;
 
 import me.desht.checkers.commands.CreateBoardCommand;
+import me.desht.checkers.commands.CreateGameCommand;
 import me.desht.checkers.commands.DeleteBoardCommand;
+import me.desht.checkers.commands.DeleteGameCommand;
 import me.desht.checkers.commands.ListBoardCommand;
+import me.desht.checkers.commands.ListGameCommand;
 import me.desht.checkers.commands.RedrawCommand;
 import me.desht.checkers.listeners.BlockListener;
 import me.desht.checkers.listeners.PlayerListener;
@@ -113,6 +116,9 @@ public class CheckersPlugin extends JavaPlugin implements ConfigurationListener,
 		cmds.registerCommand(new DeleteBoardCommand());
 		cmds.registerCommand(new RedrawCommand());
 		cmds.registerCommand(new ListBoardCommand());
+		cmds.registerCommand(new CreateGameCommand());
+		cmds.registerCommand(new DeleteGameCommand());
+		cmds.registerCommand(new ListGameCommand());
 	}
 
 	@Override
