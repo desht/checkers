@@ -23,7 +23,7 @@ public class DeleteGameCommand extends AbstractCheckersCommand {
 		gameName = game.getName();
 
 		// bypass permission check if player is deleting their own game and it's still in setup phase
-		if (!game.playerCanDelete(sender)) {
+		if (!game.playerAllowedToDelete(sender.getName())) {
 			PermissionUtils.requirePerms(sender, "checkers.commands.delete.game");
 		}
 

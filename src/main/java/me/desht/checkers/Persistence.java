@@ -2,6 +2,7 @@ package me.desht.checkers;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Map.Entry;
 
 import me.desht.checkers.game.CheckersGame;
 import me.desht.checkers.game.CheckersGameManager;
@@ -9,8 +10,11 @@ import me.desht.checkers.view.BoardView;
 import me.desht.checkers.view.BoardViewManager;
 import me.desht.dhutils.LogUtils;
 import me.desht.dhutils.MiscUtil;
+import me.desht.dhutils.PersistableLocation;
 
+import org.bukkit.Location;
 import org.bukkit.configuration.Configuration;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 public class Persistence {
@@ -28,6 +32,7 @@ public class Persistence {
 	public void save() {
 		saveGames();
 		saveBoards();
+		saveOtherPersistedData();
 	}
 
 	private void saveBoards() {
@@ -54,6 +59,7 @@ public class Persistence {
 
 		LogUtils.fine("loaded " + nLoaded + " saved boards.");
 
+		loadOtherPersistedData();
 	}
 
 	public boolean loadBoard(File f) {
@@ -99,6 +105,47 @@ public class Persistence {
 			LogUtils.severe("can't load saved game from " + gameFile.getName() + ": " + e.getMessage(), e);
 		}
 		return null;
+	}
+
+	private void saveOtherPersistedData() {
+		YamlConfiguration conf = new YamlConfiguration();
+		for (Entry<String,String> e : CheckersGameManager.getManager().getCurrentGames().entrySet()) {
+			conf.set("current_games." + e.getKey(), e.getValue());
+		}
+
+		Location loc = BoardViewManager.getManager().getGlobalTeleportOutDest();
+		if (loc != null) {
+			conf.set("teleport_out_dest", new PersistableLocation(loc));
+		}
+
+		try {
+			conf.save(DirectoryStructure.getPersistFile());
+		} catch (IOException e) {
+			LogUtils.severe("Can't save " + DirectoryStructure.getPersistFile(), e);
+		}
+	}
+
+	private void loadOtherPersistedData() {
+		try {
+			YamlConfiguration conf = MiscUtil.loadYamlUTF8(DirectoryStructure.getPersistFile());
+			ConfigurationSection current = conf.getConfigurationSection("current_games");
+			if (current != null) {
+				for (String player : current.getKeys(false)) {
+					try {
+						CheckersGameManager.getManager().setCurrentGame(player, current.getString(player));
+					} catch (CheckersException e) {
+						LogUtils.warning("can't set current game for player " + player + ": " + e.getMessage());
+					}
+				}
+			}
+			if (conf.contains("teleport_out_dest")) {
+				PersistableLocation pLoc = (PersistableLocation) conf.get("teleport_out_dest");
+				BoardViewManager.getManager().setGlobalTeleportOutDest(pLoc.getLocation());
+			}
+		} catch (Exception e) {
+			LogUtils.severe("Unexpected Error while loading " + DirectoryStructure.getPersistFile().getName());
+			LogUtils.severe("Message: " + e.getMessage());
+		}
 	}
 
 	public void savePersistable(String tag, CheckersPersistable object) {

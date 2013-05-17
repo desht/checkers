@@ -1,7 +1,5 @@
 package me.desht.checkers.player;
 
-import java.lang.ref.WeakReference;
-
 import me.desht.checkers.CheckersException;
 import me.desht.checkers.CheckersPlugin;
 import me.desht.checkers.Messages;
@@ -12,29 +10,32 @@ import me.desht.checkers.responses.DrawResponse;
 import me.desht.checkers.responses.SwapResponse;
 import me.desht.checkers.responses.YesNoResponse;
 import me.desht.checkers.util.CheckersUtils;
+import me.desht.checkers.view.BoardView;
 import me.desht.dhutils.MiscUtil;
 import net.milkbowl.vault.economy.Economy;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
 public class HumanCheckersPlayer extends CheckersPlayer {
 
-	private WeakReference<Player> player;
+	private Player player;
 
 	public HumanCheckersPlayer(String name, CheckersGame game, PlayerColour colour) {
 		super(name, game, colour);
-
-		Player p = Bukkit.getPlayerExact(name);
-		if (p == null) {
-			throw new CheckersException("Player " + name + " is not online");
-		}
-		player = new WeakReference<Player>(p);
 	}
 
 	private Player getBukkitPlayer() {
-		return player.get();
+		if (player == null) {
+			player = Bukkit.getPlayerExact(getName());
+		} else {
+			if (!player.isOnline())
+				player = null;
+		}
+
+		return player;
 	}
 
 	@Override
@@ -176,4 +177,21 @@ public class HumanCheckersPlayer extends CheckersPlayer {
 
 	}
 
+	@Override
+	public void teleport(Location loc) {
+		if (getBukkitPlayer() != null) {
+			Player p = getBukkitPlayer();
+			p.teleport(loc);
+		}
+	}
+
+	@Override
+	public void teleport(BoardView boardView) {
+		if (getBukkitPlayer() != null) {
+			Player p = getBukkitPlayer();
+			if (!boardView.getBoard().isPartOfBoard(p.getLocation())) {
+				p.teleport(boardView.getTeleportInLocation());
+			}
+		}
+	}
 }

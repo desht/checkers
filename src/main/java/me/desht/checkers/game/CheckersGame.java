@@ -10,6 +10,7 @@ import java.util.Map.Entry;
 import me.desht.checkers.CheckersException;
 import me.desht.checkers.CheckersPersistable;
 import me.desht.checkers.CheckersPlugin;
+import me.desht.checkers.CheckersValidate;
 import me.desht.checkers.DirectoryStructure;
 import me.desht.checkers.Messages;
 import me.desht.checkers.ai.CheckersAI;
@@ -20,13 +21,16 @@ import me.desht.checkers.model.SimplePosition;
 import me.desht.checkers.player.CheckersPlayer;
 import me.desht.checkers.player.HumanCheckersPlayer;
 import me.desht.checkers.util.CheckersUtils;
+import me.desht.dhutils.Duration;
 import me.desht.dhutils.LogUtils;
 import me.desht.dhutils.MessagePager;
+import me.desht.dhutils.MiscUtil;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.MemoryConfiguration;
+import org.bukkit.entity.Player;
 
 public class CheckersGame implements CheckersPersistable {
 	public enum GameResult {
@@ -36,7 +40,7 @@ public class CheckersGame implements CheckersPersistable {
 		SETTING_UP, RUNNING, FINISHED,
 	}
 
-	public static final Object OPEN_INVITATION = "*";
+	public static final String OPEN_INVITATION = "*";
 
 	private final List<GameListener> listeners = new ArrayList<GameListener>();
 
@@ -50,6 +54,7 @@ public class CheckersGame implements CheckersPersistable {
 	private double stake;
 	private long started, finished, lastMoved;
 	private GameResult result;
+	private long lastOpenInvite;
 
 	public CheckersGame(String gameName, String creatorName, PlayerColour colour) {
 		this.gameName = gameName;
@@ -60,7 +65,7 @@ public class CheckersGame implements CheckersPersistable {
 		this.created = System.currentTimeMillis();
 		this.result = GameResult.NOT_FINISHED;
 		if (creatorName != null) {
-			createPlayer(colour, creatorName);
+			players[colour.getIndex()] = createPlayer(colour, creatorName);
 		}
 	}
 
@@ -76,8 +81,8 @@ public class CheckersGame implements CheckersPersistable {
 		this.result = GameResult.valueOf(conf.getString("result"));
 		this.stake = conf.getDouble("stake");
 
-		createPlayer(PlayerColour.WHITE, conf.getString("playerWhite"));
-		createPlayer(PlayerColour.BLACK, conf.getString("playerBlack"));
+		players[PlayerColour.WHITE.getIndex()] = createPlayer(PlayerColour.WHITE, conf.getString("playerWhite"));
+		players[PlayerColour.BLACK.getIndex()] = createPlayer(PlayerColour.BLACK, conf.getString("playerBlack"));
 
 		// replay the saved move history
 		List<Integer> encoded = conf.getIntegerList("moves");
@@ -87,17 +92,18 @@ public class CheckersGame implements CheckersPersistable {
 		}
 	}
 
-	private void createPlayer(PlayerColour colour, String playerName) {
-		int idx = colour.getIndex();
+	private CheckersPlayer createPlayer(PlayerColour colour, String playerName) {
 		if (playerName == null) {
 			// TODO: new random free AI
+			return null;
 		} else if (CheckersAI.isAI(playerName)) {
 			// TODO: new named AI
+			return null;
 		} else if (playerName.isEmpty()) {
 			// no player for this slot yet
-			players[idx] = null;
+			return null;
 		} else {
-			players[idx] = new HumanCheckersPlayer(playerName, this, colour);
+			return new HumanCheckersPlayer(playerName, this, colour);
 		}
 	}
 
@@ -159,12 +165,34 @@ public class CheckersGame implements CheckersPersistable {
 		return players[colour.getIndex()];
 	}
 
+	public CheckersPlayer getPlayer(String playerName) {
+		if (playerName.equalsIgnoreCase(getPlayerName(PlayerColour.WHITE))) {
+			return getPlayer(PlayerColour.WHITE);
+		} else if (playerName.equalsIgnoreCase(getPlayerName(PlayerColour.BLACK))) {
+			return getPlayer(PlayerColour.BLACK);
+		} else {
+			return null;
+		}
+	}
+
 	public String getPlayerName(PlayerColour colour) {
 		return players[colour.getIndex()] != null ? players[colour.getIndex()].getName() : "";
 	}
 
+	public boolean isPlayerInGame(String playerName) {
+		return getPlayerName(PlayerColour.WHITE).equalsIgnoreCase(playerName) || getPlayerName(PlayerColour.BLACK).equalsIgnoreCase(playerName);
+	}
+
+	public boolean isFull() {
+		return getPlayer(PlayerColour.WHITE) != null && getPlayer(PlayerColour.BLACK) != null;
+	}
+
 	public double getStake() {
-		return stake;
+		if (CheckersPlugin.getInstance().getEconomy() == null) {
+			return 0.0;
+		} else {
+			return stake;
+		}
 	}
 
 	/**
@@ -212,6 +240,10 @@ public class CheckersGame implements CheckersPersistable {
 
 	public String getInvited() {
 		return invited;
+	}
+
+	public void alert(Player player, String message) {
+		MiscUtil.alertMessage(player, Messages.getString("Game.alertPrefix", getName()) + message);
 	}
 
 	public void alert(String message) {
@@ -264,6 +296,7 @@ public class CheckersGame implements CheckersPersistable {
 		if (getInvited().equals(OPEN_INVITATION)) {
 			res.add(bullet + Messages.getString("Game.gameDetail.openInvitation"));
 		} else if (!getInvited().isEmpty()) {
+			System.out.println("invited [" + getInvited() + "]");
 			res.add(bullet + Messages.getString("Game.gameDetail.invitation", getInvited()));
 		}
 		res.add(Messages.getString("Game.gameDetail.moveHistory"));
@@ -286,12 +319,154 @@ public class CheckersGame implements CheckersPersistable {
 		listeners.add(listener);
 	}
 
+	public boolean playerAllowedToDelete(String playerName) {
+		return getState() == GameState.SETTING_UP && isPlayerInGame(playerName);
+	}
+
+	public void invitePlayer(String inviterName, String inviteeName) {
+		inviteSanityCheck(inviterName);
+
+		if (inviteeName == null) {
+			inviteOpen(inviterName);
+			return;
+		}
+
+		Player player = Bukkit.getServer().getPlayer(inviteeName);
+		if (player != null) {
+			inviteeName = player.getName();
+			alert(player, Messages.getString("Game.youAreInvited", inviterName));
+			if (getStake() > 0.0) {
+				alert(player, Messages.getString("Game.gameHasStake", CheckersUtils.formatStakeStr(getStake())));
+			}
+			alert(player, Messages.getString("Game.joinPrompt"));
+			if (!invited.isEmpty() && !invited.equals(inviteeName)) {
+				alert(invited, Messages.getString("Game.inviteWithdrawn"));
+			}
+			invited = inviteeName;
+			alert(inviterName, Messages.getString("Game.inviteSent", invited));
+		} else {
+			// TODO: add an AI player
+			throw new CheckersException("Unknown player: " + inviteeName);
+		}
+		save();
+	}
+
+	public void inviteOpen(String inviterName) {
+		long now = System.currentTimeMillis();
+		Duration cooldown = new Duration(CheckersPlugin.getInstance().getConfig().getString("open_invite_cooldown", "3 mins"));
+		long remaining = (cooldown.getTotalDuration() - (now - lastOpenInvite)) / 1000;
+		CheckersValidate.isTrue(remaining > 0, Messages.getString("Game.inviteCooldown", remaining));
+
+		MiscUtil.broadcastMessage((Messages.getString("Game.openInviteCreated", inviterName)));
+		if (getStake() > 0.0) {
+			MiscUtil.broadcastMessage(Messages.getString("Game.gameHasStake", CheckersUtils.formatStakeStr(getStake())));
+		}
+		MiscUtil.broadcastMessage(Messages.getString("Game.joinPromptGlobal", getName()));
+		invited = OPEN_INVITATION;
+		lastOpenInvite = now;
+		save();
+	}
+
+	public void clearInvitation() {
+		invited = "";
+	}
+
+	public void addPlayer(String playerName) {
+		ensureGameInState(GameState.SETTING_UP);
+
+		if (isFull()) {
+			// this could happen if autostart is disabled and two players have already joined
+			throw new CheckersException(Messages.getString("Game.gameIsFull"));
+		}
+
+		CheckersPlayer p = fillEmptyPlayerSlot(playerName);
+
+		//		getView().getControlPanel().repaintControls();
+		clearInvitation();
+
+		for (GameListener l : listeners) {
+			l.playerAdded(this, p);
+		}
+
+		if (isFull()) {
+			if (CheckersPlugin.getInstance().getConfig().getBoolean("autostart", true)) {
+				start(playerName);
+			} else {
+				alert(Messages.getString("Game.startPrompt"));
+			}
+		}
+	}
+
+	public void start(String playerName) {
+		ensurePlayerInGame(playerName);
+		ensureGameInState(GameState.SETTING_UP);
+		if (!isFull()) {
+			// TODO game started with only one player - add an AI player
+			//			fillEmptyPlayerSlot(null);
+			throw new CheckersException("game needs two players!");
+		}
+
+		if (stake > 0.0 && !getPlayerName(PlayerColour.WHITE).equalsIgnoreCase(getPlayerName(PlayerColour.BLACK))) {
+			// just in case stake.max got adjusted after game creation...
+			double max = CheckersPlugin.getInstance().getConfig().getDouble("stake.max");
+			if (max >= 0 && stake > max) {
+				stake = max;
+			}
+			getPlayer(PlayerColour.WHITE).validateAffordability("Game.cantAffordToStart");
+			getPlayer(PlayerColour.WHITE).withdrawFunds(stake);
+			getPlayer(PlayerColour.BLACK).validateAffordability("Game.cantAffordToStart");
+			getPlayer(PlayerColour.BLACK).withdrawFunds(stake);
+		}
+
+		clearInvitation();
+		started = lastMoved = System.currentTimeMillis();
+		state = GameState.RUNNING;
+
+		getPlayer(PlayerColour.WHITE).promptForFirstMove();
+
+		save();
+
+		for (GameListener l : listeners) {
+			l.gameStarted(this);
+		}
+	}
+
+	private void inviteSanityCheck(String inviterName) {
+		ensurePlayerInGame(inviterName);
+		ensureGameInState(GameState.SETTING_UP);
+	}
+
+	private void ensureGameInState(GameState state) {
+		CheckersValidate.isTrue(getState() == state, Messages.getString("Game.shouldBeState", state));
+	}
+
+	private void ensurePlayerInGame(String playerName) {
+		CheckersValidate.isTrue(getPlayerName(PlayerColour.WHITE).equals(playerName) || getPlayerName(PlayerColour.BLACK).equals(playerName),
+		                        Messages.getString("Game.notInGame"));
+	}
+
+	private CheckersPlayer fillEmptyPlayerSlot(String playerName) {
+		PlayerColour colour;
+		if (hasPlayer(PlayerColour.WHITE)) {
+			colour = PlayerColour.BLACK;
+		} else {
+			colour = PlayerColour.WHITE;
+		}
+		CheckersPlayer checkersPlayer = createPlayer(colour, playerName);
+		checkersPlayer.validateInvited("Game.notInvited");
+		checkersPlayer.validateAffordability("Game.cantAffordToJoin");
+		players[colour.getIndex()] = checkersPlayer;
+
+		PlayerColour otherColour = colour.getOtherColour();
+		if (hasPlayer(otherColour)) {
+			getPlayer(otherColour).alert(Messages.getString("Game.playerJoined", getPlayer(colour).getDisplayName()));
+		}
+
+		return checkersPlayer;
+	}
+
 	private void handlePayout() {
 		// TODO Auto-generated method stub
 	}
 
-	public boolean playerCanDelete(CommandSender sender) {
-		// TODO Auto-generated method stub
-		return false;
-	}
 }

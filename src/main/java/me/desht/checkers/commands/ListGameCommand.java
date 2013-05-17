@@ -47,12 +47,13 @@ public class ListGameCommand extends AbstractCheckersCommand {
 				String curMoveB = game.getPosition().getToMove() == PlayerColour.BLACK ? TO_MOVE : "";
 				String white = game.hasPlayer(PlayerColour.WHITE) ? game.getPlayer(PlayerColour.WHITE).getDisplayName() : "?";
 				String black = game.hasPlayer(PlayerColour.BLACK) ? game.getPlayer(PlayerColour.BLACK).getDisplayName() : "?";
-				String line = String.format(MessagePager.BULLET + "%s: &f%s%s (%s) v %s%s (%s)",
+				String line = String.format(MessagePager.BULLET + "%s: %s%s (%s) v %s%s (%s)",
 				                            name,
-				                            curMoveW, white, PlayerColour.WHITE.getDisplayColour(),
-				                            curMoveB, black, PlayerColour.BLACK.getDisplayColour());
-				if (game.getInvited().length() > 0) {
-					line += Messages.getString("ChessCommandExecutor.invited", game.getInvited()); //$NON-NLS-1$
+				                            curMoveW, white, PlayerColour.WHITE.getDisplayColour() + ChatColor.RESET,
+				                            curMoveB, black, PlayerColour.BLACK.getDisplayColour() + ChatColor.RESET);
+				if (!game.getInvited().isEmpty()) {
+					System.out.println("invited [" + game.getInvited() + "]");
+					line += Messages.getString("Game.invited", game.getInvited());
 				}
 				pager.add(line);
 			}

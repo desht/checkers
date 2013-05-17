@@ -2,3 +2,13 @@ protection:
   no_building: true
   no_burning: true
 coloured_console: true
+autostart: true
+auto_teleport_on_join: true
+log_level: info
+locale: default
+pager:
+  lines: 0
+open_invite_cooldown: 3 min
+stake:
+  max: -1
+wand_item: '*'

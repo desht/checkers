@@ -3,6 +3,7 @@ package me.desht.checkers.listeners;
 import me.desht.checkers.CheckersPlugin;
 import me.desht.checkers.Messages;
 import me.desht.checkers.responses.BoardCreationHandler;
+import me.desht.checkers.responses.InvitePlayer;
 import me.desht.dhutils.MiscUtil;
 import me.desht.dhutils.responsehandler.ResponseHandler;
 
@@ -20,7 +21,11 @@ public class PlayerListener extends CheckersBaseListener {
 		ResponseHandler resp = plugin.getResponseHandler();
 		String playerName = event.getPlayer().getName();
 
-		if (resp.isExpecting(playerName, BoardCreationHandler.class)) {
+		if (resp.isExpecting(playerName, InvitePlayer.class)) {
+			// a left or right-click (even air, where the event is cancelled) cancels any pending player invite response
+			resp.cancelAction(playerName, InvitePlayer.class);
+			MiscUtil.alertMessage(event.getPlayer(), Messages.getString("Game.playerInviteCancelled"));
+		} else if (resp.isExpecting(playerName, BoardCreationHandler.class)) {
 			BoardCreationHandler boardCreation = resp.getAction(playerName, BoardCreationHandler.class);
 			switch (event.getAction()) {
 			case LEFT_CLICK_BLOCK:
@@ -35,6 +40,8 @@ public class PlayerListener extends CheckersBaseListener {
 				break;
 			}
 			event.setCancelled(true);
+		} else {
+		
 		}
 	}
 }

@@ -1,5 +1,7 @@
 package me.desht.checkers.view.controlpanel;
 
+import org.bukkit.Location;
+
 import me.desht.checkers.view.BoardView;
 import me.desht.dhutils.block.MassBlockUpdate;
 
@@ -28,5 +30,10 @@ public class ControlPanel {
 	public void removeSigns() {
 		// TODO Auto-generated method stub
 
+	}
+
+	public Location getTeleportInLocation() {
+		// TODO Auto-generated method stub
+		return view.getBoard().getA1Center().getLocation();
 	}
 }

@@ -18,6 +18,8 @@ import me.desht.checkers.model.Move;
 import me.desht.checkers.model.PieceType;
 import me.desht.checkers.model.Position;
 import me.desht.checkers.model.PositionListener;
+import me.desht.checkers.player.CheckersPlayer;
+import me.desht.checkers.util.CheckersUtils;
 import me.desht.checkers.util.TerrainBackup;
 import me.desht.checkers.view.controlpanel.ControlPanel;
 import me.desht.dhutils.AttributeCollection;
@@ -168,6 +170,14 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 		return controlPanel;
 	}
 
+	public double getDefaultStake() {
+		return (Double) attributes.get(DEFAULT_STAKE);
+	}
+
+	public boolean getLockStake() {
+		return (Boolean) attributes.get(LOCK_STAKE);
+	}
+
 	public void repaint() {
 		MassBlockUpdate mbu = CraftMassBlockUpdate.createMassBlockUpdater(CheckersPlugin.getInstance(), getWorld());
 		checkersBoard.repaint(mbu);
@@ -238,8 +248,8 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 		res.add(bullet + Messages.getString("Board.boardDetail.struts", style.getStrutsMaterial()));
 		res.add(bullet + Messages.getString("Board.boardDetail.height", style.getHeight()));
 		res.add(bullet + Messages.getString("Board.boardDetail.lightLevel", style.getLightLevel()));
-//		String lockStakeStr = getLockStake() ? Messages.getString("ChessCommandExecutor.boardDetail.locked") : "";
-//		res.add(bullet + Messages.getString("ChessCommandExecutor.boardDetail.defaultStake", ChessUtils.formatStakeStr(getDefaultStake()), lockStakeStr));
+		String lockStakeStr = getLockStake() ? Messages.getString("Board.boardDetail.locked") : "";
+		res.add(bullet + Messages.getString("Board.boardDetail.defaultStake", CheckersUtils.formatStakeStr(getDefaultStake()), lockStakeStr));
 //		String dest = hasTeleportDestination() ? MiscUtil.formatLocation(getTeleportDestination()) : "-";
 //		res.add(bullet + Messages.getString("ChessCommandExecutor.boardDetail.teleportDest", dest));
 
@@ -248,7 +258,6 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 
 	public void summonPlayer(Player p) {
 		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
@@ -278,5 +287,22 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 	@Override
 	public void gameDeleted(CheckersGame game) {
 		setGame(null);
+	}
+
+	@Override
+	public void playerAdded(CheckersGame checkersGame, CheckersPlayer checkersPlayer) {
+		if (CheckersPlugin.getInstance().getConfig().getBoolean("auto_teleport_on_join")) {
+			checkersPlayer.teleport(this);
+		}
+		getControlPanel().repaintControls();
+	}
+
+	@Override
+	public void gameStarted(CheckersGame checkersGame) {
+		getControlPanel().repaintControls();
+	}
+
+	public Location getTeleportInLocation() {
+		return getControlPanel().getTeleportInLocation();
 	}
 }
