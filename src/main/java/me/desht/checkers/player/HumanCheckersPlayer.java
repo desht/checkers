@@ -74,7 +74,7 @@ public class HumanCheckersPlayer extends CheckersPlayer {
 		if (p == null)
 			return;
 		Move m = getGame().getPosition().getLastMove();
-		alert(Messages.getString("Game.playerPlayedMove", getColour().getOtherColour().getDisplayColour(), m.toString()));
+		alert(Messages.getString("Game.playerPlayedMove", getColour().getOtherColour().getDisplayColour(), m.toString(), getColour().getDisplayColour()));
 	}
 
 	@Override

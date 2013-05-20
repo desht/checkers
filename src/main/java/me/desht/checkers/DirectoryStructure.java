@@ -134,7 +134,7 @@ public class DirectoryStructure {
 		for (String s : MiscUtil.listFilesinJAR(getJarFile(), "datafiles/board_styles",	".yml")) {
 			extractResource(s, boardStyleDir);
 		}
-
+		extractResource("/timecontrols.yml", pluginDir, ExtractWhen.IF_NOT_EXISTS);
 		// message resources no longer extracted here - this is now done by Messages.loadMessages()
 	}
 

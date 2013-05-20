@@ -174,7 +174,7 @@ public class CheckersGameManager {
 			gameName = makeGameName(playerName);
 		}
 
-		CheckersGame game = new CheckersGame(gameName, playerName, colour);
+		CheckersGame game = new CheckersGame(gameName, playerName, colour, bv.getDefaultTcSpec());
 		registerGame(game);
 		setCurrentGame(playerName, game);
 

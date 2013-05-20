@@ -32,6 +32,8 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerAnimationEvent;
 import org.bukkit.event.player.PlayerAnimationType;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -137,13 +139,31 @@ public class PlayerListener extends CheckersBaseListener {
 		} catch (IllegalMoveException e) {
 			// targetBlock must be non-null at this point
 			cancelMove(bv);
-			MiscUtil.errorMessage(player, e.getMessage() + ". " + Messages.getString("Misc.moveCancelled"));
-			CheckersPlugin.getInstance().getFX().playEffect(player.getLocation(), "piece_unselected");
+			MiscUtil.errorMessage(player, e.getMessage());
+			plugin.getFX().playEffect(player.getLocation(), "piece_unselected");
 		} catch (CheckersException e) {
 			MiscUtil.errorMessage(player, e.getMessage());
 		} catch (IllegalStateException e) {
 			// player.getTargetBlock() throws this exception occasionally - it appears
 			// to be harmless, so we'll ignore it
+		}
+	}
+
+	@EventHandler(ignoreCancelled = true, priority=EventPriority.HIGH)
+	public void onPlayerChat(AsyncPlayerChatEvent event) {
+		Player player = event.getPlayer();
+		ResponseHandler resp = plugin.getResponseHandler();
+		InvitePlayer ip = resp.getAction(player.getName(), InvitePlayer.class);
+
+		if (ip != null) {
+			try {
+				ip.setInviteeName(event.getMessage());
+				event.setCancelled(true);
+				ip.handleAction();
+			} catch (CheckersException e) {
+				MiscUtil.errorMessage(player, e.getMessage());
+				ip.cancelAction();
+			}
 		}
 	}
 

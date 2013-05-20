@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import me.desht.checkers.TimeControl;
+import me.desht.checkers.TimeControlDefs;
 import me.desht.checkers.game.CheckersGame;
 import me.desht.checkers.model.PlayerColour;
 import me.desht.checkers.view.BoardRotation;
@@ -132,12 +133,24 @@ public class ControlPanel {
 	}
 
 	public Location getTeleportInLocation() {
-		// TODO Auto-generated method stub
-		return view.getBoard().getA1Center().getLocation();
+		double xOff = (panelBlocks.getUpperX() - panelBlocks.getLowerX()) / 2.0 + 0.5 + signDir.getXadjustment() * 3.5;
+		double zOff = (panelBlocks.getUpperZ() - panelBlocks.getLowerZ()) / 2.0 + 0.5 + signDir.getZadjustment() * 3.5;
+
+		System.out.println("board dir = " + boardDir + ", signDir = " + signDir + ", yaw = " + signDir.getYaw());
+		return new Location(panelBlocks.getWorld(),
+		                    panelBlocks.getLowerX() + xOff,
+		                    panelBlocks.getLowerY(),
+		                    panelBlocks.getLowerZ() + zOff,
+		                    (signDir.getYaw() + 180.0f) % 360,
+		                    0.0f);
 	}
 
 	public Cuboid getPanelBlocks() {
 		return panelBlocks;
+	}
+
+	public TimeControlDefs getTcDefs() {
+		return getButton(TimeControlButton.class).getTcDefs();
 	}
 
 	private Cuboid getPanelPosition() {
@@ -160,8 +173,22 @@ public class ControlPanel {
 	}
 
 	private void createSignButtons() {
+		createSignButton(new BlackNoButton(this));
+		createSignButton(new BlackYesButton(this));
 		createSignButton(new BoardInfoButton(this));
+		createSignButton(new CreateGameButton(this));
 		createSignButton(new GameInfoButton(this));
+		createSignButton(new InviteAnyoneButton(this));
+		createSignButton(new InvitePlayerButton(this));
+		createSignButton(new OfferDrawButton(this));
+		createSignButton(new ResignButton(this));
+		createSignButton(new StakeButton(this));
+		createSignButton(new StartButton(this));
+		createSignButton(new TeleportButton(this));
+		createSignButton(new TimeControlButton(this));
+		createSignButton(new UndoButton(this));
+		createSignButton(new WhiteNoButton(this));
+		createSignButton(new WhiteYesButton(this));
 	}
 
 	private void createSignButton(AbstractSignButton button) {
@@ -175,7 +202,7 @@ public class ControlPanel {
 		}
 	}
 
-	private void updateClock(PlayerColour colour, TimeControl timeControl) {
+	void updateClock(PlayerColour colour, TimeControl timeControl) {
 		clockLabels[colour.getIndex()].setTimeControl(timeControl);
 		clockLabels[colour.getIndex()].repaint();
 	}

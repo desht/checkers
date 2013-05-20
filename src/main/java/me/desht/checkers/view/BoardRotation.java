@@ -7,17 +7,19 @@ import org.bukkit.entity.Player;
 
 public enum BoardRotation {
 
-	NORTH(0, -1), // north = -z
-	EAST(1, 0), // east = +x
-	SOUTH(0, 1), // south = +z
-	WEST(-1, 0);// west = -x
+	NORTH(0, -1, 180.0f), // north = -z
+	EAST(1, 0, 270.0f), // east = +x
+	SOUTH(0, 1, 0.0f), // south = +z
+	WEST(-1, 0, 90.0f); // west = -x
 
 	// the increments if moving in this direction
 	private final int x, z;
+	private final float yaw;
 
-	private BoardRotation(int xPositive, int zPositive) {
+	private BoardRotation(int xPositive, int zPositive, float yaw) {
 		x = xPositive;
 		z = zPositive;
+		this.yaw = yaw;
 	}
 
 	public int getXadjustment() {
@@ -34,6 +36,10 @@ public enum BoardRotation {
 
 	public int getZadjustment(int offset) {
 		return z * offset;
+	}
+
+	public float getYaw() {
+		return yaw;
 	}
 
 	/**

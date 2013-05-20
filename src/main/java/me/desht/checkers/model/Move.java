@@ -1,17 +1,16 @@
 package me.desht.checkers.model;
 
-import me.desht.checkers.CheckersValidate;
 
 public class Move {
 	private final int fromRow, fromCol;
 	private final int toRow, toCol;
 
 	public Move(int fromRow, int fromCol, int toRow, int toCol) {
-		int rowOff = Math.abs(fromRow - toRow);
-		int colOff = Math.abs(fromRow - toRow);
-		CheckersValidate.isTrue(rowOff > 0 && rowOff < 3, "invalid row offset");
-		CheckersValidate.isTrue(colOff > 0 && colOff < 3, "invalid column offset");
-		CheckersValidate.isTrue(colOff == rowOff, "invalid row/column offset");
+//		int rowOff = Math.abs(fromRow - toRow);
+//		int colOff = Math.abs(fromRow - toRow);
+//		CheckersValidate.isTrue(rowOff > 0 && rowOff < 3, Messages.getString("Game.illegalMove"));
+//		CheckersValidate.isTrue(colOff > 0 && colOff < 3, Messages.getString("Game.illegalMove"));
+//		CheckersValidate.isTrue(colOff == rowOff, Messages.getString("Game.illegalMove"));
 
 		this.fromRow = fromRow;
 		this.fromCol = fromCol;

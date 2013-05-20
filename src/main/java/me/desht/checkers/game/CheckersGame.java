@@ -28,6 +28,7 @@ import me.desht.dhutils.Duration;
 import me.desht.dhutils.LogUtils;
 import me.desht.dhutils.MessagePager;
 import me.desht.dhutils.MiscUtil;
+import net.milkbowl.vault.economy.Economy;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -38,7 +39,7 @@ import org.bukkit.entity.Player;
 
 public class CheckersGame implements CheckersPersistable {
 	public enum GameResult {
-		WIN, DRAW_AGREED, ABANDONED, NOT_FINISHED,
+		WIN, DRAW_AGREED, ABANDONED, NOT_FINISHED, RESIGNED,
 	}
 	public enum GameState {
 		SETTING_UP, RUNNING, FINISHED,
@@ -59,8 +60,10 @@ public class CheckersGame implements CheckersPersistable {
 	private long started, finished, lastMoved;
 	private GameResult result;
 	private long lastOpenInvite;
+	private TimeControl tcWhite, tcBlack;
+	private PlayerColour winner = PlayerColour.NONE;
 
-	public CheckersGame(String gameName, String creatorName, PlayerColour colour) {
+	public CheckersGame(String gameName, String creatorName, PlayerColour colour, String tcSpec) {
 		this.gameName = gameName;
 		this.position = new SimplePosition();
 		this.state = GameState.SETTING_UP;
@@ -71,6 +74,7 @@ public class CheckersGame implements CheckersPersistable {
 		if (creatorName != null) {
 			players[colour.getIndex()] = createPlayer(colour, creatorName);
 		}
+		setTimeControl(tcSpec);
 	}
 
 	public CheckersGame(Configuration conf) {
@@ -84,6 +88,8 @@ public class CheckersGame implements CheckersPersistable {
 		this.lastMoved = conf.getLong("lastMoved");
 		this.result = GameResult.valueOf(conf.getString("result"));
 		this.stake = conf.getDouble("stake");
+		this.tcWhite = (TimeControl) conf.get("tcWhite");
+		this.tcBlack = (TimeControl) conf.get("tcBlack");
 
 		players[PlayerColour.WHITE.getIndex()] = createPlayer(PlayerColour.WHITE, conf.getString("playerWhite"));
 		players[PlayerColour.BLACK.getIndex()] = createPlayer(PlayerColour.BLACK, conf.getString("playerBlack"));
@@ -94,6 +100,10 @@ public class CheckersGame implements CheckersPersistable {
 			Move move = new Move(m);
 			position.makeMove(move);
 		}
+
+		// set chess clock activity appropriately
+		tcWhite.setActive(getPosition().getToMove() == PlayerColour.WHITE);
+		tcBlack.setActive(!tcWhite.isActive());
 	}
 
 	private CheckersPlayer createPlayer(PlayerColour colour, String playerName) {
@@ -136,6 +146,8 @@ public class CheckersGame implements CheckersPersistable {
 		map.put("lastMoved", lastMoved);
 		map.put("result", result.toString());
 		map.put("stake", stake);
+		map.put("tcWhite", tcWhite);
+		map.put("tcBlack", tcBlack);
 
 		return map;
 	}
@@ -230,8 +242,8 @@ public class CheckersGame implements CheckersPersistable {
 	public void deletePermanently() {
 		CheckersPlugin.getInstance().getPersistenceHandler().unpersist(this);
 
-		if (getState() != GameState.FINISHED) {
-			gameOver(GameResult.ABANDONED);
+		if (getState() == GameState.RUNNING) {
+			gameOver(PlayerColour.NONE, GameResult.ABANDONED);
 			handlePayout();
 		}
 
@@ -278,11 +290,6 @@ public class CheckersGame implements CheckersPersistable {
 				cp.alert(message);
 			}
 		}
-	}
-
-	public void drawn(GameResult result) {
-		setState(GameState.FINISHED);
-		gameOver(result);
 	}
 
 	public void swapColours() {
@@ -477,15 +484,108 @@ public class CheckersGame implements CheckersPersistable {
 		if (getPosition().getLegalMoves().length == 0) {
 			// no legal moves, therefore the player currently to-play has just lost
 			setState(GameState.FINISHED);
-			gameOver(GameResult.WIN);
+			gameOver(getPosition().getToMove().getOtherColour(), GameResult.WIN);
 		}
 
 		save();
 	}
 
+	public void resign(String playerName) {
+		ensureGameInState(GameState.RUNNING);
+		ensurePlayerInGame(playerName);
+
+		CheckersPlayer loser = getPlayer(playerName);
+		setState(GameState.FINISHED);
+		gameOver(loser.getColour().getOtherColour(), GameResult.RESIGNED);
+	}
+
+	public void drawn(GameResult result) {
+		setState(GameState.FINISHED);
+		gameOver(PlayerColour.NONE, result);
+	}
+
 	public void tick() {
 		checkForAutoDelete();
 		checkForAIActivity();
+	}
+
+	public TimeControl getTimeControl(PlayerColour colour) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public void setTimeControl(String spec) {
+		ensureGameInState(GameState.SETTING_UP);
+		tcWhite = new TimeControl(spec);
+		tcBlack = new TimeControl(spec);
+	}
+
+	public void setStake(String playerName, double newStake) {
+		Economy economy = CheckersPlugin.getInstance().getEconomy();
+		if (economy == null || !economy.isEnabled()) {
+			return;
+		}
+
+		ensureGameInState(GameState.SETTING_UP);
+		ensurePlayerInGame(playerName);
+
+		if (newStake < 0.0) {
+			throw new CheckersException(Messages.getString("Game.noNegativeStakes"));
+		}
+
+		if (!economy.has(playerName, newStake)) {
+			throw new CheckersException(Messages.getString("Game.cantAffordStake"));
+		}
+
+		double max = CheckersPlugin.getInstance().getConfig().getDouble("stake.max");
+		if (max >= 0.0 && newStake > max) {
+			throw new CheckersException(Messages.getString("Game.stakeTooHigh", max));
+		}
+
+		if (isFull()) {
+			throw new CheckersException(Messages.getString("Game.stakeCantBeChanged"));
+		}
+
+		this.stake = newStake;
+	}
+
+	public void adjustStake(String playerName, double adjustment) {
+		Economy economy = CheckersPlugin.getInstance().getEconomy();
+		if (economy == null || !economy.isEnabled()) {
+			return;
+		}
+
+		double newStake = getStake() + adjustment;
+		double max = CheckersPlugin.getInstance().getConfig().getDouble("stake.max");
+
+		if (max >= 0.0 && newStake > max && adjustment < 0.0) {
+			// allow stake to be adjusted down without throwing an exception
+			// could happen if global max stake was changed to something lower than
+			// a game's current stake setting
+			newStake = Math.min(max, economy.getBalance(playerName));
+		}
+		if (!economy.has(playerName, newStake) && adjustment < 0.0) {
+			// similarly for the player's own balance
+			newStake = Math.min(max, economy.getBalance(playerName));
+		}
+
+		setStake(playerName, newStake);
+	}
+
+	public void offerDraw(String playerName) {
+		ensurePlayerInGame(playerName);
+		ensurePlayerToMove(playerName);
+		ensureGameInState(GameState.RUNNING);
+
+		CheckersPlayer offeringPlayer = getPlayer(playerName);
+		CheckersPlayer offeredPlayer = getPlayer(offeringPlayer.getColour().getOtherColour());
+		offeringPlayer.statusMessage(Messages.getString("Game.youOfferDraw", offeredPlayer.getName()));
+		offeredPlayer.drawOffered();
+	}
+
+	public void offerUndoMove(String name) {
+		// TODO Auto-generated method stub
+
 	}
 
 	private void checkForAIActivity() {
@@ -521,26 +621,25 @@ public class CheckersGame implements CheckersPersistable {
 		}
 	}
 
-	private void gameOver(GameResult result) {
-		if (getState() == GameState.SETTING_UP) {
-			return;
-		}
+	private void gameOver(PlayerColour winner, GameResult result) {
 		String msg = "";
-		CheckersPlayer p1 = getPlayer(PlayerColour.WHITE);
-		CheckersPlayer p2 = getPlayer(PlayerColour.BLACK);
 		this.result = result;
+		this.winner = winner;
+		CheckersPlayer p1 = winner == PlayerColour.NONE ? getPlayer(PlayerColour.WHITE) : getPlayer(winner);
+		CheckersPlayer p2 = getPlayer(p1.getColour().getOtherColour());
 		switch (result) {
 		case WIN:
-			CheckersPlayer winner = getPlayer(getPosition().getToMove().getOtherColour());
-			CheckersPlayer loser  = getPlayer(getPosition().getToMove());
-			msg = Messages.getString("Game.resultWin", winner.getName(), loser.getName());
-			if (!winner.getName().equals(loser.getName())) {
-				winner.playEffect("game_won");
-				loser.playEffect("game_lost");
+			msg = Messages.getString("Game.resultWin", p1.getName(), p2.getName());
+			if (!p1.getName().equals(p2.getName())) {
+				p1.playEffect("game_won");
+				p2.playEffect("game_lost");
 			}
 			break;
 		case DRAW_AGREED:
 			msg = Messages.getString("Game.resultDrawAgreed", p1.getName(), p2.getName());
+			break;
+		case RESIGNED:
+			msg = Messages.getString("Game.resultResigned", p1.getName(), p2.getName());
 			break;
 		case ABANDONED:
 			String name1 = p1 == null ? "???" : p1.getName();
@@ -552,7 +651,7 @@ public class CheckersGame implements CheckersPersistable {
 		}
 		if (!msg.isEmpty()) {
 			if (CheckersPlugin.getInstance().getConfig().getBoolean("broadcast_results")) {
-				Bukkit.broadcastMessage(msg);
+				MiscUtil.broadcastMessage(msg);
 			} else {
 				alert(msg);
 			}
@@ -620,6 +719,8 @@ public class CheckersGame implements CheckersPersistable {
 			winner.depositFunds(winnings);
 			winner.alert(Messages.getString("Game.stakeWon", CheckersUtils.formatStakeStr(winnings)));
 			loser.alert(Messages.getString("Game.stakeLost", CheckersUtils.formatStakeStr(stake)));
+		} else if (result == GameResult.RESIGNED) {
+			
 		} else {
 			// draw or abandoned; return original stakes
 			getPlayer(PlayerColour.WHITE).depositFunds(stake);
@@ -630,10 +731,4 @@ public class CheckersGame implements CheckersPersistable {
 
 		stake = 0.0;
 	}
-
-	public TimeControl getTimeControl(PlayerColour colour) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 }

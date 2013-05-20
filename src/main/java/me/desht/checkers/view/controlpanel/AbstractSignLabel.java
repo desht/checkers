@@ -145,11 +145,11 @@ public abstract class AbstractSignLabel {
 		case NORTH:
 			return 5;
 		case EAST:
-			return 2;
+			return 3;
 		case SOUTH:
 			return 4;
 		case WEST:
-			return 3;
+			return 2;
 		default:
 			return 0;
 		}

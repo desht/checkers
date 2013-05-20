@@ -26,11 +26,12 @@ Game:
   gameHasStake: "This game has a stake of &f{0}&-."
   gameIsFull: "This game already has two players."
   getStakeBack: "You get your stake of {0} back."
-  illegalMove: "Illegal move"
+  illegalMove: "Illegal move."
   inviteCooldown: "You must wait {0,number,integer} seconds before sending another open invitation."
   invited: " [invited: &6{0}&-]"
   inviteSent: "An invitation has been sent to &6{0}&-."
   inviteWithdrawn: "Your invitation has been withdrawn."
+  joinedGame: "You have joined the chess game &6{0}&- as &f{1}&-."
   joinPrompt: "Type &f/checkers join&- to join the game."
   joinPromptGlobal: "Type &f/checkers join {0}&- to join the game."
   lostStake: "You lost your stake of {0}."
@@ -53,7 +54,7 @@ Game:
   paidStake: "You have paid a stake of {0}."
   playerJoined: "&6{0}&- has joined your game."
   playerNotOnline: "Player {0} is not online."
-  playerPlayedMove: "{0} played [&f{1}&-].  Your move."
+  playerPlayedMove: "{0}&- played [&f{1}&-].  Your move, {2}&-."
   resultAbandoned: "&6{0}&- drew with &6{1}&- (game abandoned) in a game of Checkers!"
   resultDrawAgreed: "&6{0}&- drew with &6{1}&- (draw agreed) in a game of Checkers!"
   resultForfeited: "&6{0}&- beat &6{1}&- (forfeited) in a game of Checkers!"
@@ -138,3 +139,5 @@ ControlPanel:
   whitePawnPromotionBtn: "White Pawn;Promotion"
   yesBtn: ";;Yes"
 
+Misc:
+  anything: "anything"

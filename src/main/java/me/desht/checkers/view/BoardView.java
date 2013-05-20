@@ -12,6 +12,7 @@ import me.desht.checkers.CheckersPersistable;
 import me.desht.checkers.CheckersPlugin;
 import me.desht.checkers.DirectoryStructure;
 import me.desht.checkers.Messages;
+import me.desht.checkers.TimeControl;
 import me.desht.checkers.game.CheckersGame;
 import me.desht.checkers.game.GameListener;
 import me.desht.checkers.model.Move;
@@ -23,6 +24,7 @@ import me.desht.checkers.player.CheckersPlayer;
 import me.desht.checkers.util.CheckersUtils;
 import me.desht.checkers.util.TerrainBackup;
 import me.desht.checkers.view.controlpanel.ControlPanel;
+import me.desht.checkers.view.controlpanel.TimeControlButton;
 import me.desht.dhutils.AttributeCollection;
 import me.desht.dhutils.ConfigurationListener;
 import me.desht.dhutils.ConfigurationManager;
@@ -46,6 +48,8 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 	private static final String BOARD_STYLE = "boardstyle";
 	private static final String DEFAULT_STAKE = "defaultstake";
 	private static final String LOCK_STAKE = "lockstake";
+	private static final String DEFAULT_TC = "defaulttc";
+	private static final String LOCK_TC = "locktc";
 
 	private final String name;
 	private final CheckersBoard checkersBoard;
@@ -55,6 +59,7 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 	private final AttributeCollection attributes;
 
 	private CheckersGame game;
+	private PersistableLocation teleportOutDest;
 
 	public BoardView(String name, Location loc, BoardRotation rot, String boardStyle) {
 		this.name = name;
@@ -78,7 +83,9 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 		this.attributes = new AttributeCollection(this);
 		registerAttributes();
 		for (String attr : attributes.listAttributeKeys(false)) {
-			attributes.set(attr, conf.getString(attr));
+			if (conf.contains(attr)) {
+				attributes.set(attr, conf.getString(attr));
+			}
 		}
 
 		this.savedGameName = conf.getString("game", "");
@@ -92,6 +99,8 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 		attributes.registerAttribute(BOARD_STYLE, "", "Board style for this board");
 		attributes.registerAttribute(DEFAULT_STAKE, 0.0, "Default stake for games on this board");
 		attributes.registerAttribute(LOCK_STAKE, false, "Disallow changing of stake by players");
+		attributes.registerAttribute(DEFAULT_TC, "NONE", "Default time control for games on this board");
+		attributes.registerAttribute(LOCK_TC, false, "Disallow changing of time control by players");
 	}
 
 	@Override
@@ -179,6 +188,22 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 		return (Boolean) attributes.get(LOCK_STAKE);
 	}
 
+	public String getDefaultTcSpec() {
+		return (String) attributes.get(DEFAULT_TC);
+	}
+
+	public boolean getLockTcSpec() {
+		return (Boolean) attributes.get(LOCK_TC);
+	}
+
+	public Location getTeleportDestination() {
+		return teleportOutDest == null ? null : teleportOutDest.getLocation();
+	}
+
+	public boolean hasTeleportDestination() {
+		return teleportOutDest != null;
+	}
+
 	public void repaint() {
 		MassBlockUpdate mbu = CraftMassBlockUpdate.createMassBlockUpdater(CheckersPlugin.getInstance(), getWorld());
 		checkersBoard.repaint(mbu);
@@ -235,7 +260,7 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 		String bullet = MessagePager.BULLET + ChatColor.YELLOW;
 		Cuboid bounds = checkersBoard.getFullBoard();
 		BoardStyle style = checkersBoard.getBoardStyle();
-		String gameName = getGame() != null ? getGame().getName() : Messages.getString("Game.noGame");
+		String gameName = getGame() != null ? getGame().getName() : "-";
 
 		res.add(Messages.getString("Board.boardDetail.board", getName()));
 		res.add(bullet + Messages.getString("Board.boardDetail.boardExtents", MiscUtil.formatLocation(bounds.getLowerNE()), MiscUtil.formatLocation(bounds.getUpperSW())));
@@ -251,8 +276,10 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 		res.add(bullet + Messages.getString("Board.boardDetail.lightLevel", style.getLightLevel()));
 		String lockStakeStr = getLockStake() ? Messages.getString("Board.boardDetail.locked") : "";
 		res.add(bullet + Messages.getString("Board.boardDetail.defaultStake", CheckersUtils.formatStakeStr(getDefaultStake()), lockStakeStr));
-//		String dest = hasTeleportDestination() ? MiscUtil.formatLocation(getTeleportDestination()) : "-";
-//		res.add(bullet + Messages.getString("ChessCommandExecutor.boardDetail.teleportDest", dest));
+		String lockTcStr = getLockTcSpec() ? Messages.getString("Board.boardDetail.locked") : "";
+		res.add(bullet + Messages.getString("Board.boardDetail.defaultTimeControl", getDefaultTcSpec(), lockTcStr));
+		String dest = hasTeleportDestination() ? MiscUtil.formatLocation(getTeleportDestination()) : "-";
+		res.add(bullet + Messages.getString("Board.boardDetail.teleportDest", dest));
 
 		return res;
 	}
@@ -264,13 +291,21 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 	@Override
 	public void onConfigurationValidate(ConfigurationManager configurationManager, String key, Object oldVal,
 			Object newVal) {
-		// TODO Auto-generated method stub
+		if (key.equals(DEFAULT_TC) && !newVal.toString().isEmpty()) {
+			new TimeControl(newVal.toString());		// force validation of the spec
+		}
 	}
 
 	@Override
-	public void onConfigurationChanged(ConfigurationManager configurationManager, String key, Object oldVal,
-			Object newVal) {
-		if (key.equals(BOARD_STYLE) && checkersBoard != null) {
+	public void onConfigurationChanged(ConfigurationManager configurationManager, String key, Object oldVal, Object newVal) {
+		if (key.equals(DEFAULT_TC) && getControlPanel() != null) {
+			String spec = newVal.toString();
+			if (spec.isEmpty()) {
+				spec = CheckersPlugin.getInstance().getConfig().getString("time_control.default");
+			}
+			getControlPanel().getTcDefs().addCustomSpec(spec);
+			getControlPanel().getButton(TimeControlButton.class).repaint();
+		} else if (key.equals(BOARD_STYLE) && checkersBoard != null) {
 			checkersBoard.setBoardStyle(newVal.toString());
 		}
 	}
@@ -323,9 +358,7 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 	}
 
 	public boolean isControlPanel(Location loc) {
-		return false;
-		// TODO
-//		return controlPanel.getPanelBlocks().contains(loc);
+		return controlPanel.getPanelBlocks().contains(loc);
 	}
 
 	public int getSquareAt(Location loc) {
