@@ -14,6 +14,7 @@ import me.desht.checkers.CheckersValidate;
 import me.desht.checkers.DirectoryStructure;
 import me.desht.checkers.IllegalMoveException;
 import me.desht.checkers.Messages;
+import me.desht.checkers.TimeControl;
 import me.desht.checkers.ai.CheckersAI;
 import me.desht.checkers.model.Checkers;
 import me.desht.checkers.model.Move;
@@ -628,6 +629,11 @@ public class CheckersGame implements CheckersPersistable {
 		}
 
 		stake = 0.0;
+	}
+
+	public TimeControl getTimeControl(PlayerColour colour) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

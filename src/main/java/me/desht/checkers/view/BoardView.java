@@ -16,6 +16,7 @@ import me.desht.checkers.game.CheckersGame;
 import me.desht.checkers.game.GameListener;
 import me.desht.checkers.model.Move;
 import me.desht.checkers.model.PieceType;
+import me.desht.checkers.model.PlayerColour;
 import me.desht.checkers.model.Position;
 import me.desht.checkers.model.PositionListener;
 import me.desht.checkers.player.CheckersPlayer;
@@ -287,6 +288,16 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 	@Override
 	public void squareChanged(int row, int col, PieceType piece) {
 		checkersBoard.paintPiece(row, col, piece);
+	}
+
+	@Override
+	public void plyCountChanged(int plyCount) {
+		getControlPanel().updatePlyCount(plyCount);
+	}
+
+	@Override
+	public void toMoveChanged(PlayerColour toMove) {
+		getControlPanel().updateToMoveIndicator(toMove);
 	}
 
 	@Override

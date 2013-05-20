@@ -134,6 +134,8 @@ public class SimplePosition implements Position {
 
 		for (PositionListener l : listeners) {
 			l.moveMade(this, move);
+			l.plyCountChanged(moveHistory.size());
+			l.toMoveChanged(toMove);
 		}
 	}
 

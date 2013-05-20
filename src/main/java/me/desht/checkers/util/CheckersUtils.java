@@ -39,5 +39,13 @@ public class CheckersUtils {
 		return id < 0 ? Messages.getString("Misc.anything") : MaterialWithData.get(id).toString();
 	}
 
+	public static String milliSecondsToHMS(long l) {
+		l /= 1000;
 
+		long secs = l % 60;
+		long hrs = l / 3600;
+		long mins = (l - (hrs * 3600)) / 60;
+
+		return String.format("%1$02d:%2$02d:%3$02d", hrs, mins, secs);
+	}
 }
