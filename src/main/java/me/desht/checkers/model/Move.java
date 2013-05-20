@@ -1,8 +1,6 @@
 package me.desht.checkers.model;
 
-import me.desht.checkers.util.CheckersUtils;
-
-import org.apache.commons.lang.Validate;
+import me.desht.checkers.CheckersValidate;
 
 public class Move {
 	private final int fromRow, fromCol;
@@ -11,9 +9,9 @@ public class Move {
 	public Move(int fromRow, int fromCol, int toRow, int toCol) {
 		int rowOff = Math.abs(fromRow - toRow);
 		int colOff = Math.abs(fromRow - toRow);
-		Validate.isTrue(rowOff > 0 && rowOff < 3, "invalid row offset");
-		Validate.isTrue(colOff > 0 && colOff < 3, "invalid column offset");
-		Validate.isTrue(colOff == rowOff, "invalid row/column offset");
+		CheckersValidate.isTrue(rowOff > 0 && rowOff < 3, "invalid row offset");
+		CheckersValidate.isTrue(colOff > 0 && colOff < 3, "invalid column offset");
+		CheckersValidate.isTrue(colOff == rowOff, "invalid row/column offset");
 
 		this.fromRow = fromRow;
 		this.fromCol = fromCol;
@@ -63,6 +61,43 @@ public class Move {
 
 	@Override
 	public String toString() {
-		return CheckersUtils.rowColToString(fromRow, fromCol) + "-" + CheckersUtils.rowColToString(toRow, toCol);
+		return Checkers.rowColToString(fromRow, fromCol) + "-" + Checkers.rowColToString(toRow, toCol);
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + fromCol;
+		result = prime * result + fromRow;
+		result = prime * result + toCol;
+		result = prime * result + toRow;
+		return result;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Move other = (Move) obj;
+		if (fromCol != other.fromCol)
+			return false;
+		if (fromRow != other.fromRow)
+			return false;
+		if (toCol != other.toCol)
+			return false;
+		if (toRow != other.toRow)
+			return false;
+		return true;
 	}
 }

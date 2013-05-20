@@ -3,6 +3,8 @@ package me.desht.checkers.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.google.common.base.Joiner;
+
 /**
  * Represents a checkers board position.
  *
@@ -49,7 +51,7 @@ public class SimplePosition implements Position {
 			}
 		}
 		toMove = PlayerColour.WHITE;
-		legalMoves = calculateLegalMoves(toMove, false);
+		legalMoves = calculateLegalMoves(toMove);
 		jumpInProgress = false;
 	}
 
@@ -111,18 +113,23 @@ public class SimplePosition implements Position {
 
 		if (move.isJump()) {
 			// check for a possible chain of jumps
-			Move[] jumps = calculateLegalMoves(toMove, true);
+			Move[] jumps = getLegalJumps(toRow, toCol);
 			if (jumps.length > 0) {
 				// the same player must continue jumping
 				jumpInProgress = true;
 				legalMoves = jumps;
+			} else {
+				toMove = toMove.getOtherColour();
+				legalMoves = calculateLegalMoves(toMove);
+				jumpInProgress = false;
 			}
 		} else {
 			toMove = toMove.getOtherColour();
-			legalMoves = calculateLegalMoves(toMove, false);
+			legalMoves = calculateLegalMoves(toMove);
 			jumpInProgress = false;
 		}
 
+		System.out.println("move made - legal moves = " + Joiner.on(",").join(legalMoves));
 		moveHistory.add(move);
 
 		for (PositionListener l : listeners) {
@@ -157,7 +164,7 @@ public class SimplePosition implements Position {
 		}
 	}
 
-	private Move[] calculateLegalMoves(PlayerColour who, boolean jumpsOnly) {
+	private Move[] calculateLegalMoves(PlayerColour who) {
 		List<Move> moves = new ArrayList<Move>();
 
 		// get all the possible jumps that can be made
@@ -166,7 +173,7 @@ public class SimplePosition implements Position {
 				if (board[row][col].getColour() == who) {
 					for (MoveDirection dir : MoveDirection.values()) {
 						if (canJump(who, row, col, dir)) {
-							moves.add(new Move(row, col, row + dir.getRowOffset(), col + dir.getColOffset()));
+							moves.add(new Move(row, col, row + dir.getRowOffset() * 2, col + dir.getColOffset() * 2));
 						}
 					}
 				}
@@ -174,18 +181,33 @@ public class SimplePosition implements Position {
 		}
 
 		// if there are any jumps, the player *must* jump, so don't calculate any non-jump moves
-		if (moves.isEmpty() && !jumpsOnly) {
+		if (moves.isEmpty()) {
 			for (int row = 0; row < 8; row++) {
 				for (int col = 0; col < 8; col++) {
-					for (MoveDirection dir : MoveDirection.values()) {
-						if (canMove(who, row, col, dir)) {
-							moves.add(new Move(row, col, row + dir.getRowOffset(), col + dir.getColOffset()));
+					if (board[row][col].getColour() == who) {
+						for (MoveDirection dir : MoveDirection.values()) {
+							if (canMove(who, row, col, dir)) {
+								moves.add(new Move(row, col, row + dir.getRowOffset(), col + dir.getColOffset()));
+							}
 						}
 					}
 				}
 			}
 		}
 
+		return moves.toArray(new Move[moves.size()]);
+	}
+
+	private Move[] getLegalJumps(int row, int col) {
+		if (getPieceAt(row, col).getColour() != getToMove()) {
+			return new Move[0];
+		}
+		List<Move> moves = new ArrayList<Move>();
+		for (MoveDirection dir : MoveDirection.values()) {
+			if (canJump(getToMove(), row, col, dir)) {
+				moves.add(new Move(row, col, row + dir.getRowOffset() * 2, col + dir.getColOffset() * 2));
+			}
+		}
 		return moves.toArray(new Move[moves.size()]);
 	}
 

@@ -24,21 +24,28 @@ import me.desht.checkers.commands.CreateBoardCommand;
 import me.desht.checkers.commands.CreateGameCommand;
 import me.desht.checkers.commands.DeleteBoardCommand;
 import me.desht.checkers.commands.DeleteGameCommand;
+import me.desht.checkers.commands.GetcfgCommand;
 import me.desht.checkers.commands.InviteCommand;
 import me.desht.checkers.commands.JoinCommand;
 import me.desht.checkers.commands.ListBoardCommand;
 import me.desht.checkers.commands.ListGameCommand;
 import me.desht.checkers.commands.RedrawCommand;
+import me.desht.checkers.commands.SetcfgCommand;
 import me.desht.checkers.listeners.BlockListener;
+import me.desht.checkers.listeners.FlightListener;
 import me.desht.checkers.listeners.PlayerListener;
 import me.desht.checkers.view.BoardView;
+import me.desht.checkers.view.BoardViewManager;
 import me.desht.dhutils.ConfigurationListener;
 import me.desht.dhutils.ConfigurationManager;
+import me.desht.dhutils.DHUtilsException;
+import me.desht.dhutils.Duration;
 import me.desht.dhutils.LogUtils;
 import me.desht.dhutils.MessagePager;
 import me.desht.dhutils.MiscUtil;
 import me.desht.dhutils.PersistableLocation;
 import me.desht.dhutils.PluginVersionListener;
+import me.desht.dhutils.SpecialFX;
 import me.desht.dhutils.commands.CommandManager;
 import me.desht.dhutils.nms.NMSHelper;
 import me.desht.dhutils.responsehandler.ResponseHandler;
@@ -65,6 +72,9 @@ public class CheckersPlugin extends JavaPlugin implements ConfigurationListener,
 	private Economy economy;
 	private final CommandManager cmds = new CommandManager(this);
 	private final ResponseHandler responseHandler = new ResponseHandler(this);
+	private SpecialFX fx;
+	private TickTask tickTask;
+	private FlightListener flightListener;
 
 	@Override
 	public void onLoad() {
@@ -110,7 +120,12 @@ public class CheckersPlugin extends JavaPlugin implements ConfigurationListener,
 		setupVault(pm);
 		setupWorldEdit(pm);
 
+		fx = new SpecialFX(getConfig().getConfigurationSection("effects"));
+
 		persistenceHandler.reload();
+
+		tickTask = new TickTask();
+		tickTask.runTaskTimer(this, 20L, 20L);
 	}
 
 	private void registerCommands() {
@@ -123,6 +138,8 @@ public class CheckersPlugin extends JavaPlugin implements ConfigurationListener,
 		cmds.registerCommand(new ListGameCommand());
 		cmds.registerCommand(new InviteCommand());
 		cmds.registerCommand(new JoinCommand());
+		cmds.registerCommand(new GetcfgCommand());
+		cmds.registerCommand(new SetcfgCommand());
 	}
 
 	@Override
@@ -216,14 +233,64 @@ public class CheckersPlugin extends JavaPlugin implements ConfigurationListener,
 
 	@Override
 	public void onConfigurationValidate(ConfigurationManager configurationManager, String key, Object oldVal, Object newVal) {
-		// TODO Auto-generated method stub
-
+		if (key.startsWith("auto_delete.") || key.startsWith("timeout")) {
+			String dur = newVal.toString();
+			try {
+				new Duration(dur);
+			} catch (NumberFormatException e) {
+				throw new DHUtilsException("Invalid duration: " + dur);
+			}
+		} else if (key.startsWith("effects.") && getConfig().get(key) instanceof String) {
+			// this will throw an IllegalArgumentException if the value is no good
+			SpecialFX.SpecialEffect e = fx.new SpecialEffect(newVal.toString(), 1.0f);
+			e.play(null);
+		} else if (key.equals("version")) {
+			throw new DHUtilsException("'version' config item may not be changed");
+		}
 	}
 
 	@Override
 	public void onConfigurationChanged(ConfigurationManager configurationManager, String key, Object oldVal, Object newVal) {
-		// TODO Auto-generated method stub
+		if (key.equalsIgnoreCase("locale")) {
+			Messages.setMessageLocale(newVal.toString());
+			// redraw control panel signs in the right language
+			updateAllControlPanels();
+		} else if (key.equalsIgnoreCase("log_level")) {
+			LogUtils.setLogLevel(newVal.toString());
+		} else if (key.equalsIgnoreCase("teleporting")) {
+			updateAllControlPanels();
+		} else if (key.equalsIgnoreCase("flying.allowed")) {
+			flightListener.setEnabled((Boolean) newVal);
+		} else if (key.equalsIgnoreCase("flying.captive")) {
+			flightListener.setCaptive((Boolean) newVal);
+		} else if (key.equalsIgnoreCase("flying.upper_limit") || key.equalsIgnoreCase("flying.outer_limit")) {
+			flightListener.recalculateFlightRegions();
+		} else if (key.equalsIgnoreCase("flying.fly_speed") || key.equalsIgnoreCase("flying.walk_speed")) {
+			flightListener.updateSpeeds();
+		} else if (key.equalsIgnoreCase("pager.enabled")) {
+			if ((Boolean) newVal) {
+				MessagePager.setDefaultPageSize();
+			} else {
+				MessagePager.setDefaultPageSize(Integer.MAX_VALUE);
+			}
+		} else if (key.startsWith("effects.")) {
+			fx = new SpecialFX(getConfig().getConfigurationSection("effects"));
+//		} else if (key.startsWith("database.")) {
+//			Results.shutdown();
+//			if (Results.getResultsHandler() == null) {
+//				LogUtils.warning("DB connection cannot be re-established.  Check your settings.");
+//			}
+		} else if (key.equals("coloured_console")) {
+			MiscUtil.setColouredConsole((Boolean)newVal);
+		}
 
+	}
+
+	private void updateAllControlPanels() {
+		for (BoardView bv : BoardViewManager.getManager().listBoardViews()) {
+			bv.getControlPanel().repaintControls();
+			bv.getControlPanel().repaintClocks();
+		}
 	}
 
 	@Override
@@ -240,5 +307,9 @@ public class CheckersPlugin extends JavaPlugin implements ConfigurationListener,
 	@Override
 	public void setPreviousVersion(String currentVersion) {
 		// TODO Auto-generated method stub
+	}
+
+	public SpecialFX getFX() {
+		return fx;
 	}
 }

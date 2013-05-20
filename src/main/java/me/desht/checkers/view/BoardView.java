@@ -276,7 +276,12 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 
 	@Override
 	public void moveMade(Position position, Move move) {
-		// TODO Auto-generated method stub
+		if (move.isJump()) {
+			int cr = (move.getFromRow() + move.getToRow()) / 2;
+			int cc = (move.getFromCol() + move.getToCol()) / 2;
+			Location loc = getBoard().getSquare(cr, cc).getCenter();
+			CheckersPlugin.getInstance().getFX().playEffect(loc, "piece_captured");
+		}
 	}
 
 	@Override
@@ -304,5 +309,15 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 
 	public Location getTeleportInLocation() {
 		return getControlPanel().getTeleportInLocation();
+	}
+
+	public boolean isControlPanel(Location loc) {
+		return false;
+		// TODO
+//		return controlPanel.getPanelBlocks().contains(loc);
+	}
+
+	public int getSquareAt(Location loc) {
+		return getBoard().getSquareAt(loc);
 	}
 }

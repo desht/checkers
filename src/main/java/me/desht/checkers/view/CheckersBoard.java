@@ -3,8 +3,10 @@ package me.desht.checkers.view;
 import me.desht.checkers.CheckersException;
 import me.desht.checkers.CheckersPlugin;
 import me.desht.checkers.Messages;
+import me.desht.checkers.model.Checkers;
 import me.desht.checkers.model.PieceType;
 import me.desht.checkers.model.Position;
+import me.desht.dhutils.LogUtils;
 import me.desht.dhutils.PersistableLocation;
 import me.desht.dhutils.block.CraftMassBlockUpdate;
 import me.desht.dhutils.block.MassBlockUpdate;
@@ -24,9 +26,9 @@ public class CheckersBoard {
 	// the upper-right-most part (outer corner) of the h8 square (depends on rotation)
 	private final PersistableLocation h8Corner;
 	// region that defines the board itself - just the squares
-	private final Cuboid board;
+	private final Cuboid boardSquares;
 	// area above the board squares
-	private final Cuboid areaBoard;
+	private final Cuboid aboveSquares;
 	// region outset by the frame
 	private final Cuboid frameBoard;
 	// area <i>above</i> the board
@@ -37,7 +39,7 @@ public class CheckersBoard {
 	private final BoardRotation rotation;
 
 	// the square currently selected, if any
-	private int selectedRow = -1, selectedCol = -1;
+	private int selectedSqi = Checkers.NO_SQUARE;
 
 	// settings related to how the board is drawn
 	private BoardStyle boardStyle = null;
@@ -50,9 +52,9 @@ public class CheckersBoard {
 		a1Center = new PersistableLocation(origin);
 		a1Corner = initA1Corner(origin);
 		h8Corner = initH8Corner(a1Corner.getLocation());
-		board = new Cuboid(a1Corner.getLocation(), h8Corner.getLocation());
-		areaBoard = board.expand(CuboidDirection.Up, boardStyle.getHeight());
-		frameBoard = board.outset(CuboidDirection.Horizontal, boardStyle.getFrameWidth());
+		boardSquares = new Cuboid(a1Corner.getLocation(), h8Corner.getLocation());
+		aboveSquares = boardSquares.expand(CuboidDirection.Up, boardStyle.getHeight());
+		frameBoard = boardSquares.outset(CuboidDirection.Horizontal, boardStyle.getFrameWidth());
 		aboveFullBoard = frameBoard.shift(CuboidDirection.Up, 1).expand(CuboidDirection.Up, boardStyle.getHeight() - 1);
 		fullBoard = frameBoard.expand(CuboidDirection.Up, boardStyle.getHeight() + 1);
 		validateBoardPosition();
@@ -138,15 +140,15 @@ public class CheckersBoard {
 	/**
 	 * @return the board
 	 */
-	public Cuboid getBoard() {
-		return board;
+	public Cuboid getBoardSquares() {
+		return boardSquares;
 	}
 
 	/**
 	 * @return the areaBoard
 	 */
-	public Cuboid getAreaBoard() {
-		return areaBoard;
+	public Cuboid getAboveSquares() {
+		return aboveSquares;
 	}
 
 	/**
@@ -182,7 +184,7 @@ public class CheckersBoard {
 	}
 
 	public boolean isOnBoard(Location loc, int minHeight, int maxHeight) {
-		Cuboid bounds = getBoard().shift(CuboidDirection.Up, minHeight).expand(CuboidDirection.Up, maxHeight - minHeight);
+		Cuboid bounds = getBoardSquares().shift(CuboidDirection.Up, minHeight).expand(CuboidDirection.Up, maxHeight - minHeight);
 		return bounds.contains(loc);
 	}
 
@@ -263,18 +265,32 @@ public class CheckersBoard {
 	}
 
 	public World getWorld() {
-		return board.getWorld();
+		return boardSquares.getWorld();
+	}
+
+	public int getSelectedSqi() {
+		return selectedSqi;
+	}
+
+	public void setSelected(int sqi) {
+		if (this.selectedSqi != Checkers.NO_SQUARE) {
+			clearSelected();
+		}
+		this.selectedSqi = sqi;
+		highlightSquare(selectedSqi, boardStyle.getSelectedHighlightMaterial());
 	}
 
 	public void setSelected(int row, int col) {
-		selectedRow = row;
-		selectedCol = col;
-		highlightSquare(selectedRow, selectedCol, boardStyle.getSelectedHighlightMaterial());
+		if (row >= 0 && row <= 7 && col >= 0 && col <= 7) {
+			setSelected(Checkers.rowColToSqi(row, col));
+		} else {
+			clearSelected();
+		}
 	}
 
 	public void clearSelected() {
-		paintBoardSquare(selectedRow, selectedCol, null);
-		selectedRow = selectedCol = -1;
+		paintBoardSquare(Checkers.sqiToRow(selectedSqi), Checkers.sqiToCol(selectedSqi), null);
+		selectedSqi = -1;
 	}
 
 	void repaint(MassBlockUpdate mbu) {
@@ -282,7 +298,7 @@ public class CheckersBoard {
 		paintEnclosure(mbu);
 		paintFrame(mbu);
 		paintBoard(mbu);
-		highlightSquare(selectedRow, selectedCol, boardStyle.getSelectedHighlightMaterial());
+		highlightSquare(selectedSqi, boardStyle.getSelectedHighlightMaterial());
 		fullBoard.forceLightLevel(boardStyle.getLightLevel());
 		redrawNeeded = false;
 	}
@@ -290,7 +306,7 @@ public class CheckersBoard {
 	void reset() {
 		MassBlockUpdate mbu = CraftMassBlockUpdate.createMassBlockUpdater(CheckersPlugin.getInstance(), getWorld());
 		paintBoard(mbu);
-		getBoard().shift(CuboidDirection.Up, 1).expand(CuboidDirection.Up, getBoardStyle().getHeight() - 1).fill(0, (byte)0, mbu);
+		getBoardSquares().shift(CuboidDirection.Up, 1).expand(CuboidDirection.Up, getBoardStyle().getHeight() - 1).fill(0, (byte)0, mbu);
 		mbu.notifyClients();
 	}
 
@@ -316,7 +332,7 @@ public class CheckersBoard {
 		// TODO: simple algorithm just draws square pieces; should be disks!
 		Cuboid c = getSquare(row, col).inset(CuboidDirection.Horizontal, 1).shift(CuboidDirection.Up, 1);
 		int height = boardStyle.getSquareSize() / 5 + 1;
-		if (piece.isKing()) {
+		if (piece.isKing() || piece == PieceType.NONE) {
 			height *= 2;
 		}
 		c = c.expand(CuboidDirection.Up, height - 1);
@@ -326,6 +342,12 @@ public class CheckersBoard {
 	public void reloadBoardStyle() {
 		if (boardStyle != null) {
 			setBoardStyle(boardStyle.getName());
+		}
+	}
+
+	private void highlightSquare(int sqi, MaterialWithData mat) {
+		if (sqi != Checkers.NO_SQUARE) {
+			highlightSquare(Checkers.sqiToRow(sqi), Checkers.sqiToCol(sqi), mat);
 		}
 	}
 
@@ -403,5 +425,28 @@ public class CheckersBoard {
 	public void clearAll() {
 		// TODO Auto-generated method stub
 		
+	}
+
+	public int getSquareAt(Location loc) {
+		if (!aboveSquares.contains(loc)) {
+			return Checkers.NO_SQUARE;
+		}
+
+		int xOff = (loc.getBlockX() - boardSquares.getLowerX()) / boardStyle.getSquareSize();
+		int zOff = (loc.getBlockZ() - boardSquares.getLowerZ()) / boardStyle.getSquareSize();
+
+		LogUtils.fine("loc = " + loc + ", xOff = " + xOff + ", zOff = " + zOff);
+		switch (getRotation()) {
+		case NORTH:
+			return Checkers.rowColToSqi(7 - zOff, xOff);
+		case SOUTH:
+			return Checkers.rowColToSqi(zOff, 7 - xOff);
+		case EAST:
+			return Checkers.rowColToSqi(xOff, zOff);
+		case WEST:
+			return Checkers.rowColToSqi(7 - xOff, 7 - zOff);
+		default:
+			return Checkers.NO_SQUARE;
+		}
 	}
 }
