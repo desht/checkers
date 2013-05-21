@@ -11,4 +11,6 @@ public interface Position {
 	public void newGame();
 	public boolean isJumpInProgress();
 	public void addPositionListener(PositionListener listener);
+	public void undoLastMove();
+	public int getPlyCount();
 }

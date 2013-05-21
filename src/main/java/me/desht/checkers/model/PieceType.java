@@ -25,4 +25,21 @@ public enum PieceType {
 		default: return this;
 		}
 	}
+
+	public static PieceType decode(int enc) {
+		switch (enc) {
+		case 0: return PieceType.WHITE;
+		case 1: return PieceType.BLACK;
+		case 2: return PieceType.WHITE_KING;
+		case 3: return PieceType.BLACK_KING;
+		default: return PieceType.NONE;
+		}
+	}
+
+	public int encode() {
+		int ret = 0;
+		if (getColour() == PlayerColour.BLACK) ret |= 0x1;
+		if (isKing()) ret |= 0x2;
+		return ret;
+	}
 }

@@ -11,12 +11,13 @@ import com.google.common.base.Joiner;
  * This is a fairly simple-minded implementation, using an 8x8 array of piece types.
  */
 public class SimplePosition implements Position {
+	private final List<PositionListener> listeners = new ArrayList<PositionListener>();
 	private final PieceType[][] board;
+
 	private PlayerColour toMove;
 	private Move[] legalMoves;
 	private boolean jumpInProgress;
-	private final List<PositionListener> listeners = new ArrayList<PositionListener>();
-	private List<Move> moveHistory = new ArrayList<Move>();
+	private List<Move> moveHistory;
 
 	public SimplePosition() {
 		board = new PieceType[8][8];
@@ -39,9 +40,9 @@ public class SimplePosition implements Position {
 			for (int col = 0; col < 8; col++) {
 				if (row % 2 == col % 2) {
 					if (row < 3) {
-						board[row][col] = PieceType.WHITE;
-					} else if (row > 4) {
 						board[row][col] = PieceType.BLACK;
+					} else if (row > 4) {
+						board[row][col] = PieceType.WHITE;
 					} else {
 						board[row][col] = PieceType.NONE;
 					}
@@ -50,9 +51,10 @@ public class SimplePosition implements Position {
 				}
 			}
 		}
-		toMove = PlayerColour.WHITE;
+		toMove = PlayerColour.BLACK;
 		legalMoves = calculateLegalMoves(toMove);
 		jumpInProgress = false;
+		moveHistory = new ArrayList<Move>();
 	}
 
 	@Override
@@ -94,18 +96,20 @@ public class SimplePosition implements Position {
 		int toCol = move.getToCol();
 
 		PieceType movingPiece = getPieceAt(fromRow, fromCol);
+		move.setMovedPiece(movingPiece);
 		setPieceAt(fromRow, fromCol, PieceType.NONE);
 
 		if (move.isJump()) {
 			// move is a jump - remove the intervening piece
 			int overRow = (fromRow + toRow) / 2;
 			int overCol = (fromCol + toCol) / 2;
+			move.setCapturedPiece(getPieceAt(overRow, overCol));
 			setPieceAt(overRow, overCol, PieceType.NONE);
 		}
 		// check for piece promotion
-		if (toRow == 0 && movingPiece == PieceType.BLACK) {
+		if (toRow == 7 && movingPiece == PieceType.BLACK) {
 			setPieceAt(toRow, toCol, PieceType.BLACK_KING);
-		} else if (toRow == 7 && movingPiece == PieceType.WHITE) {
+		} else if (toRow == 0 && movingPiece == PieceType.WHITE) {
 			setPieceAt(toRow, toCol, PieceType.WHITE_KING);
 		} else {
 			setPieceAt(toRow, toCol, movingPiece);
@@ -117,6 +121,7 @@ public class SimplePosition implements Position {
 			if (jumps.length > 0) {
 				// the same player must continue jumping
 				jumpInProgress = true;
+				move.setChainedJump(true);
 				legalMoves = jumps;
 			} else {
 				toMove = toMove.getOtherColour();
@@ -134,8 +139,10 @@ public class SimplePosition implements Position {
 
 		for (PositionListener l : listeners) {
 			l.moveMade(this, move);
-			l.plyCountChanged(moveHistory.size());
-			l.toMoveChanged(toMove);
+			if (!move.isChainedJump()) {
+				l.plyCountChanged(getPlyCount());
+				l.toMoveChanged(toMove);
+			}
 		}
 	}
 
@@ -157,6 +164,54 @@ public class SimplePosition implements Position {
 	@Override
 	public Move getLastMove() {
 		return moveHistory.get(moveHistory.size() - 1);
+	}
+
+	@Override
+	public void undoLastMove() {
+		if (moveHistory.size() == 0) {
+			return;
+		}
+		int idx = moveHistory.size() - 1;
+		do {
+			Move move = moveHistory.get(idx);
+			setPieceAt(move.getToRow(), move.getToCol(), PieceType.NONE);
+			setPieceAt(move.getFromRow(), move.getFromCol(), move.getMovedPiece());
+			if (move.isJump()) {
+				int overRow = (move.getFromRow() + move.getToRow()) / 2;
+				int overCol = (move.getFromCol() + move.getToCol()) / 2;
+				setPieceAt(overRow, overCol, move.getCapturedPiece());
+			}
+			idx--;
+		} while (idx >= 0 && moveHistory.get(idx).isChainedJump());
+
+		toMove = toMove.getOtherColour();
+		legalMoves = calculateLegalMoves(toMove);
+		jumpInProgress = false;
+
+		// truncate the move history
+		List<Move> tmpHist = new ArrayList<Move>(idx + 1);
+		for (int i = 0; i <= idx; i++) {
+			tmpHist.add(moveHistory.get(i));
+		}
+		moveHistory = tmpHist;
+
+		for (PositionListener l : listeners) {
+			l.lastMoveUndone(this);
+			l.plyCountChanged(getPlyCount());
+			l.toMoveChanged(toMove);
+		}
+	}
+
+	@Override
+	public int getPlyCount() {
+		// need to account for chained jumps
+		int count = 0;
+		for (Move m : moveHistory) {
+			if (!m.isChainedJump()) {
+				count++;
+			}
+		}
+		return count;
 	}
 
 	private void setPieceAt(int row, int col, PieceType piece) {
@@ -224,10 +279,10 @@ public class SimplePosition implements Position {
 		if (target != PieceType.NONE) {
 			return false;
 		}
-		if (moving == PieceType.WHITE && toRow < fromRow) {
+		if (moving == PieceType.WHITE && toRow > fromRow) {
 			return false;
 		}
-		if (moving == PieceType.BLACK && toRow > fromRow) {
+		if (moving == PieceType.BLACK && toRow < fromRow) {
 			return false;
 		}
 		return true;
@@ -247,10 +302,10 @@ public class SimplePosition implements Position {
 		if (target != PieceType.NONE) {
 			return false;
 		}
-		if (moving == PieceType.WHITE && toRow < fromRow) {
+		if (moving == PieceType.WHITE && toRow > fromRow) {
 			return false;
 		}
-		if (moving == PieceType.BLACK && toRow > fromRow) {
+		if (moving == PieceType.BLACK && toRow < fromRow) {
 			return false;
 		}
 		if (victim.getColour() != moving.getColour().getOtherColour()) {

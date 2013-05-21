@@ -36,7 +36,7 @@ public class RedrawCommand extends AbstractCheckersCommand {
 			// redraw board caller is standing on, if any
 			notFromConsole(sender);
 			Player player = (Player) sender;
-			BoardView bv = BoardViewManager.getManager().partOfChessBoard(player.getLocation());
+			BoardView bv = BoardViewManager.getManager().partOfBoard(player.getLocation());
 			if (bv == null) {
 				throw new CheckersException(Messages.getString("Board.notOnBoard"));
 			}

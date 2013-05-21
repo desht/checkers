@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 
 import me.desht.checkers.DirectoryStructure;
+import me.desht.checkers.game.CheckersGame;
+import me.desht.checkers.game.CheckersGameManager;
 import me.desht.checkers.view.BoardStyle;
 import me.desht.checkers.view.BoardView;
 import me.desht.checkers.view.BoardViewManager;
@@ -26,6 +28,17 @@ public abstract class AbstractCheckersCommand extends AbstractCommand {
 	}
 	public AbstractCheckersCommand(String label, int minArgs, int maxArgs) {
 		super(label, minArgs, maxArgs);
+	}
+
+	protected List<String> getGameCompletions(Plugin plugin, CommandSender sender, String prefix) {
+		List<String> res = new ArrayList<String>();
+
+		for (CheckersGame game : CheckersGameManager.getManager().listGames()) {
+			if (game.getName().startsWith(prefix)) {
+				res.add(game.getName());
+			}
+		}
+		return getResult(res, sender, true);
 	}
 
 	protected List<String> getBoardCompletions(Plugin plugin, CommandSender sender, String prefix) {

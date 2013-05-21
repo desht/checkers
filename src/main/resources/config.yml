@@ -1,33 +1,52 @@
-broadcast_results: true
-protection:
-  no_building: true
-  no_burning: true
-coloured_console: true
-autostart: true
 auto_teleport_on_join: true
-log_level: info
-locale: default
-pager:
-  lines: 0
-open_invite_cooldown: 3 min
-stake:
-  max: -1
-  default: 0.0
-  largeIncrement: 10.0
-  smallIncrement: 1.0
-wand_item: '*'
-effects:
-  piece_captured: explosion
-  piece_selected: sound,name=note_sticks
-  piece_unselected: sound,name=note_bass
-  piece_moved: sound,name=item_pickup
-  game_lost: sound,name=enderman_death
-  game_won: sound,name=level_up
-  teleport_out: effect,name=smoke,data=4
-  teleport_in: effect,name=ender_signal
-  piece_riding: true
-  volume: 1.0
 auto_delete:
   finished: 15 sec
   not_started: 1 min 30 sec
   running: 28 days
+autostart: true
+broadcast_results: true
+coloured_console: true
+effects:
+  game_lost: sound,name=enderman_death
+  game_won: sound,name=level_up
+  piece_captured: explosion
+  piece_moved: sound,name=item_pickup
+  piece_riding: true
+  piece_selected: sound,name=note_sticks
+  piece_unselected: sound,name=note_bass
+  teleport_in: effect,name=ender_signal
+  teleport_out: effect,name=smoke,data=4
+  volume: 1.0
+flying:
+  allowed: true
+  captive: true
+  auto: false
+  upper_limit: 50
+  outer_limit: 25
+  fly_speed: 0.2
+  walk_speed: 0.2
+forfeit_timeout: 5 min
+locale: default
+log_level: info
+mcstats: true
+open_invite_cooldown: 3 min
+open_invite_cooldown: 1 min 30 sec
+pager:
+  lines: 0
+protection:
+  no_building: true
+  no_burning: true
+  no_creatures: true
+  no_explosions: true
+  no_misc_damage: true
+  no_pvp: true
+stake:
+  default: 0.0
+  largeIncrement: 10.0
+  max: -1
+  smallIncrement: 1.0
+teleporting: true
+time_control:
+  default: none
+  warn_seconds: 30
+wand_item: '*'

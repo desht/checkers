@@ -50,6 +50,7 @@ public class CheckersBoard {
 		setBoardStyle(boardStyleName);
 		this.rotation = rotation;
 		a1Center = new PersistableLocation(origin);
+		a1Center.setSavePitchAndYaw(false);
 		a1Corner = initA1Corner(origin);
 		h8Corner = initH8Corner(a1Corner.getLocation());
 		boardSquares = new Cuboid(a1Corner.getLocation(), h8Corner.getLocation());

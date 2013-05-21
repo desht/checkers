@@ -8,7 +8,7 @@ import java.io.IOException;
 import me.desht.checkers.CheckersException;
 import me.desht.checkers.CheckersValidate;
 import me.desht.checkers.DirectoryStructure;
-import me.desht.checkers.Persistence;
+import me.desht.checkers.PersistenceHandler;
 import me.desht.dhutils.AttributeCollection;
 import me.desht.dhutils.ConfigurationListener;
 import me.desht.dhutils.ConfigurationManager;
@@ -42,7 +42,7 @@ public class BoardStyle implements Comparable<BoardStyle>, ConfigurationListener
 		for (String k : new String[] {
 				"square_size", "frame_width", "height",
 				"black_square", "white_square", "frame", "enclosure"}) {
-			Persistence.requireSection(c, k);
+			PersistenceHandler.requireSection(c, k);
 		}
 		this.attributes = new AttributeCollection(this);
 		registerAttributes();
@@ -62,16 +62,16 @@ public class BoardStyle implements Comparable<BoardStyle>, ConfigurationListener
 	private void registerAttributes() {
 		attributes.registerAttribute(LIGHT_LEVEL, 15, "Lighting level (0-15) for the board");
 		attributes.registerAttribute(PIECE_HEIGHT, 1, "Height in blocks of a checkers piece");
-		attributes.registerAttribute(WHITE_PIECE, MaterialWithData.get("sandstone"), "Material for white checkers pieces");
-		attributes.registerAttribute(BLACK_PIECE, MaterialWithData.get("obsidian"), "Material for black checkers pieces");
+		attributes.registerAttribute(WHITE_PIECE, MaterialWithData.get("wool:white"), "Material for white checkers pieces");
+		attributes.registerAttribute(BLACK_PIECE, MaterialWithData.get("wool:red"), "Material for black checkers pieces");
 		attributes.registerAttribute(WHITE_SQUARE, MaterialWithData.get("wool:white"), "Block for white board square");
-		attributes.registerAttribute(BLACK_SQUARE, MaterialWithData.get("wool:black"), "Block for black board square");
+		attributes.registerAttribute(BLACK_SQUARE, MaterialWithData.get("wool:grey"), "Block for black board square");
 		attributes.registerAttribute(FRAME, MaterialWithData.get("wood"), "Block for outer board frame");
 		attributes.registerAttribute(ENCLOSURE, MaterialWithData.get("air"), "Block for board enclosure");
 		attributes.registerAttribute(STRUTS, MaterialWithData.get("wood"), "Block for board edge struts");
 		attributes.registerAttribute(PANEL, MaterialWithData.get("wood"), "Block for control panel");
-		attributes.registerAttribute(HIGHLIGHT_SELECTED, MaterialWithData.get("wool:red"), "Block for selected square highlight");
-		attributes.registerAttribute(HIGHLIGHT_LEGAL, MaterialWithData.get("wool:red"), "Block for legal move highlight");
+		attributes.registerAttribute(HIGHLIGHT_SELECTED, MaterialWithData.get("wool:yellow"), "Block for selected square highlight");
+		attributes.registerAttribute(HIGHLIGHT_LEGAL, MaterialWithData.get("wool:cyan"), "Block for legal move highlight");
 	}
 
 	public static BoardStyle loadStyle(String styleName) {
@@ -116,13 +116,13 @@ public class BoardStyle implements Comparable<BoardStyle>, ConfigurationListener
 			out.write("# material/data for the white pieces\n");
 			out.write("white_piece: " + getWhitePieceMaterial() + "\n");
 			out.write("# material/data for the black pieces\n");
-			out.write("white_piece: " + getBlackPieceMaterial() + "\n");
+			out.write("black_piece: " + getBlackPieceMaterial() + "\n");
 			out.write("# material/data for the control panel (default: 'frame' setting)\n");
 			out.write("panel: '" + getControlPanelMaterial() + "'\n");
 			out.write("# highlighting material for selected piece (default: glowstone)\n");
 			out.write("highlight_selected: '" + getSelectedHighlightMaterial() + "'\n");
 			out.write("# highlighting material for legal moves (default: glowstone)\n");
-			out.write("highlight_selected: '" + getLegalHighlightMaterial() + "'\n");
+			out.write("highlight_legal: '" + getLegalHighlightMaterial() + "'\n");
 			out.close();
 
 			return loadStyle(newStyleName);
@@ -214,6 +214,10 @@ public class BoardStyle implements Comparable<BoardStyle>, ConfigurationListener
 	@Override
 	public int compareTo(BoardStyle o) {
 		return getName().compareTo(o.getName());
+	}
+
+	public AttributeCollection getAttributes() {
+		return attributes;
 	}
 
 }

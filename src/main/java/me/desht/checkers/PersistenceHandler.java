@@ -17,7 +17,7 @@ import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 
-public class Persistence {
+public class PersistenceHandler {
 	public void reload() {
 		for (CheckersGame game : CheckersGameManager.getManager().listGames()) {
 			game.deleteTemporary();
@@ -30,19 +30,17 @@ public class Persistence {
 	}
 
 	public void save() {
-		saveGames();
 		saveBoards();
 		saveOtherPersistedData();
 	}
 
 	private void saveBoards() {
-		for (BoardView b : BoardViewManager.getManager().listBoardViews()) {
-			savePersistable("board", b);
+		for (BoardView bv : BoardViewManager.getManager().listBoardViews()) {
+			savePersistable("board", bv);
+			if (bv.getGame() != null) {
+				bv.getGame().save();
+			}
 		}
-	}
-
-	private void saveGames() {
-		// TODO Auto-generated method stub
 	}
 
 	private void loadPersistedData() {
@@ -69,14 +67,18 @@ public class Persistence {
 			BoardView bv;
 			if (conf.contains("board")) {
 				bv = (BoardView) conf.get("board");
-				BoardViewManager.getManager().registerView(bv);
-				// load the board's game too, if there is one
-				if (!bv.getSavedGameName().isEmpty()) {
-					File gameFile = new File(DirectoryStructure.getGamesPersistDirectory(), bv.getSavedGameName() + ".yml");
-					CheckersGame game = loadGame(gameFile);
-					if (game != null) {
-						bv.setGame(game);
+				if (bv.isWorldAvailable()) {
+					BoardViewManager.getManager().registerView(bv);
+					// load the board's game too, if there is one
+					if (!bv.getSavedGameName().isEmpty()) {
+						File gameFile = new File(DirectoryStructure.getGamesPersistDirectory(), bv.getSavedGameName() + ".yml");
+						CheckersGame game = loadGame(gameFile);
+						if (game != null) {
+							bv.setGame(game);
+						}
 					}
+				} else {
+					BoardViewManager.getManager().deferLoading(bv.getBoard().getA1Center().getWorldName(), f);
 				}
 			} else {
 				return false;

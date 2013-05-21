@@ -28,12 +28,14 @@ import me.desht.checkers.view.controlpanel.TimeControlButton;
 import me.desht.dhutils.AttributeCollection;
 import me.desht.dhutils.ConfigurationListener;
 import me.desht.dhutils.ConfigurationManager;
+import me.desht.dhutils.LogUtils;
 import me.desht.dhutils.MessagePager;
 import me.desht.dhutils.MiscUtil;
 import me.desht.dhutils.PersistableLocation;
 import me.desht.dhutils.block.CraftMassBlockUpdate;
 import me.desht.dhutils.block.MassBlockUpdate;
 import me.desht.dhutils.cuboid.Cuboid;
+import me.desht.dhutils.cuboid.Cuboid.CuboidDirection;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -42,7 +44,6 @@ import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemoryConfiguration;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
-import org.bukkit.entity.Player;
 
 public class BoardView implements PositionListener, ConfigurationListener, CheckersPersistable, ConfigurationSerializable, GameListener {
 	private static final String BOARD_STYLE = "boardstyle";
@@ -196,12 +197,41 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 		return (Boolean) attributes.get(LOCK_TC);
 	}
 
-	public Location getTeleportDestination() {
+	public AttributeCollection getAttributes() {
+		return attributes;
+	}
+
+	public boolean hasTeleportOutDestination() {
+		return teleportOutDest != null;
+	}
+
+	public Location getTeleportOutDestination() {
 		return teleportOutDest == null ? null : teleportOutDest.getLocation();
 	}
 
-	public boolean hasTeleportDestination() {
-		return teleportOutDest != null;
+	public void setTeleportOutDestination(Location location) {
+		teleportOutDest = new PersistableLocation(location);
+	}
+
+	public Location getTeleportInDestination() {
+		return getControlPanel().getTeleportInDestination();
+	}
+
+	public boolean isControlPanel(Location loc) {
+		return controlPanel.getPanelBlocks().contains(loc);
+	}
+
+	public boolean isWorldAvailable() {
+		return getBoard().getA1Center().isWorldAvailable();
+	}
+
+	public int getSquareAt(Location loc) {
+		return getBoard().getSquareAt(loc);
+	}
+
+	public Location findSafeLocationOutside() {
+		Location dest = getBoard().getFullBoard().outset(CuboidDirection.Horizontal, 1).getLowerNE();
+		return dest.getWorld().getHighestBlockAt(dest).getLocation();
 	}
 
 	public void repaint() {
@@ -278,15 +308,44 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 		res.add(bullet + Messages.getString("Board.boardDetail.defaultStake", CheckersUtils.formatStakeStr(getDefaultStake()), lockStakeStr));
 		String lockTcStr = getLockTcSpec() ? Messages.getString("Board.boardDetail.locked") : "";
 		res.add(bullet + Messages.getString("Board.boardDetail.defaultTimeControl", getDefaultTcSpec(), lockTcStr));
-		String dest = hasTeleportDestination() ? MiscUtil.formatLocation(getTeleportDestination()) : "-";
+		String dest = hasTeleportOutDestination() ? MiscUtil.formatLocation(getTeleportOutDestination()) : "-";
 		res.add(bullet + Messages.getString("Board.boardDetail.teleportDest", dest));
 
 		return res;
 	}
 
-	public void summonPlayer(Player p) {
-		// TODO Auto-generated method stub
+	public void tick() {
+		if (game != null) {
+			updateChessClocks(false);
+			game.tick();
+		}
 	}
+
+	private void updateChessClocks(boolean force) {
+		updateChessClock(PlayerColour.WHITE, force);
+		updateChessClock(PlayerColour.BLACK, force);
+	}
+
+	private void updateChessClock(PlayerColour colour, boolean force) {
+		TimeControl timeControl = game.getTimeControl(colour);
+		timeControl.tick();
+		if (!force && colour != game.getPosition().getToMove()) {
+			return;
+		}
+		getControlPanel().updateClock(colour, timeControl);
+
+		CheckersPlayer cp = game.getPlayer(colour);
+		if (timeControl.getRemainingTime() <= 0) {
+			try {
+				game.forfeit(cp.getName());
+			} catch (CheckersException e) {
+				LogUtils.severe("unexpected exception: " + e.getMessage(), e);
+			}
+		} else {
+			cp.timeControlCheck(timeControl);
+		}
+	}
+
 
 	@Override
 	public void onConfigurationValidate(ConfigurationManager configurationManager, String key, Object oldVal,
@@ -321,6 +380,11 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 	}
 
 	@Override
+	public void lastMoveUndone(Position position) {
+		// nothing to do here?
+	}
+
+	@Override
 	public void squareChanged(int row, int col, PieceType piece) {
 		checkersBoard.paintPiece(row, col, piece);
 	}
@@ -333,6 +397,9 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 	@Override
 	public void toMoveChanged(PlayerColour toMove) {
 		getControlPanel().updateToMoveIndicator(toMove);
+		game.getTimeControl(PlayerColour.WHITE).setActive(toMove == PlayerColour.WHITE);
+		game.getTimeControl(PlayerColour.BLACK).setActive(toMove == PlayerColour.BLACK);
+		updateChessClocks(true);
 	}
 
 	@Override
@@ -343,7 +410,7 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 	@Override
 	public void playerAdded(CheckersGame checkersGame, CheckersPlayer checkersPlayer) {
 		if (CheckersPlugin.getInstance().getConfig().getBoolean("auto_teleport_on_join")) {
-			checkersPlayer.teleport(this);
+			checkersPlayer.teleport(getTeleportInDestination());
 		}
 		getControlPanel().repaintControls();
 	}
@@ -351,17 +418,5 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 	@Override
 	public void gameStarted(CheckersGame checkersGame) {
 		getControlPanel().repaintControls();
-	}
-
-	public Location getTeleportInLocation() {
-		return getControlPanel().getTeleportInLocation();
-	}
-
-	public boolean isControlPanel(Location loc) {
-		return controlPanel.getPanelBlocks().contains(loc);
-	}
-
-	public int getSquareAt(Location loc) {
-		return getBoard().getSquareAt(loc);
 	}
 }

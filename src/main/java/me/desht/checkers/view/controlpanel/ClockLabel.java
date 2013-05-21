@@ -9,8 +9,8 @@ public class ClockLabel extends AbstractSignLabel {
 
 	private static int[] xPos = new int[2];
 	static {
-		xPos[PlayerColour.WHITE.getIndex()] = 2;
-		xPos[PlayerColour.BLACK.getIndex()] = 5;
+		xPos[PlayerColour.WHITE.getIndex()] = 5;
+		xPos[PlayerColour.BLACK.getIndex()] = 2;
 	};
 
 	private final PlayerColour colour;

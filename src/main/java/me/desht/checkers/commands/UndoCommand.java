@@ -1,0 +1,28 @@
+package me.desht.checkers.commands;
+
+import me.desht.checkers.game.CheckersGame;
+import me.desht.checkers.game.CheckersGameManager;
+
+import org.bukkit.command.CommandSender;
+import org.bukkit.plugin.Plugin;
+
+public class UndoCommand extends AbstractCheckersCommand {
+
+	public UndoCommand() {
+		super("checkers undo");
+		setPermissionNode("checkers.commands.undo");
+		setUsage("/checkers undo");
+	}
+
+	@Override
+	public boolean execute(Plugin plugin, CommandSender sender, String[] args) {
+		notFromConsole(sender);
+
+		CheckersGame game = CheckersGameManager.getManager().getCurrentGame(sender.getName(), true);
+
+		game.offerUndoMove(sender.getName());
+
+		return true;
+	}
+
+}

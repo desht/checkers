@@ -5,4 +5,5 @@ public interface PositionListener {
 	public void squareChanged(int row, int col, PieceType piece);
 	public void plyCountChanged(int plyCount);
 	public void toMoveChanged(PlayerColour toMove);
+	public void lastMoveUndone(Position position);
 }

@@ -81,7 +81,7 @@ public class PlayerListener extends CheckersBaseListener {
 				}
 				event.setCancelled(true);
 			} else if (b != null) {
-				BoardView bv = BoardViewManager.getManager().partOfChessBoard(b.getLocation(), 0);
+				BoardView bv = BoardViewManager.getManager().partOfBoard(b.getLocation(), 0);
 				if (bv != null && bv.getControlPanel().isButton(b.getLocation())) {
 					bv.getControlPanel().handleButtonClick(event);
 					event.setCancelled(true);
@@ -120,14 +120,14 @@ public class PlayerListener extends CheckersBaseListener {
 					targetBlock = player.getTargetBlock(transparent, 120);
 					LogUtils.finer("Player " + player.getName() + " waved at block " + targetBlock);
 					Location loc = targetBlock.getLocation();
-					bv = BoardViewManager.getManager().partOfChessBoard(loc);
+					bv = BoardViewManager.getManager().partOfBoard(loc);
 					if (bv != null) {
 						if (bv.getBoard().getBoardSquares().contains(loc)) {
 							boardClicked(player, loc, bv);
 						} else if (bv.getBoard().getAboveSquares().contains(loc)) {
 							pieceClicked(player, loc, bv);
 						} else if (bv.isControlPanel(loc)) {
-							Location tpLoc = bv.getTeleportInLocation();
+							Location tpLoc = bv.getTeleportInDestination();
 							Cuboid zone = bv.getControlPanel().getPanelBlocks().outset(CuboidDirection.Horizontal, 4);
 							if (!zone.contains(player.getLocation()) && bv.getBoard().isPartOfBoard(player.getLocation())) {
 								teleportPlayer(player, tpLoc);
@@ -186,7 +186,7 @@ public class PlayerListener extends CheckersBaseListener {
 		}
 		CheckersPlayer cp = game.getPlayerToMove();
 		if (!cp.getName().equals(player.getName())) {
-			if (game.isPlayerInGame(player.getName())) {
+			if (game.hasPlayer(player.getName())) {
 				MiscUtil.errorMessage(player, Messages.getString("Game.notYourTurn"));
 			} else {
 				MiscUtil.errorMessage(player, Messages.getString("Game.notInGame"));

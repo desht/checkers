@@ -1,5 +1,7 @@
 package me.desht.checkers.commands;
 
+import java.util.List;
+
 import me.desht.checkers.Messages;
 import me.desht.checkers.game.CheckersGame;
 import me.desht.checkers.game.CheckersGameManager;
@@ -34,4 +36,13 @@ public class DeleteGameCommand extends AbstractCheckersCommand {
 		return true;
 	}
 
+	@Override
+	public List<String> onTabComplete(Plugin plugin, CommandSender sender, String[] args) {
+		if (args.length == 1) {
+			return getGameCompletions(plugin, sender, args[0]);
+		} else {
+			showUsage(sender);
+			return noCompletions(sender);
+		}
+	}
 }

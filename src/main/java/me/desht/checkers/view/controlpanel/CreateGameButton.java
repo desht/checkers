@@ -8,7 +8,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 
 public class CreateGameButton extends AbstractSignButton {
 
-	private PlayerColour colour = PlayerColour.WHITE;
+	private PlayerColour colour = PlayerColour.BLACK;
 
 	public CreateGameButton(ControlPanel panel) {
 		super(panel, "createGameBtn", "create.game", 1, 2);

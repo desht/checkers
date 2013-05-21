@@ -16,17 +16,60 @@ permissions:
   checkers.player:
     description: Gives access to the commands needs to play
     default: true
-    children: [ ]
+    children:
+      checkers.commands.list.board: true
+      checkers.commands.list.game: true
+      checkers.commands.create.game: true
+      checkers.commands.invite: true
+      checkers.commands.join: true
+      checkers.commands.undo: true
   checkers.admin:
     description: Gives access to all commands
     default: op
     children:
+      checkers.commands.player: true
       checkers.commands.create.board: true
       checkers.commands.delete.board: true
+      checkers.commands.delete.game: true
+      checkers.commands.getcfg: true
+      checkers.commands.setcfg: true
+      checkers.commands.redraw: true
   checkers.commands.create.board:
     description: Allow board creation
     default: op
   checkers.commands.delete.board:
     description: Allow board deletion
     default: op
-
+  checkers.commands.delete.game:
+    description: Allow game deletion
+    default: op
+  checkers.commands.board.set:
+    description: Allow board parameters to be changed
+    default: op
+  checkers.commands.create.game:
+    description: Allow games to be created
+    default: true
+  checkers.commands.getcfg:
+    description: Allow plugin config to be viewed
+    default: op
+  checkers.commands.invite:
+    description: Allow inviting players to games
+    default: true
+  checkers.commands.join:
+    description: Allow joining of games
+    default: true
+  checkers.commands.list.board:
+    description: Allow boards or board parameters to be listed
+    default: true
+  checkers.commands.list.game:
+    description: Allow games or game details to be listed
+    default: true
+  checkers.commands.redraw:
+    description: Allow redrawing of boards
+    default: op
+  checkers.commands.setcfg:
+    description: Allow plugin config to be modified
+    default: op
+  checkers.commands.undo:
+    description: Allow the last move in a game to be undone
+    default: true

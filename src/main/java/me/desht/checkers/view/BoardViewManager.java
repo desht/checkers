@@ -16,8 +16,11 @@ import me.desht.checkers.CheckersPlugin;
 import me.desht.checkers.Messages;
 import me.desht.checkers.event.CheckersBoardCreatedEvent;
 import me.desht.checkers.event.CheckersBoardDeletedEvent;
+import me.desht.checkers.game.CheckersGame;
 import me.desht.checkers.util.TerrainBackup;
 import me.desht.dhutils.LogUtils;
+import me.desht.dhutils.MiscUtil;
+import me.desht.dhutils.PermissionUtils;
 import me.desht.dhutils.PersistableLocation;
 
 import org.bukkit.Bukkit;
@@ -131,11 +134,11 @@ public class BoardViewManager {
 	 * @param fudge	fudge factor - check a larger area around the board
 	 * @return the boardview that matches, or null if none
 	 */
-	public BoardView partOfChessBoard(Location loc) {
-		return partOfChessBoard(loc, 0);
+	public BoardView partOfBoard(Location loc) {
+		return partOfBoard(loc, 0);
 	}
 
-	public BoardView partOfChessBoard(Location loc, int fudge) {
+	public BoardView partOfBoard(Location loc, int fudge) {
 		for (BoardView bv : listBoardViews()) {
 			if (bv.getBoard().isPartOfBoard(loc, fudge)) {
 				return bv;
@@ -150,7 +153,7 @@ public class BoardViewManager {
 	 * @param loc  location to check
 	 * @return the boardview that matches, or null if none
 	 */
-	public BoardView aboveChessBoard(Location loc) {
+	public BoardView aboveBoard(Location loc) {
 		for (BoardView bv : listBoardViews()) {
 			if (bv.getBoard().isAboveBoard(loc)) {
 				return bv;
@@ -165,9 +168,18 @@ public class BoardViewManager {
 	 * @param loc	location to check
 	 * @return the boardview that matches, or null if none
 	 */
-	public BoardView onChessBoard(Location loc) {
+	public BoardView onBoard(Location loc) {
 		for (BoardView bv : listBoardViews()) {
 			if (bv.getBoard().isOnBoard(loc)) {
+				return bv;
+			}
+		}
+		return null;
+	}
+
+	public BoardView findBoardForGame(CheckersGame game) {
+		for (BoardView bv : listBoardViews()) {
+			if (bv.getGame() != null && bv.getGame().getName().equals(game.getName())) {
 				return bv;
 			}
 		}
@@ -181,31 +193,32 @@ public class BoardViewManager {
 	 * @throws CheckersException
 	 */
 	public void teleportOut(Player player) throws CheckersException {
-		//		PermissionUtils.requirePerms(player, "chesscraft.commands.teleport");
-		//
-		//		BoardView bv = partOfChessBoard(player.getLocation(), 0);
-		//		Location prev = CheckersPlugin.getInstance().getPlayerTracker().getLastPos(player);
-		//		if (bv != null && bv.hasTeleportDestination()) {
-		//			// board has a specific location defined
-		//			Location loc = bv.getTeleportDestination();
-		//			CheckersPlugin.getInstance().getPlayerTracker().teleportPlayer(player, loc);
-		//		} else if (bv != null && globalTeleportOutDest != null) {
-		//			CheckersPlugin.getInstance().getPlayerTracker().teleportPlayer(player, getGlobalTeleportOutDest());
-		//		} else if (bv != null && (prev == null || partOfChessBoard(prev, 0) == bv)) {
-		//			// try to get the player out of this board safely
-		//			Location loc = bv.findSafeLocationOutside();
-		//			if (loc != null) {
-		//				CheckersPlugin.getInstance().getPlayerTracker().teleportPlayer(player, loc);
-		//			} else {
-		//				CheckersPlugin.getInstance().getPlayerTracker().teleportPlayer(player, player.getWorld().getSpawnLocation());
-		//				MiscUtil.errorMessage(player, Messages.getString("Board.goingToSpawn")); //$NON-NLS-1$
-		//			}
-		//		} else if (prev != null) {
-		//			// go back to previous location
-		//			CheckersPlugin.getInstance().getPlayerTracker().teleportPlayer(player, prev);
-		//		} else {
-		//			throw new CheckersException(Messages.getString("Board.notOnChessboard")); //$NON-NLS-1$
-		//		}
+		PermissionUtils.requirePerms(player, "checkers.commands.teleport");
+
+		BoardView bv = partOfBoard(player.getLocation(), 0);
+		Location prev = CheckersPlugin.getInstance().getPlayerTracker().getLastPos(player);
+		if (bv != null && bv.hasTeleportOutDestination()) {
+			// board has a specific location defined
+			Location loc = bv.getTeleportOutDestination();
+			CheckersPlugin.getInstance().getPlayerTracker().teleportPlayer(player, loc);
+		} else if (bv != null && globalTeleportOutDest != null) {
+			// maybe there's a global location defined
+			CheckersPlugin.getInstance().getPlayerTracker().teleportPlayer(player, getGlobalTeleportOutDest());
+		} else if (bv != null && (prev == null || partOfBoard(prev, 0) == bv)) {
+			// try to get the player out of this board safely
+			Location loc = bv.findSafeLocationOutside();
+			if (loc != null) {
+				CheckersPlugin.getInstance().getPlayerTracker().teleportPlayer(player, loc);
+			} else {
+				CheckersPlugin.getInstance().getPlayerTracker().teleportPlayer(player, player.getWorld().getSpawnLocation());
+				MiscUtil.errorMessage(player, Messages.getString("Board.goingToSpawn"));
+			}
+		} else if (prev != null) {
+			// go back to previous location
+			CheckersPlugin.getInstance().getPlayerTracker().teleportPlayer(player, prev);
+		} else {
+			throw new CheckersException(Messages.getString("Board.notOnChessboard"));
+		}
 	}
 
 	/**
@@ -237,6 +250,7 @@ public class BoardViewManager {
 	 * @param f
 	 */
 	public void deferLoading(String worldName, File f) {
+		LogUtils.info("Board load for " + f + " deferred: world " + worldName + " not available at this time");
 		if (!deferred.containsKey(worldName)) {
 			deferred.put(worldName, new HashSet<File>());
 		}
@@ -253,6 +267,7 @@ public class BoardViewManager {
 			return;
 		}
 		for (File f : deferred.get(worldName)) {
+			LogUtils.info("Doing deferred board load for " + f);
 			CheckersPlugin.getInstance().getPersistenceHandler().loadBoard(f);
 		}
 		deferred.get(worldName).clear();

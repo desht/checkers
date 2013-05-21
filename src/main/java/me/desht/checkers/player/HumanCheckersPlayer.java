@@ -3,6 +3,7 @@ package me.desht.checkers.player;
 import me.desht.checkers.CheckersException;
 import me.desht.checkers.CheckersPlugin;
 import me.desht.checkers.Messages;
+import me.desht.checkers.TimeControl;
 import me.desht.checkers.game.CheckersGame;
 import me.desht.checkers.model.Move;
 import me.desht.checkers.model.PlayerColour;
@@ -22,6 +23,7 @@ import org.bukkit.entity.Player;
 public class HumanCheckersPlayer extends CheckersPlayer {
 
 	private Player player;
+	private int tcWarned = 0;
 
 	public HumanCheckersPlayer(String name, CheckersGame game, PlayerColour colour) {
 		super(name, game, colour);
@@ -181,17 +183,26 @@ public class HumanCheckersPlayer extends CheckersPlayer {
 	public void teleport(Location loc) {
 		if (getBukkitPlayer() != null) {
 			Player p = getBukkitPlayer();
-			p.teleport(loc);
+			CheckersPlugin.getInstance().getPlayerTracker().teleportPlayer(p, loc);
 		}
 	}
 
 	@Override
-	public void teleport(BoardView boardView) {
-		if (getBukkitPlayer() != null) {
-			Player p = getBukkitPlayer();
-			if (!boardView.getBoard().isPartOfBoard(p.getLocation())) {
-				p.teleport(boardView.getTeleportInLocation());
-			}
+	public void timeControlCheck(TimeControl timeControl) {
+		if (needToWarn(timeControl)) {
+			alert(Messages.getString("Game.timeControlWarning", timeControl.getRemainingTime() / 1000 + 1));
+			tcWarned++;
 		}
 	}
+
+	private boolean needToWarn(TimeControl tc) {
+		long remaining = tc.getRemainingTime();
+		long t = CheckersPlugin.getInstance().getConfig().getInt("time_control.warn_seconds") * 1000;
+		long tot = tc.getTotalTime();
+		long warning = Math.min(t, tot) >>> tcWarned;
+
+		int tickInt = (CheckersPlugin.getInstance().getConfig().getInt("tick_interval") * 1000) + 50;	// fudge for inaccuracy of tick timer
+		return remaining <= warning && remaining > warning - tickInt;
+	}
+
 }

@@ -110,9 +110,9 @@ public class ControlPanel {
 	public void updateToMoveIndicator(PlayerColour toPlay) {
 		MaterialWithData mat = getView().getBoard().getBoardStyle().getControlPanelMaterial();
 		if (toPlay == PlayerColour.WHITE) {
-			mat = getView().getBoard().getBoardStyle().getWhiteSquareMaterial();
+			mat = getView().getBoard().getBoardStyle().getWhitePieceMaterial();
 		} else if (toPlay == PlayerColour.BLACK) {
-			mat = getView().getBoard().getBoardStyle().getBlackSquareMaterial();
+			mat = getView().getBoard().getBoardStyle().getBlackPieceMaterial();
 		}
 		toMoveIndicator.fill(mat);
 	}
@@ -120,6 +120,11 @@ public class ControlPanel {
 	public void updatePlyCount(int plyCount) {
 		plyCountLabel.setCount(plyCount);
 		plyCountLabel.repaint();
+	}
+
+	public void updateClock(PlayerColour colour, TimeControl timeControl) {
+		clockLabels[colour.getIndex()].setTimeControl(timeControl);
+		clockLabels[colour.getIndex()].repaint();
 	}
 
 	public void repaintClocks() {
@@ -132,7 +137,7 @@ public class ControlPanel {
 		panelBlocks.shift(signDir.getDirection(), 1).fill(0, (byte)0);
 	}
 
-	public Location getTeleportInLocation() {
+	public Location getTeleportInDestination() {
 		double xOff = (panelBlocks.getUpperX() - panelBlocks.getLowerX()) / 2.0 + 0.5 + signDir.getXadjustment() * 3.5;
 		double zOff = (panelBlocks.getUpperZ() - panelBlocks.getLowerZ()) / 2.0 + 0.5 + signDir.getZadjustment() * 3.5;
 
@@ -200,10 +205,5 @@ public class ControlPanel {
 		for (AbstractSignButton btn : buttonLocs.values()) {
 			btn.repaint();
 		}
-	}
-
-	void updateClock(PlayerColour colour, TimeControl timeControl) {
-		clockLabels[colour.getIndex()].setTimeControl(timeControl);
-		clockLabels[colour.getIndex()].repaint();
 	}
 }

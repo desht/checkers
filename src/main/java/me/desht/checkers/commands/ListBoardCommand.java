@@ -16,7 +16,7 @@ public class ListBoardCommand extends AbstractCheckersCommand {
 
 	public ListBoardCommand() {
 		super("checkers list board", 0, 1);
-		setPermissionNode("chesscraft.commands.list.board");
+		setPermissionNode("checkers.commands.list.board");
 		setUsage("/checkers list board");
 	}
 	@Override

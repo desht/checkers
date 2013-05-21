@@ -9,6 +9,7 @@ Game:
   cantAffordToStart: "{0} can''t afford to play! (need {1})"
   cantAffordToJoin: "You can''t afford the stake for this game (need {0})!"
   cantWriteArchive: "Can''t write PGN archive {0}: {1}"
+  currentGames: "Your current checkers games: {0}"
   gameCreated: "Checkers game &6{0}&- has been created on board &6{1}&-."
   gameDeleted: "Game &6{0}&- has been deleted."
   gameDeletedAlert: "Game deleted by &6{0}&-!"
@@ -31,7 +32,7 @@ Game:
   invited: " [invited: &6{0}&-]"
   inviteSent: "An invitation has been sent to &6{0}&-."
   inviteWithdrawn: "Your invitation has been withdrawn."
-  joinedGame: "You have joined the chess game &6{0}&- as &f{1}&-."
+  joinedGame: "You have joined the checkers game &6{0}&- as &f{1}&-."
   joinPrompt: "Type &f/checkers join&- to join the game."
   joinPromptGlobal: "Type &f/checkers join {0}&- to join the game."
   lostStake: "You lost your stake of {0}."
@@ -55,11 +56,14 @@ Game:
   playerJoined: "&6{0}&- has joined your game."
   playerNotOnline: "Player {0} is not online."
   playerPlayedMove: "{0}&- played [&f{1}&-].  Your move, {2}&-."
-  resultAbandoned: "&6{0}&- drew with &6{1}&- (game abandoned) in a game of Checkers!"
-  resultDrawAgreed: "&6{0}&- drew with &6{1}&- (draw agreed) in a game of Checkers!"
-  resultForfeited: "&6{0}&- beat &6{1}&- (forfeited) in a game of Checkers!"
-  resultResigned: "&6{0}&- beat &6{1}&- (resigned) in a game of Checkers!"
-  resultWin: "&6{0}&- beat &6{1}&- in a game of Checkers!"
+  playerBack: "{0} is back in the game!"
+  playerQuit: "{0} quit.  If they don''t rejoin within {1,number,integer} seconds, you can type &f/checkers win&- to win by default."
+  result:
+    ABANDONED: "&6{0}&- drew with &6{1}&- (game abandoned) in a game of Checkers!"
+    DRAW: "&6{0}&- drew with &6{1}&- (draw agreed) in a game of Checkers!"
+    FORFEITED: "&6{0}&- beat &6{1}&- (forfeited) in a game of Checkers!"
+    RESIGNED: "&6{0}&- beat &6{1}&- (resigned) in a game of Checkers!"
+    WIN: "&6{0}&- beat &6{1}&- in a game of Checkers!"
   shouldBeState: "Game should be in state {0}."
   stakeCantBeChanged: "Stake cannot be changed once both players have joined."
   stakeLocked: "The stake for this game is locked and may not be changed."
@@ -67,9 +71,13 @@ Game:
   started:
     - "Game started!  You are playing &f{0}&-."
     - "To move a piece, look at it while holding {1}, and left-click."
-  startPrompt: "Start the game by typing &f/game start&-."
+  startPrompt: "Start the game by typing &f/game start&- or pressing the &fStart&- button."
   timeControlLocked: "The time control for this game is locked may not be changed."
   timeControlWarning: "You have {0,number,integer} seconds left to move!"
+  typeYesOrNo: "Type &f/chess yes&- to accept, or &f/chess no&- to decline."
+  undoOfferedOther: "&6{0}&- wishes to undo their last move."
+  undoOfferedYou: "You have asked &6{0}&- if you may undo your last move."
+  undoAIWithStake: "You may not undo moves when playing for a stake against the computer."
   white: "White"
   youAreInvited: "You have been invited to this game by &6{0}&-."
   youPlayed: "You played &f{0}-{1}&-."
@@ -86,6 +94,12 @@ Board:
   boardExists: A board by that name already exists.
   boardList: "&6{0}&-: loc=&6{1}&- style=&6{2}&- game=&6{3}&-"
   boardRedrawn: Board &6{0}&- has been redrawn.
+  boardStyleChanged: "Board &6{0}&- style changed."
+  boardStyleSuggestSave: "Use &f/checkers board save [<new-style-name>]&- to save changes."
+  boardStyleSaved: "Board &6{0}&- style saved as &6{1}&-."
+  boardStyleBadParam: "Invalid style parameter value &6{0}&-."
+  boardTeleportSet: "The teleport-out destination has been set for board &6{0}&-."
+  boardTeleportCleared: "The teleport-out destination has been cleared for board &6{0}&-."
   boardTooHigh: This board would be too high for this world.
   boardWouldIntersect: This board would intersect another board (&6{1}&-).
   goingToSpawn: Sending you to spawn point.
@@ -118,7 +132,7 @@ ControlPanel:
   acceptUndoBtn: "Accept Undo?"
   blackPawnPromotionBtn: "Black Pawn;Promotion"
   boardInfoBtn: ";Board;Info"
-  chessInviteReminder: "Type &f/chess invite <playername>&- to invite someone"
+  chessInviteReminder: "Type &f/checkers invite <playername>&- to invite someone"
   chessInvitePrompt: "Type a player name to invite.  Left or right-click cancels."
   createGameBtn: ";Create;Game"
   gameInfoBtn: ";Game;Info"
@@ -141,3 +155,16 @@ ControlPanel:
 
 Misc:
   anything: "anything"
+  boardTeleportSet: "The teleport-out destination has been set for board &6{0}&-."
+  boardTeleportCleared: "The teleport-out destination has been cleared for board &6{0}&-."
+  globalTeleportSet: "The global teleport-out destination has been set."
+  globalTeleportCleared: "The global teleport-out destination has been cleared."
+
+Flight:
+  flightEnabled:
+    - You are close enough to a Checkers board to fly.
+    - Double-tab Space to toggle flight.
+  flightDisabled: You are no longer close enough to a Checkers board to fly.
+  flightDisabledByAdmin: Checkers board flight has been disabled by a server admin.
+  interactionStopped: You may not interact with the world while flying around a Checkers board!
+
