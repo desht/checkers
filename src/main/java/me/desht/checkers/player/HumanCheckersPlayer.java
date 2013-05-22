@@ -11,7 +11,6 @@ import me.desht.checkers.responses.DrawResponse;
 import me.desht.checkers.responses.SwapResponse;
 import me.desht.checkers.responses.YesNoResponse;
 import me.desht.checkers.util.CheckersUtils;
-import me.desht.checkers.view.BoardView;
 import me.desht.dhutils.MiscUtil;
 import net.milkbowl.vault.economy.Economy;
 
@@ -205,4 +204,8 @@ public class HumanCheckersPlayer extends CheckersPlayer {
 		return remaining <= warning && remaining > warning - tickInt;
 	}
 
+	@Override
+	public boolean isAvailable() {
+		return getBukkitPlayer().isOnline();
+	}
 }

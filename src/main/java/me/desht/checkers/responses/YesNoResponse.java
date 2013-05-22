@@ -43,8 +43,8 @@ public abstract class YesNoResponse extends ExpectBase {
 			c = DrawResponse.class;
 		} else if (respHandler.isExpecting(player.getName(), SwapResponse.class)) {
 			c = SwapResponse.class;
-			//		} else if (respHandler.isExpecting(player.getName(), ExpectUndoResponse.class)) {
-			//			c = ExpectUndoResponse.class;
+		} else if (respHandler.isExpecting(player.getName(), UndoResponse.class)) {
+			c = UndoResponse.class;
 		} else {
 			return;
 		}
@@ -52,7 +52,6 @@ public abstract class YesNoResponse extends ExpectBase {
 		YesNoResponse response = (YesNoResponse) respHandler.getAction(player.getName(), c);
 		response.setResponse(isAccepted);
 		response.handleAction();
-//		response.getGame().getView().getControlPanel().repaintControls();
 	}
 
 }

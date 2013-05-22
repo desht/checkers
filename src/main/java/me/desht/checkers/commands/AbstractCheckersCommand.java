@@ -41,6 +41,17 @@ public abstract class AbstractCheckersCommand extends AbstractCommand {
 		return getResult(res, sender, true);
 	}
 
+	protected List<String> getPlayerInGameCompletions(Plugin plugin, CommandSender sender, String prefix) {
+		List<String> res = new ArrayList<String>();
+
+		for (CheckersGame game : CheckersGameManager.getManager().listGames()) {
+			if (game.getName().startsWith(prefix) && game.hasPlayer(sender.getName())) {
+				res.add(game.getName());
+			}
+		}
+		return getResult(res, sender, true);
+	}
+
 	protected List<String> getBoardCompletions(Plugin plugin, CommandSender sender, String prefix) {
 		List<String> res = new ArrayList<String>();
 

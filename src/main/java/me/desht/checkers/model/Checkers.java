@@ -2,8 +2,19 @@ package me.desht.checkers.model;
 
 public class Checkers {
 	public static final int NO_SQUARE = -1;
-	private static final String rows = "ABCDEFGH";
-	private static final String cols = "12345678";
+
+	private static int[] cnToSqi = new int[32];
+
+	static {
+		for (int row = 0; row < 7; row++) {
+			for (int col = 0; col < 7; col++) {
+				if (row % 2 == col % 2) {
+					int cn = rowColToCheckersNotation(row, col);
+					cnToSqi[cn - 1] = rowColToSqi(row, col);
+				}
+			}
+		}
+	}
 
 	public static int rowColToSqi(int row, int col) {
 		return (row << 3) | col;
@@ -17,11 +28,16 @@ public class Checkers {
 		return sqi & 0x07;
 	}
 
-	public static String sqiToString(int sqi) {
-		return rowColToString(sqiToRow(sqi), sqiToCol(sqi));
+	public static int sqiToCheckersNotation(int sqi) {
+		return rowColToCheckersNotation(sqiToRow(sqi), sqiToCol(sqi));
 	}
 
-	public static String rowColToString(int row, int col) {
-		return rows.substring(row, row + 1) + cols.substring(col, col + 1);
+	public static int rowColToCheckersNotation(int row, int col) {
+		return row * 4 + (4 - (col / 2));
+	}
+
+	public static int checkersNotationToSqi(int cn) {
+		System.out.println(cn + " -> " + cnToSqi[cn - 1]);
+		return cnToSqi[cn - 1];
 	}
 }

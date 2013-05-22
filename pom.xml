@@ -26,7 +26,7 @@
 		<dependency>
 		    <groupId>net.milkbowl.vault</groupId>
 		    <artifactId>Vault</artifactId>
-		    <version>1.2.24-SNAPSHOT</version>
+		    <version>1.2.25</version>
 		    <scope>provided</scope>
 		</dependency>
 		<dependency>
@@ -118,9 +118,11 @@
 			<id>Plugin Metrics</id>
 			<url>http://repo.mcstats.org/content/repositories/public</url>
 		</repository>
+<!--
                 <repository>
                         <id>vault-repo</id>
                         <url>http://ci.herocraftonline.com/plugin/repository/everything</url>
                 </repository>
+-->
 	</repositories>
 </project>

@@ -221,7 +221,11 @@ public class PlayerListener extends CheckersBaseListener {
 			tryMove(player, bv, sqi);
 		} else {
 			if (player.isSneaking()) {
-				MiscUtil.statusMessage(player, Messages.getString("Board.squareMessage", Checkers.sqiToString(sqi), bv.getName()));
+				int row = Checkers.sqiToRow(sqi);
+				int col = Checkers.sqiToCol(sqi);
+				if (row % 2 == col % 2) {
+					MiscUtil.statusMessage(player, Messages.getString("Board.squareMessage", Checkers.rowColToCheckersNotation(row, col), bv.getName()));
+				}
 				if (bv.getBoard().isPartOfBoard(player.getLocation())) {
 					// allow teleporting around the board, but only if the player is already on the board
 					Location newLoc = loc.clone().add(0, 1.0, 0);
@@ -238,7 +242,7 @@ public class PlayerListener extends CheckersBaseListener {
 		CheckersGame game = bv.getGame();
 		CheckersPlayer cp = game.getPlayerToMove();
 		game.doMove(player.getName(), fromSqi, toSqi);
-		MiscUtil.statusMessage(player, Messages.getString("Game.youPlayed", Checkers.sqiToString(fromSqi), Checkers.sqiToString(toSqi)));
+		MiscUtil.statusMessage(player, Messages.getString("Game.youPlayed", Checkers.sqiToCheckersNotation(fromSqi), Checkers.sqiToCheckersNotation(toSqi)));
 		if (game.getState() != GameState.FINISHED) {
 			if (game.getPosition().getToMove() == cp.getColour()) {
 				// still the same player to move - must be a chained jump

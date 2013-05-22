@@ -1,8 +1,5 @@
 package me.desht.checkers.model;
 
-import org.bukkit.ChatColor;
-
-
 public class Move {
 	private final int fromRow, fromCol;
 	private final int toRow, toCol;
@@ -101,11 +98,11 @@ public class Move {
 
 	@Override
 	public String toString() {
-		return Checkers.rowColToString(fromRow, fromCol) + "-" + Checkers.rowColToString(toRow, toCol);
+		return Checkers.rowColToCheckersNotation(fromRow, fromCol) + "-" + Checkers.rowColToCheckersNotation(toRow, toCol);
 	}
 
 	public String toChainedString() {
-		return "-" + Checkers.rowColToString(toRow, toCol);
+		return "-" + Checkers.rowColToCheckersNotation(toRow, toCol);
 	}
 
 	/* (non-Javadoc)

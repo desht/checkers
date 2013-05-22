@@ -154,17 +154,21 @@ ControlPanel:
   yesBtn: ";;Yes"
 
 Misc:
+  AIdefsReloaded: "AI definitions have been reloaded."
   anything: "anything"
+  configReloaded: "Configuration (config.yml) has been reloaded"
   boardTeleportSet: "The teleport-out destination has been set for board &6{0}&-."
   boardTeleportCleared: "The teleport-out destination has been cleared for board &6{0}&-."
   globalTeleportSet: "The global teleport-out destination has been set."
   globalTeleportCleared: "The global teleport-out destination has been cleared."
+  persistedReloaded: "Persisted board and game data has been reloaded."
+  timeControlsReloaded: "Time control definitions have been reloaded."
 
 Flight:
+  flightDisabledByAdmin: Checkers board flight has been disabled by a server admin.
+  flightDisabled: You are no longer close enough to a Checkers board to fly.
   flightEnabled:
     - You are close enough to a Checkers board to fly.
     - Double-tab Space to toggle flight.
-  flightDisabled: You are no longer close enough to a Checkers board to fly.
-  flightDisabledByAdmin: Checkers board flight has been disabled by a server admin.
   interactionStopped: You may not interact with the world while flying around a Checkers board!
 

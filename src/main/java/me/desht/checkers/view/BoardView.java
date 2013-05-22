@@ -24,6 +24,7 @@ import me.desht.checkers.player.CheckersPlayer;
 import me.desht.checkers.util.CheckersUtils;
 import me.desht.checkers.util.TerrainBackup;
 import me.desht.checkers.view.controlpanel.ControlPanel;
+import me.desht.checkers.view.controlpanel.StakeButton;
 import me.desht.checkers.view.controlpanel.TimeControlButton;
 import me.desht.dhutils.AttributeCollection;
 import me.desht.dhutils.ConfigurationListener;

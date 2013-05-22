@@ -8,6 +8,7 @@ version: ${project.version}
 commands:
   checkers:
     description: A Command
+    aliases: [ chk ]
     usage: |
       /<command> create board <board-name>
       /<command> delete board <board-name>
@@ -23,6 +24,13 @@ permissions:
       checkers.commands.invite: true
       checkers.commands.join: true
       checkers.commands.undo: true
+      checkers.commands.win: true
+      checkers.commands.offer.draw: true
+      checkers.commands.resign: true
+      checkers.commands.move: true
+      checkers.commands.stake: true
+      checkers.commands.teleport: true
+      checkers.commands.timecontrol: true
   checkers.admin:
     description: Gives access to all commands
     default: op
@@ -34,6 +42,8 @@ permissions:
       checkers.commands.getcfg: true
       checkers.commands.setcfg: true
       checkers.commands.redraw: true
+      checkers.commands.save: true
+      checkers.commands.reload: true
   checkers.commands.create.board:
     description: Allow board creation
     default: op
@@ -72,4 +82,34 @@ permissions:
     default: op
   checkers.commands.undo:
     description: Allow the last move in a game to be undone
+    default: true
+  checkers.commands.win:
+    description: Allow victory to be claimed if other player has gone offline
+    default: true
+  checkers.commands.save:
+    description: Allow persisted data to be force-saved
+    default: op
+  checkers.commands.reload:
+    description: Allow plugin configuration and other data files to be reloaded
+    default: op
+  checkers.commands.offer.draw:
+    description: Allow offering of draws in a game
+    default: true
+  checkers.commands.list.style:
+    description: Allow board styles to be listed
+    default: op
+  checkers.commands.resign:
+    description: Allow games to be resigned
+    default: true
+  checkers.commands.move:
+    description: Allow use of the /checkers move command
+    default: true
+  checkers.commands.teleport:
+    description: Allow teleporting to/from boards
+    default: true
+  checkers.commands.timecontrol:
+    description: Allow time controls for a game to be changed
+    default: true
+  checkers.commands.stake:
+    description: Allow the stake for a game to be changed
     default: true

@@ -1,11 +1,10 @@
 package me.desht.checkers.player;
 
-import org.bukkit.Location;
-
 import me.desht.checkers.TimeControl;
 import me.desht.checkers.game.CheckersGame;
 import me.desht.checkers.model.PlayerColour;
-import me.desht.checkers.view.BoardView;
+
+import org.bukkit.Location;
 
 public abstract class CheckersPlayer {
 	private final String name;
@@ -59,17 +58,17 @@ public abstract class CheckersPlayer {
 
 	public abstract void alert(String message);
 	public abstract void statusMessage(String message);
+	public abstract void playEffect(String effect);
 
 	public abstract void replayMoves();
 
 	public abstract void cleanup();
 
 	public abstract boolean isHuman();
+	public abstract boolean isAvailable();
 
 	public abstract void withdrawFunds(double amount);
 	public abstract void depositFunds(double amount);
-
-//	public abstract void summonToGame();
 
 	public abstract void cancelOffers();
 
@@ -82,9 +81,8 @@ public abstract class CheckersPlayer {
 
 	public abstract void checkPendingAction();
 
-	public abstract void playEffect(String effect);
-
 	public abstract void teleport(Location loc);
 
 	public abstract void timeControlCheck(TimeControl timeControl);
+
 }
