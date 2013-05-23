@@ -4,7 +4,9 @@ import me.desht.checkers.CheckersException;
 import me.desht.checkers.Messages;
 import me.desht.checkers.game.CheckersGame;
 import me.desht.checkers.game.CheckersGameManager;
+import me.desht.checkers.game.CheckersGame.GameState;
 import me.desht.checkers.model.Checkers;
+import me.desht.checkers.model.PlayerColour;
 import me.desht.dhutils.MiscUtil;
 
 import org.bukkit.command.CommandSender;
@@ -29,14 +31,24 @@ public class MoveCommand extends AbstractCheckersCommand {
 			from = Integer.parseInt(args[0]);
 			to = Integer.parseInt(args[1]);
 		} catch (NumberFormatException e) {
-			throw new CheckersException(Messages.getString("Misc.invalidNumeric", args[0], args[1]));
+			throw new CheckersException(Messages.getString("Misc.invalidNumeric", args[0] + "-" + args[1]));
 		}
 
 		int fromSqi = Checkers.checkersNotationToSqi(from);
 		int toSqi = Checkers.checkersNotationToSqi(to);
+		PlayerColour prevToMove = game.getPosition().getToMove();
 		game.doMove(sender.getName(), fromSqi, toSqi);
 
 		MiscUtil.statusMessage(sender, Messages.getString("Game.youPlayed", from, to));
+
+		if (game.getState() != GameState.FINISHED) {
+			if (game.getPosition().getToMove() == prevToMove) {
+				// still the same player to move - must be a chained jump
+				game.getPlayer(prevToMove).promptForContinuedMove();
+			} else {
+				game.getPlayer(game.getPosition().getToMove()).promptForNextMove();
+			}
+		}
 
 		return true;
 	}

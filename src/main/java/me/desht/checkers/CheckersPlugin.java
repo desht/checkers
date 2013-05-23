@@ -20,32 +20,7 @@ package me.desht.checkers;
 import java.util.List;
 
 import me.desht.checkers.ai.AIFactory;
-import me.desht.checkers.commands.BoardSaveCommand;
-import me.desht.checkers.commands.BoardSetCommand;
-import me.desht.checkers.commands.CreateBoardCommand;
-import me.desht.checkers.commands.CreateGameCommand;
-import me.desht.checkers.commands.DeleteBoardCommand;
-import me.desht.checkers.commands.DeleteGameCommand;
-import me.desht.checkers.commands.GetcfgCommand;
-import me.desht.checkers.commands.InviteCommand;
-import me.desht.checkers.commands.JoinCommand;
-import me.desht.checkers.commands.ListBoardCommand;
-import me.desht.checkers.commands.ListGameCommand;
-import me.desht.checkers.commands.ListStylesCommand;
-import me.desht.checkers.commands.MoveCommand;
-import me.desht.checkers.commands.NoCommand;
-import me.desht.checkers.commands.OfferDrawCommand;
-import me.desht.checkers.commands.RedrawCommand;
-import me.desht.checkers.commands.ReloadCommand;
-import me.desht.checkers.commands.ResignCommand;
-import me.desht.checkers.commands.SaveCommand;
-import me.desht.checkers.commands.SetcfgCommand;
-import me.desht.checkers.commands.StakeCommand;
-import me.desht.checkers.commands.TeleportCommand;
-import me.desht.checkers.commands.TimeControlCommand;
-import me.desht.checkers.commands.UndoCommand;
-import me.desht.checkers.commands.WinCommand;
-import me.desht.checkers.commands.YesCommand;
+import me.desht.checkers.commands.AbstractCheckersCommand;
 import me.desht.checkers.listeners.FlightListener;
 import me.desht.checkers.listeners.PlayerListener;
 import me.desht.checkers.listeners.PlayerTracker;
@@ -150,32 +125,9 @@ public class CheckersPlugin extends JavaPlugin implements ConfigurationListener 
 	}
 
 	private void registerCommands() {
-		cmds.registerCommand(new CreateBoardCommand());
-		cmds.registerCommand(new DeleteBoardCommand());
-		cmds.registerCommand(new RedrawCommand());
-		cmds.registerCommand(new ListBoardCommand());
-		cmds.registerCommand(new CreateGameCommand());
-		cmds.registerCommand(new DeleteGameCommand());
-		cmds.registerCommand(new ListGameCommand());
-		cmds.registerCommand(new InviteCommand());
-		cmds.registerCommand(new JoinCommand());
-		cmds.registerCommand(new GetcfgCommand());
-		cmds.registerCommand(new SetcfgCommand());
-		cmds.registerCommand(new BoardSetCommand());
-		cmds.registerCommand(new BoardSaveCommand());
-		cmds.registerCommand(new TeleportCommand());
-		cmds.registerCommand(new UndoCommand());
-		cmds.registerCommand(new ReloadCommand());
-		cmds.registerCommand(new WinCommand());
-		cmds.registerCommand(new MoveCommand());
-		cmds.registerCommand(new ResignCommand());
-		cmds.registerCommand(new TimeControlCommand());
-		cmds.registerCommand(new StakeCommand());
-		cmds.registerCommand(new SaveCommand());
-		cmds.registerCommand(new YesCommand());
-		cmds.registerCommand(new NoCommand());
-		cmds.registerCommand(new ListStylesCommand());
-		cmds.registerCommand(new OfferDrawCommand());
+		@SuppressWarnings("unused")
+		Class<AbstractCheckersCommand> c = AbstractCheckersCommand.class;
+		cmds.registerAllCommands("me.desht.checkers.commands");
 	}
 
 	@Override

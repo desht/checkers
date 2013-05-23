@@ -246,7 +246,7 @@ public class PlayerListener extends CheckersBaseListener {
 		if (game.getState() != GameState.FINISHED) {
 			if (game.getPosition().getToMove() == cp.getColour()) {
 				// still the same player to move - must be a chained jump
-				MiscUtil.statusMessage(player, Messages.getString("Game.mustContinueJumping"));
+				cp.promptForContinuedMove();
 				bv.getBoard().setSelected(toSqi);
 			} else {
 				game.getPlayer(game.getPosition().getToMove()).promptForNextMove();

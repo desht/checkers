@@ -79,6 +79,11 @@ public class HumanCheckersPlayer extends CheckersPlayer {
 	}
 
 	@Override
+	public void promptForContinuedMove() {
+		alert(Messages.getString("Game.mustContinueJumping"));
+	}
+
+	@Override
 	public void alert(String message) {
 		Player p = getBukkitPlayer();
 		if (p != null) {

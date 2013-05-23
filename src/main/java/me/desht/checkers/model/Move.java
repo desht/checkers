@@ -96,6 +96,14 @@ public class Move {
 		return toCol;
 	}
 
+	public int getFromSqi() {
+		return Checkers.rowColToSqi(fromRow, fromCol);
+	}
+
+	public int getToSqi() {
+		return Checkers.rowColToSqi(toRow, toCol);
+	}
+
 	@Override
 	public String toString() {
 		return Checkers.rowColToCheckersNotation(fromRow, fromCol) + "-" + Checkers.rowColToCheckersNotation(toRow, toCol);

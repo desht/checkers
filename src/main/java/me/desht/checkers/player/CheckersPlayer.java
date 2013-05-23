@@ -55,6 +55,7 @@ public abstract class CheckersPlayer {
 
 	public abstract void promptForFirstMove();
 	public abstract void promptForNextMove();
+	public abstract void promptForContinuedMove();
 
 	public abstract void alert(String message);
 	public abstract void statusMessage(String message);

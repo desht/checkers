@@ -37,7 +37,6 @@ public class Checkers {
 	}
 
 	public static int checkersNotationToSqi(int cn) {
-		System.out.println(cn + " -> " + cnToSqi[cn - 1]);
 		return cnToSqi[cn - 1];
 	}
 }

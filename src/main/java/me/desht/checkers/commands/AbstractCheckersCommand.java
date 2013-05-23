@@ -6,7 +6,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import me.desht.checkers.CheckersPlugin;
 import me.desht.checkers.DirectoryStructure;
+import me.desht.checkers.ai.AIFactory.AIDefinition;
 import me.desht.checkers.game.CheckersGame;
 import me.desht.checkers.game.CheckersGameManager;
 import me.desht.checkers.view.BoardStyle;
@@ -15,7 +17,9 @@ import me.desht.checkers.view.BoardViewManager;
 import me.desht.dhutils.MiscUtil;
 import me.desht.dhutils.commands.AbstractCommand;
 
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
 public abstract class AbstractCheckersCommand extends AbstractCommand {
@@ -50,6 +54,21 @@ public abstract class AbstractCheckersCommand extends AbstractCommand {
 			}
 		}
 		return getResult(res, sender, true);
+	}
+
+	protected List<String> getPlayerCompletions(Plugin plugin, CommandSender sender, String prefix, boolean aiOnly) {
+		List<String> res = new ArrayList<String>();
+		if (!aiOnly) {
+			for (Player p : Bukkit.getOnlinePlayers()) {
+				res.add(p.getName());
+			}
+		}
+		for (AIDefinition aiDef : ((CheckersPlugin) plugin).getAIFactory().listAIDefinitions()) {
+			if (!aiDef.isEnabled())
+				continue;
+			res.add(aiDef.getName());
+		}
+		return filterPrefix(sender, res, prefix);
 	}
 
 	protected List<String> getBoardCompletions(Plugin plugin, CommandSender sender, String prefix) {

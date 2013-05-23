@@ -21,6 +21,7 @@ import me.desht.checkers.model.Move;
 import me.desht.checkers.model.PlayerColour;
 import me.desht.checkers.model.Position;
 import me.desht.checkers.model.SimplePosition;
+import me.desht.checkers.player.AICheckersPlayer;
 import me.desht.checkers.player.CheckersPlayer;
 import me.desht.checkers.player.HumanCheckersPlayer;
 import me.desht.checkers.responses.UndoResponse;
@@ -110,11 +111,10 @@ public class CheckersGame implements CheckersPersistable {
 
 	private CheckersPlayer createPlayer(PlayerColour colour, String playerName) {
 		if (playerName == null) {
-			// TODO: new random free AI
-			return null;
-		} else if (CheckersAI.isAI(playerName)) {
-			// TODO: new named AI
-			return null;
+			String aiName = CheckersPlugin.getInstance().getAIFactory().getFreeAIName();
+			return new AICheckersPlayer(aiName, this, colour);
+		} else if (CheckersAI.isAIPlayer(playerName)) {
+			return new AICheckersPlayer(playerName, this, colour);
 		} else if (playerName.isEmpty()) {
 			// no player for this slot yet
 			return null;
@@ -312,21 +312,25 @@ public class CheckersGame implements CheckersPersistable {
 		String bullet = MessagePager.BULLET + ChatColor.YELLOW;
 
 		res.add(Messages.getString("Game.gameDetail.name", getName(), getState()));
-		res.add(bullet + Messages.getString("Game.gameDetail.players", white, black));
+		res.add(bullet + Messages.getString("Game.gameDetail.players", black, white));
 		res.add(bullet +  Messages.getString("Game.gameDetail.halfMoves", getPosition().getPlyCount()));
 		if (CheckersPlugin.getInstance().getEconomy() != null) {
 			res.add(bullet + Messages.getString("Game.gameDetail.stake", CheckersUtils.formatStakeStr(getStake())));
 		}
 		res.add(bullet + (getPosition().getToMove() == PlayerColour.WHITE ? 
-				Messages.getString("Game.gameDetail.whiteToPlay") : 
-					Messages.getString("Game.gameDetail.blackToPlay")));
+				Messages.getString("Game.gameDetail.whiteToPlay") : Messages.getString("Game.gameDetail.blackToPlay")));
+		res.add(bullet + Messages.getString("Game.gameDetail.timeControlType", tcWhite.toString()));
+		if (getState() == GameState.RUNNING) {
+			res.add(bullet + Messages.getString("Game.gameDetail.clock", tcBlack.getClockString(), tcWhite.getClockString()));	//$NON-NLS-1$
+		}
 		if (getInvited().equals(OPEN_INVITATION)) {
 			res.add(bullet + Messages.getString("Game.gameDetail.openInvitation"));
 		} else if (!getInvited().isEmpty()) {
-			System.out.println("invited [" + getInvited() + "]");
 			res.add(bullet + Messages.getString("Game.gameDetail.invitation", getInvited()));
 		}
-		res.add(Messages.getString("Game.gameDetail.moveHistory"));
+		if (getPosition().getMoveHistory().length > 0) {
+			res.add(Messages.getString("Game.gameDetail.moveHistory"));
+		}
 		res.add(getMovesAsString(getPosition().getMoveHistory()));
 
 		return res;
@@ -392,8 +396,7 @@ public class CheckersGame implements CheckersPersistable {
 			invited = inviteeName;
 			alert(inviterName, Messages.getString("Game.inviteSent", invited));
 		} else {
-			// TODO: add an AI player
-			throw new CheckersException("Unknown player: " + inviteeName);
+			addPlayer(CheckersAI.AI_PREFIX + inviteeName);
 		}
 		save();
 	}
@@ -422,9 +425,6 @@ public class CheckersGame implements CheckersPersistable {
 	public void addPlayer(String playerName) {
 		ensureGameInState(GameState.SETTING_UP);
 
-		if (!playerName.equalsIgnoreCase(invited) && !invited.equals(OPEN_INVITATION)) {
-			throw new CheckersException(Messages.getString("Game.notInvited"));
-		}
 		if (isFull()) {
 			// this could happen if autostart is disabled and two players have already joined
 			throw new CheckersException(Messages.getString("Game.gameIsFull"));
@@ -447,10 +447,9 @@ public class CheckersGame implements CheckersPersistable {
 	public void start(String playerName) {
 		ensurePlayerInGame(playerName);
 		ensureGameInState(GameState.SETTING_UP);
+
 		if (!isFull()) {
-			// TODO game started with only one player - add an AI player
-			//			fillEmptyPlayerSlot(null);
-			throw new CheckersException("game needs two players!");
+			fillEmptyPlayerSlot(null);
 		}
 
 		if (stake > 0.0 && !getPlayerName(PlayerColour.WHITE).equalsIgnoreCase(getPlayerName(PlayerColour.BLACK))) {
@@ -482,22 +481,8 @@ public class CheckersGame implements CheckersPersistable {
 		ensurePlayerToMove(playerName);
 
 		Move move = new Move(Checkers.sqiToRow(fromSqi), Checkers.sqiToCol(fromSqi), Checkers.sqiToRow(toSqi), Checkers.sqiToCol(toSqi));
-		Move validMove = null;
-		for (Move m : getPosition().getLegalMoves()) {
-			if (m.equals(move)) {
-				// legal move
-				validMove = m;
-				break;
-			}
-		}
-		if (validMove == null) {
-			throw new IllegalMoveException();
-		}
-
 		PlayerColour prevToMove = getPosition().getToMove();
-
-		// the move is valid; make the necessary changes
-		getPosition().makeMove(validMove);  // this will cause a board redraw
+		getPosition().makeMove(move);  // this will cause a board redraw
 		lastMoved = System.currentTimeMillis();
 
 		getPlayer(prevToMove).cancelOffers();
@@ -554,7 +539,9 @@ public class CheckersGame implements CheckersPersistable {
 	}
 
 	public void tick() {
-		checkForAIActivity();
+		if (getState() == GameState.RUNNING) {
+			checkForAIActivity();
+		}
 		checkForAutoDelete();
 	}
 
@@ -661,7 +648,10 @@ public class CheckersGame implements CheckersPersistable {
 	}
 
 	private void checkForAIActivity() {
-		// TODO add AI support
+		synchronized (this) {
+			getPlayer(PlayerColour.WHITE).checkPendingAction();
+			getPlayer(PlayerColour.BLACK).checkPendingAction();	
+		}
 	}
 
 	public void playerLeft(String playerName) {
@@ -707,9 +697,9 @@ public class CheckersGame implements CheckersPersistable {
 
 		this.result = result;
 		this.winner = winner;
-		CheckersPlayer p1 = winner == PlayerColour.NONE ? getPlayer(PlayerColour.WHITE) : getPlayer(winner);
+		CheckersPlayer p1 = winner == PlayerColour.NONE ? getPlayer(PlayerColour.BLACK) : getPlayer(winner);
 		CheckersPlayer p2 = getPlayer(p1.getColour().getOtherColour());
-		String msg = Messages.getString("Game.result." + result.toString(), p1.getName(), p2.getName());
+		String msg = Messages.getString("Game.result." + result.toString(), p1.getDisplayName(), p2.getDisplayName());
 
 		if (winner != PlayerColour.NONE && !p1.getName().equals(p2.getName())) {
 			p1.playEffect("game_won");

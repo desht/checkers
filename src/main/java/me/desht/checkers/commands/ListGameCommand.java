@@ -49,10 +49,9 @@ public class ListGameCommand extends AbstractCheckersCommand {
 				String black = game.hasPlayer(PlayerColour.BLACK) ? game.getPlayer(PlayerColour.BLACK).getDisplayName() : "?";
 				String line = String.format(MessagePager.BULLET + "%s: %s%s (%s) v %s%s (%s)",
 				                            name,
-				                            curMoveW, white, PlayerColour.WHITE.getDisplayColour() + ChatColor.RESET,
-				                            curMoveB, black, PlayerColour.BLACK.getDisplayColour() + ChatColor.RESET);
+				                            curMoveB, black, PlayerColour.BLACK.getDisplayColour() + ChatColor.RESET,
+				                            curMoveW, white, PlayerColour.WHITE.getDisplayColour() + ChatColor.RESET);
 				if (!game.getInvited().isEmpty()) {
-					System.out.println("invited [" + game.getInvited() + "]");
 					line += Messages.getString("Game.invited", game.getInvited());
 				}
 				pager.add(line);

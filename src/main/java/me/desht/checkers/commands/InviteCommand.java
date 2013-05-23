@@ -31,7 +31,7 @@ public class InviteCommand extends AbstractCheckersCommand {
 	public List<String> onTabComplete(Plugin plugin, CommandSender sender, String[] args) {
 		switch (args.length) {
 		case 1:
-			return null; // TODO: getPlayerCompletions(plugin, sender, args[0], false);
+			return getPlayerCompletions(plugin, sender, args[0], false);
 		default:
 			return noCompletions(sender);
 		}

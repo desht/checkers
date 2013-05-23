@@ -12,7 +12,7 @@ public class CreateGameCommand extends AbstractCheckersCommand {
 	public CreateGameCommand() {
 		super("checkers create game");
 		setPermissionNode("checkers.commands.create.game");
-		setUsage("/checkers create game [-black] [<game-name>] [<board-name>]");
+		setUsage("/checkers create game [-white] [<game-name>] [<board-name>]");
 		setOptions("black");
 	}
 
@@ -23,7 +23,7 @@ public class CreateGameCommand extends AbstractCheckersCommand {
 		String gameName = args.length >= 1 ? args[0] : null;
 		String boardName = args.length >= 2 ? args[1] : null;
 
-		CheckersGameManager.getManager().createGame((Player) sender, gameName, boardName, getBooleanOption("black") ? PlayerColour.BLACK : PlayerColour.WHITE);
+		CheckersGameManager.getManager().createGame((Player) sender, gameName, boardName, getBooleanOption("white") ? PlayerColour.WHITE : PlayerColour.BLACK);
 
 		return true;
 	}

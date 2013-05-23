@@ -1,3 +1,8 @@
+ai:
+  max_ai_games: 3
+  min_move_wait: 1
+  name_format: '[AI]<NAME>'
+  lose_on_fail: false
 auto_teleport_on_join: true
 auto_delete:
   finished: 15 sec

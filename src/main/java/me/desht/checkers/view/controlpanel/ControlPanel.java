@@ -141,7 +141,6 @@ public class ControlPanel {
 		double xOff = (panelBlocks.getUpperX() - panelBlocks.getLowerX()) / 2.0 + 0.5 + signDir.getXadjustment() * 3.5;
 		double zOff = (panelBlocks.getUpperZ() - panelBlocks.getLowerZ()) / 2.0 + 0.5 + signDir.getZadjustment() * 3.5;
 
-		System.out.println("board dir = " + boardDir + ", signDir = " + signDir + ", yaw = " + signDir.getYaw());
 		return new Location(panelBlocks.getWorld(),
 		                    panelBlocks.getLowerX() + xOff,
 		                    panelBlocks.getLowerY(),

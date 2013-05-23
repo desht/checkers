@@ -1,7 +1,11 @@
 package me.desht.checkers.model;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+
+import me.desht.checkers.IllegalMoveException;
+import me.desht.dhutils.LogUtils;
 
 import com.google.common.base.Joiner;
 
@@ -22,6 +26,24 @@ public class SimplePosition implements Position {
 	public SimplePosition() {
 		board = new PieceType[8][8];
 		newGame();
+	}
+
+	public SimplePosition(SimplePosition other, boolean copyHistory) {
+		board = new PieceType[8][8];
+		for (int row = 0; row < 8; row++) {
+			for (int col = 0; col < 8; col++) {
+				setPieceAt(row, col, other.getPieceAt(row, col));
+			}
+		}
+		legalMoves = Arrays.copyOf(other.getLegalMoves(), other.getLegalMoves().length);
+		toMove = other.getToMove();
+		jumpInProgress = other.isJumpInProgress();
+		moveHistory = new ArrayList<Move>();
+		if (copyHistory) {
+			for (Move m : other.getMoveHistory()) {
+				moveHistory.add(m);
+			}
+		}
 	}
 
 	@Override
@@ -90,6 +112,17 @@ public class SimplePosition implements Position {
 
 	@Override
 	public void makeMove(Move move) {
+		Move legalMove = null;
+		for (Move m : getLegalMoves()) {
+			if (m.equals(move)) {
+				legalMove = m;
+				break;
+			}
+		}
+		if (legalMove == null) {
+			throw new IllegalMoveException();
+		}
+
 		int fromRow = move.getFromRow();
 		int fromCol = move.getFromCol();
 		int toRow = move.getToRow();
@@ -134,7 +167,7 @@ public class SimplePosition implements Position {
 			jumpInProgress = false;
 		}
 
-		System.out.println("move made - legal moves = " + Joiner.on(",").join(legalMoves));
+		LogUtils.fine("move made by " + toMove.getOtherColour() + ", legal moves now: " + Joiner.on(",").join(legalMoves));
 		moveHistory.add(move);
 
 		for (PositionListener l : listeners) {
@@ -144,6 +177,13 @@ public class SimplePosition implements Position {
 				l.toMoveChanged(toMove);
 			}
 		}
+	}
+
+	@Override
+	public Position tryMove(Move move) {
+		Position newPos = new SimplePosition(this, false);
+		newPos.makeMove(move);
+		return newPos;
 	}
 
 	@Override

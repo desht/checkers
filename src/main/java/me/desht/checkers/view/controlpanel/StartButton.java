@@ -22,8 +22,6 @@ public class StartButton extends AbstractSignButton {
 
 	@Override
 	public boolean isEnabled() {
-//		return getGame() != null && getGame().getState() == GameState.SETTING_UP;
-		// TODO - change when AI is added
-		return getGame() != null && getGame().getState() == GameState.SETTING_UP && getGame().isFull();
+		return getGame() != null && getGame().getState() == GameState.SETTING_UP;
 	}
 }

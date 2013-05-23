@@ -15,14 +15,15 @@ Game:
   gameDeletedAlert: "Game deleted by &6{0}&-!"
   gameDetail:
     blackToPlay: "&8Black&- to play"
-    clock: "Clock: &fWhite&-: {0}, &8Black&-: {1}"
+    clock: "Clock: &8Black&-: {0}, &fWhite&-: {1}"
     halfMoves: "&f{0,number,integer}&- half-moves made"
     invitation: "&6{0}&- has been invited.  Awaiting response."
     moveHistory: "&eMove history:"
     name: "&eGame {0} [{1}]:"
     openInvitation: "Game has an open invitation"
-    players: "&6{0}&- (&fWhite&-) vs. &6{1}&- (&8Black&-)."
+    players: "&6{0}&- (&8Black&-) vs. &6{1}&- (&fWhite&-)."
     stake: "&eStake: &f{0}"
+    timeControlType: "&eTime Control: &f{0}"
     whiteToPlay: "&fWhite&- to play"
   gameHasStake: "This game has a stake of &f{0}&-."
   gameIsFull: "This game already has two players."
@@ -56,6 +57,7 @@ Game:
   playerJoined: "&6{0}&- has joined your game."
   playerNotOnline: "Player {0} is not online."
   playerPlayedMove: "{0}&- played [&f{1}&-].  Your move, {2}&-."
+  playerPlayedChainedMove: "{0}&- played [&f{1}&-] (move continues...)"
   playerBack: "{0} is back in the game!"
   playerQuit: "{0} quit.  If they don''t rejoin within {1,number,integer} seconds, you can type &f/checkers win&- to win by default."
   result:
@@ -130,7 +132,6 @@ ControlPanel:
   acceptDrawBtn: "Accept Draw?"
   acceptSwapBtn: "Accept Swap?"
   acceptUndoBtn: "Accept Undo?"
-  blackPawnPromotionBtn: "Black Pawn;Promotion"
   boardInfoBtn: ";Board;Info"
   chessInviteReminder: "Type &f/checkers invite <playername>&- to invite someone"
   chessInvitePrompt: "Type a player name to invite.  Left or right-click cancels."
@@ -150,7 +151,6 @@ ControlPanel:
   timeElapsed: "Elapsed"
   timeRemaining: "Remaining"
   undoBtn: ";Undo;Last Move"
-  whitePawnPromotionBtn: "White Pawn;Promotion"
   yesBtn: ";;Yes"
 
 Misc:
@@ -161,6 +161,7 @@ Misc:
   boardTeleportCleared: "The teleport-out destination has been cleared for board &6{0}&-."
   globalTeleportSet: "The global teleport-out destination has been set."
   globalTeleportCleared: "The global teleport-out destination has been cleared."
+  invalidNumeric: "Invalid number: {0}"
   persistedReloaded: "Persisted board and game data has been reloaded."
   timeControlsReloaded: "Time control definitions have been reloaded."
 
@@ -171,4 +172,19 @@ Flight:
     - You are close enough to a Checkers board to fly.
     - Double-tab Space to toggle flight.
   interactionStopped: You may not interact with the world while flying around a Checkers board!
+
+AI:
+  AIbusy: "AI is busy right now"
+  AIdisabled: "AI games are disabled"
+  AIloadError: "AI Loading Error"
+  AInotFound: "AI not found"
+  AIunexpectedException: "Unexpected Exception in AI: {0}"
+  computer: "Computer"
+  human: "Human"
+  noAvailableAIs:
+    - "There are no AIs available to play right now"
+    - "(all {0,number,integer} are currently in a game)."
+  AIList: "&6{0}&- ({1})&- {2}"
+  AIpayout: "payout={0,number,integer}%"
+  noFreeAI: "No free AI was found"
 

@@ -1,0 +1,36 @@
+#
+# User-editable alias file defining all AIs available to Checkers.
+# See "AI_settings.yml" for core AI definitions.
+#
+# Each entry below has an alias as the key, followed by one or more parameters for the AI that
+# the alias uses.  You are free to change any of the alias keys below to a preferred name,
+# or add/remove alias definitions.  You can have multiple aliases referring to the same
+# AI definition (e.g. see the "gnuchess1" and "gnuchess2" aliases below).
+#
+# These aliases are used for the "/chess invite <ai-name>" command, and appear as the AI's
+# displayed name (prefixed with "[AI]").
+#
+# The "ai" parameter is mandatory and must reference an AI definition in AI_settings.yml
+#
+# See AI_settings.yml for the default parameters for each AI.  The following parameters
+# are useful to override when defining aliases:
+#
+# "enabled" - if false, this AI will not be randomly picked to join games (but it can still be
+#   invited explicitly with "/chess invite <ai-name>"
+#
+# "comment" - a short text string displayed to players who use "/chess list ai"
+#
+# "payout_multiplier" - applies if Economy support is enabled; the player's winnings will be
+#    multiplied by this value.  Default is 1.0 - it could be raised for tougher engines and
+#    lowered for weaker engines.
+#
+# "command" - applies to "xboard" AIs; the command to start the external chess engine for the AI.
+#
+# See the website for full documentation: http://dev.bukkit.org/server-mods/chesscraft/pages/ai
+
+standard3: { ai: "ai01" }
+standard4: { ai: "ai02" }
+standard5: { ai: "ai03" }
+standard6: { ai: "ai04" }
+
+random: { ai: "ai99", enabled: false }

@@ -14,6 +14,7 @@ import me.desht.checkers.DirectoryStructure;
 import me.desht.checkers.Messages;
 import me.desht.checkers.TimeControl;
 import me.desht.checkers.game.CheckersGame;
+import me.desht.checkers.game.CheckersGame.GameState;
 import me.desht.checkers.game.GameListener;
 import me.desht.checkers.model.Move;
 import me.desht.checkers.model.PieceType;
@@ -24,7 +25,6 @@ import me.desht.checkers.player.CheckersPlayer;
 import me.desht.checkers.util.CheckersUtils;
 import me.desht.checkers.util.TerrainBackup;
 import me.desht.checkers.view.controlpanel.ControlPanel;
-import me.desht.checkers.view.controlpanel.StakeButton;
 import me.desht.checkers.view.controlpanel.TimeControlButton;
 import me.desht.dhutils.AttributeCollection;
 import me.desht.dhutils.ConfigurationListener;
@@ -323,8 +323,10 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 	}
 
 	private void updateChessClocks(boolean force) {
-		updateChessClock(PlayerColour.WHITE, force);
-		updateChessClock(PlayerColour.BLACK, force);
+		if (game.getState() == GameState.RUNNING) {
+			updateChessClock(PlayerColour.WHITE, force);
+			updateChessClock(PlayerColour.BLACK, force);
+		}
 	}
 
 	private void updateChessClock(PlayerColour colour, boolean force) {

@@ -27,7 +27,12 @@ public class JoinCommand extends AbstractCheckersCommand {
 		String gameName = null;
 		if (args.length >= 1) {
 			gameName = args[0];
-			gameManager.getGame(gameName).addPlayer(sender.getName());
+			CheckersGame game = gameManager.getGame(gameName);
+			if (game.getInvited().equalsIgnoreCase(sender.getName())) {
+				gameManager.getGame(gameName).addPlayer(sender.getName());
+			} else {
+				throw new CheckersException(Messages.getString("Game.notInvited"));
+			}
 		} else {
 			// find a game (or games) with an invitation for us
 			for (CheckersGame game : gameManager.listGames()) {
