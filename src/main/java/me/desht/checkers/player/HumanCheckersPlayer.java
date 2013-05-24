@@ -9,6 +9,7 @@ import me.desht.checkers.model.Move;
 import me.desht.checkers.model.PlayerColour;
 import me.desht.checkers.responses.DrawResponse;
 import me.desht.checkers.responses.SwapResponse;
+import me.desht.checkers.responses.UndoResponse;
 import me.desht.checkers.responses.YesNoResponse;
 import me.desht.checkers.util.CheckersUtils;
 import me.desht.dhutils.MiscUtil;
@@ -127,17 +128,8 @@ public class HumanCheckersPlayer extends CheckersPlayer {
 		economy.depositPlayer(getName(), amount);
 	}
 
-//	@Override
-//	public void summonToGame() {
-//		Player p = getBukkitPlayer();
-//		if (p != null) {
-//			getGame().getView().summonPlayer(p);
-//		}
-//	}
-
 	@Override
 	public void cancelOffers() {
-		// TODO Auto-generated method stub
 		Player p = getBukkitPlayer();
 		if (p != null) {
 			// making a move after a draw/swap/undo offer has been made is equivalent to declining the offer
@@ -154,16 +146,24 @@ public class HumanCheckersPlayer extends CheckersPlayer {
 	public void drawOffered() {
 		String offerer = getGame().getPlayer(getColour().getOtherColour()).getName();
 		CheckersPlugin.getInstance().getResponseHandler().expect(getName(), new DrawResponse(getGame(), offerer));
-		alert(Messages.getString("Game.drawOfferedOther", offerer));
-		alert(Messages.getString("Misc.typeYesOrNo"));
+		alert(Messages.getString("Offers.drawOfferedOther", offerer));
+		alert(Messages.getString("Offers.typeYesOrNo"));
 	}
 
 	@Override
 	public void swapOffered() {
 		String offerer = getGame().getPlayer(getColour().getOtherColour()).getName();
 		CheckersPlugin.getInstance().getResponseHandler().expect(getName(), new SwapResponse(getGame(), offerer));
-		alert(Messages.getString("Game.swapOfferedOther", offerer));
-		alert(Messages.getString("Misc.typeYesOrNo"));
+		alert(Messages.getString("Offers.swapOfferedOther", offerer));
+		alert(Messages.getString("Offers.typeYesOrNo"));
+	}
+
+	@Override
+	public void undoOffered() {
+		String offerer = getGame().getPlayer(getColour().getOtherColour()).getName();
+		CheckersPlugin.getInstance().getResponseHandler().expect(getName(), new UndoResponse(getGame(), offerer));
+		alert(Messages.getString("Offers.undoOfferedOther", offerer));
+		alert(Messages.getString("Offers.typeYesOrNo"));
 	}
 
 	@Override
@@ -179,8 +179,10 @@ public class HumanCheckersPlayer extends CheckersPlayer {
 
 	@Override
 	public void playEffect(String effect) {
-		// TODO Auto-generated method stub
-
+		Player player = getBukkitPlayer();
+		if (player != null) {
+			CheckersPlugin.getInstance().getFX().playEffect(player.getLocation(), effect);
+		}
 	}
 
 	@Override

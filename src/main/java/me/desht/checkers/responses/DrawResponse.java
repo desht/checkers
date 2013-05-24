@@ -21,13 +21,13 @@ public class DrawResponse extends YesNoResponse {
 			@Override
 			public void run() {
 				if (accepted) {
-					game.alert(offerer, Messages.getString("Game.drawOfferAccepted", getPlayerName()));
+					game.alert(offerer, Messages.getString("Offers.drawOfferAccepted", getPlayerName()));
 					game.drawn(GameResult.DRAW);
 				} else {
-					game.alert(offerer, Messages.getString("Game.drawOfferDeclined", getPlayerName()));
+					game.alert(offerer, Messages.getString("Offers.drawOfferDeclined", getPlayerName()));
 					Player player = Bukkit.getPlayer(offeree);
 					if (player != null) {
-						MiscUtil.statusMessage(player, Messages.getString("Game.youDeclinedDrawOffer"));
+						MiscUtil.statusMessage(player, Messages.getString("Offers.youDeclinedDrawOffer"));
 					}
 				}
 			}

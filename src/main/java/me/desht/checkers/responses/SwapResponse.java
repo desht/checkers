@@ -20,13 +20,13 @@ public class SwapResponse extends YesNoResponse {
 			@Override
 			public void run() {
 				if (accepted) {
-					game.alert(offerer, Messages.getString("Game.swapOfferAccepted", getPlayerName()));
+					game.alert(offerer, Messages.getString("Offers.swapOfferAccepted", getPlayerName()));
 					game.swapColours();
 				} else {
-					game.alert(offerer, Messages.getString("Game.swapOfferDeclined", getPlayerName()));
+					game.alert(offerer, Messages.getString("Offers.swapOfferDeclined", getPlayerName()));
 					Player player = Bukkit.getPlayer(offeree);
 					if (player != null) {
-						MiscUtil.statusMessage(player, Messages.getString("Game.youDeclinedSwapOffer"));
+						MiscUtil.statusMessage(player, Messages.getString("Offers.youDeclinedSwapOffer"));
 					}
 				}
 			}

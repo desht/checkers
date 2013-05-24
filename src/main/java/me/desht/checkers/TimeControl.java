@@ -116,6 +116,11 @@ public class TimeControl implements ConfigurationSerializable {
 		this.active = active;
 	}
 
+	/**
+	 * Get the remaining time for this time control.
+	 *
+	 * @return the remaining time, in milliseconds
+	 */
 	public long getRemainingTime() {
 		return controlType == ControlType.NONE ? Long.MAX_VALUE : remainingTime;
 	}

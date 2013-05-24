@@ -77,6 +77,7 @@ public abstract class CheckersPlayer {
 
 	public abstract void drawOffered();
 	public abstract void swapOffered();
+	public abstract void undoOffered();
 
 	public abstract void undoLastMove();
 

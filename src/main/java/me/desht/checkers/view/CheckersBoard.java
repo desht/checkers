@@ -424,8 +424,9 @@ public class CheckersBoard {
 	}
 
 	public void clearAll() {
-		// TODO Auto-generated method stub
-		
+		MassBlockUpdate mbu = CraftMassBlockUpdate.createMassBlockUpdater(CheckersPlugin.getInstance(), getFullBoard().getWorld());
+		getFullBoard().fill(0, (byte) 0, mbu);
+		mbu.notifyClients();
 	}
 
 	public int getSquareAt(Location loc) {

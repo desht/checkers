@@ -77,14 +77,30 @@ Game:
   timeControlLocked: "The time control for this game is locked may not be changed."
   timeControlWarning: "You have {0,number,integer} seconds left to move!"
   typeYesOrNo: "Type &f/chess yes&- to accept, or &f/chess no&- to decline."
-  undoOfferedOther: "&6{0}&- wishes to undo their last move."
-  undoOfferedYou: "You have asked &6{0}&- if you may undo your last move."
   undoAIWithStake: "You may not undo moves when playing for a stake against the computer."
   white: "White"
   youAreInvited: "You have been invited to this game by &6{0}&-."
   youPlayed: "You played &f{0}-{1}&-."
   yourMove: "It is your move &f({0})&-."
   youWon: "You have won {0}!"
+
+Offers:
+  drawOfferAccepted: "Your draw offer has been accepted by &6{0}&-."
+  drawOfferDeclined: "Your draw offer has been declined by &6{0}&-."
+  drawOfferedOther: "&6{0}&- has offered a draw."
+  swapOfferAccepted: "Your swap offer has been accepted by &6{0}&-."
+  swapOfferDeclined: "Your swap offer has been declined by &6{0}&-."
+  swapOfferedOther: "&6{0}&- has offered to swap sides."
+  undoOfferAccepted: "Your undo offer has been accepted by &6{0}&-."
+  undoOfferDeclined: "Your undo offer has been declined by &6{0}&-."
+  undoOfferedOther: "&6{0}&- wishes to undo their last move."
+  youDeclinedDrawOffer: "You have declined the draw offer."
+  youDeclinedSwapOffer: "You have declined the swap offer."
+  youDeclinedUndoOffer: "You have declined the undo offer."
+  youOfferDraw: "You have offered a draw to &6{0}&-."
+  youOfferSwap: "You have offered to swap sides with &6{0}&-."
+  youOfferUndo: "You have asked &6{0}&- if you may undo your last move."
+  typeYesOrNo: "Type &f/checkers yes&- to accept, or &f/checkers no&- to decline."
 
 Board:
   allBoardsRedrawn: All boards have been redrawn.

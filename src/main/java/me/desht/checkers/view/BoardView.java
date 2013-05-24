@@ -379,6 +379,9 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 			int cc = (move.getFromCol() + move.getToCol()) / 2;
 			Location loc = getBoard().getSquare(cr, cc).getCenter();
 			CheckersPlugin.getInstance().getFX().playEffect(loc, "piece_captured");
+		} else {
+			CheckersPlayer cp = getGame().getPlayer(position.getToMove().getOtherColour());
+			cp.playEffect("piece_moved");
 		}
 	}
 

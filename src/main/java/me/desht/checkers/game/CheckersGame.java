@@ -12,7 +12,6 @@ import me.desht.checkers.CheckersPersistable;
 import me.desht.checkers.CheckersPlugin;
 import me.desht.checkers.CheckersValidate;
 import me.desht.checkers.DirectoryStructure;
-import me.desht.checkers.IllegalMoveException;
 import me.desht.checkers.Messages;
 import me.desht.checkers.TimeControl;
 import me.desht.checkers.ai.CheckersAI;
@@ -295,8 +294,18 @@ public class CheckersGame implements CheckersPersistable {
 	}
 
 	public void swapColours() {
-		// TODO Auto-generated method stub
+		CheckersPlayer black = getPlayer(PlayerColour.BLACK);
+		CheckersPlayer white = getPlayer(PlayerColour.WHITE);
+		setPlayer(PlayerColour.BLACK, white);
+		setPlayer(PlayerColour.WHITE, black);
+		getPlayer(PlayerColour.BLACK).alert(Messages.getString("Game.nowPlayingBlack"));
+		getPlayer(PlayerColour.WHITE).alert(Messages.getString("Game.nowPlayingWhite"));
+		getPlayer(getPosition().getToMove()).promptForNextMove();
+	}
 
+	private void setPlayer(PlayerColour colour, CheckersPlayer cp) {
+		cp.setColour(colour);
+		players[colour.getIndex()] = cp;
 	}
 
 	/**
@@ -613,13 +622,26 @@ public class CheckersGame implements CheckersPersistable {
 
 	public void offerDraw(String playerName) {
 		ensurePlayerInGame(playerName);
-		ensurePlayerToMove(playerName);
 		ensureGameInState(GameState.RUNNING);
 
 		CheckersPlayer offeringPlayer = getPlayer(playerName);
 		CheckersPlayer offeredPlayer = getPlayer(offeringPlayer.getColour().getOtherColour());
-		offeringPlayer.statusMessage(Messages.getString("Game.youOfferDraw", offeredPlayer.getName()));
+		offeringPlayer.statusMessage(Messages.getString("Offers.youOfferDraw", offeredPlayer.getName()));
 		offeredPlayer.drawOffered();
+	}
+
+	public void offerSwap(String playerName) {
+		ensurePlayerInGame(playerName);
+		ensureGameInState(GameState.RUNNING);
+
+		CheckersPlayer offeringPlayer = getPlayer(playerName);
+		CheckersPlayer offeredPlayer = getPlayer(offeringPlayer.getColour().getOtherColour());
+		if (offeredPlayer.getName().equals(offeringPlayer.getName())) {
+			// swap makes no sense in this case
+			return;
+		}
+		offeringPlayer.statusMessage(Messages.getString("Offers.youOfferSwap", offeredPlayer.getName()));
+		offeredPlayer.swapOffered();
 	}
 
 	public void offerUndoMove(String playerName) {
@@ -632,25 +654,16 @@ public class CheckersGame implements CheckersPersistable {
 		if (offeredPlayer.getName().equals(offeringPlayer.getName())) {
 			// same player playing black & white - just undo
 			undoMove(playerName);
-		} else if (offeredPlayer.isHuman()) {
-			// playing another human - we need to ask them if it's OK to undo
-			CheckersPlugin.getInstance().getResponseHandler().expect(offeredPlayer.getName(), new UndoResponse(this, playerName));
-			offeredPlayer.alert(Messages.getString("Game.undoOfferedOther", offeringPlayer.getName()));
-			offeredPlayer.alert(Messages.getString("Game.typeYesOrNo"));
-			offeringPlayer.statusMessage(Messages.getString("Game.undoOfferedYou", offeredPlayer.getName()));
 		} else {
-			// playing an AI - only allow undo if there's no stake for this game
-			if (getStake() > 0.0) {
-				throw new CheckersException(Messages.getString("Game.undoAIWithStake"));
-			}
-			undoMove(playerName);
+			offeringPlayer.statusMessage(Messages.getString("Offers.youOfferUndo", offeredPlayer.getName()));
+			offeredPlayer.undoOffered();
 		}
 	}
 
 	private void checkForAIActivity() {
 		synchronized (this) {
 			getPlayer(PlayerColour.WHITE).checkPendingAction();
-			getPlayer(PlayerColour.BLACK).checkPendingAction();	
+			getPlayer(PlayerColour.BLACK).checkPendingAction();
 		}
 	}
 

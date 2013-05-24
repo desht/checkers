@@ -1,4 +1,7 @@
 ai:
+  accept_undo_offers:
+    no_stake: true
+    stake: false
   max_ai_games: 3
   min_move_wait: 1
   name_format: '[AI]<NAME>'

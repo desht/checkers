@@ -6,7 +6,6 @@ import me.desht.checkers.TimeControl;
 import me.desht.checkers.game.CheckersGame;
 import me.desht.checkers.model.Move;
 import me.desht.checkers.model.PlayerColour;
-import me.desht.checkers.player.CheckersPlayer;
 import me.desht.dhutils.LogUtils;
 
 import org.bukkit.Bukkit;
@@ -23,7 +22,7 @@ public abstract class CheckersAI implements Runnable {
 	 */
 	public static final String AI_PREFIX = ChatColor.WHITE.toString();
 
-	public enum PendingAction { NONE, MOVED, DRAW_OFFERED, DRAW_ACCEPTED, DRAW_DECLINED }
+	public enum PendingAction { NONE, MOVED, DRAW_OFFERED, DRAW_ACCEPTED, DRAW_DECLINED, UNDO_ACCEPTED, UNDO_DECLINED }
 
 	private boolean active = false;
 	private BukkitTask aiTask;
@@ -45,6 +44,10 @@ public abstract class CheckersAI implements Runnable {
 		this.aiColour = aiColour;
 		this.params = params;
 		this.gameDetails = "game [" + checkersGame.getName() + "] AI [" + getName() + "]: ";
+	}
+
+	public static boolean isAIPlayer(String playerName) {
+		return playerName.startsWith(AI_PREFIX);
 	}
 
 	/**
@@ -80,12 +83,23 @@ public abstract class CheckersAI implements Runnable {
 	 * override this if the implementing AI supports being offered a draw.
 	 */
 	public void offerDraw() {
-		rejectDrawOffer();
+		drawOfferResponse(false);
+	}
+
+	/**
+	 * Ask the AI if undoing the last move is acceptable.
+	 */
+	public void offerUndo() {
+		if (getCheckersGame().getStake() == 0.0) {
+			undoOfferResponse(CheckersPlugin.getInstance().getConfig().getBoolean("ai.accept_undo_offers.no_stake"));
+		} else {
+			undoOfferResponse(CheckersPlugin.getInstance().getConfig().getBoolean("ai.accept_undo_offers.stake"));
+		}
 	}
 
 	/**
 	 * Get the AI's canonical name.  This is dependent only on the internal prefix.
-	 * 
+	 *
 	 * @return
 	 */
 	public String getName() {
@@ -269,7 +283,7 @@ public abstract class CheckersAI implements Runnable {
 
 		if (isDrawOfferedToAI()) {
 			// making a move effectively rejects any pending draw offer
-			rejectDrawOffer();
+			drawOfferResponse(false);
 		}
 
 		setActive(false);
@@ -290,20 +304,12 @@ public abstract class CheckersAI implements Runnable {
 		pendingAction = PendingAction.DRAW_OFFERED;
 	}
 
-	protected void acceptDrawOffer() {
-		pendingAction = PendingAction.DRAW_ACCEPTED;
+	protected void drawOfferResponse(boolean accept) {
+		pendingAction = accept ? PendingAction.DRAW_ACCEPTED : PendingAction.DRAW_DECLINED;
 	}
 
-	protected void rejectDrawOffer() {
-		pendingAction = PendingAction.DRAW_DECLINED;
-	}
-
-	public CheckersPlayer getChessPlayer() {
-		return getCheckersGame().getPlayer(getColour());
-	}
-
-	public CheckersPlayer getOtherChessPlayer() {
-		return getCheckersGame().getPlayer(getColour().getOtherColour());
+	protected void undoOfferResponse(boolean accept) {
+		pendingAction = accept ? PendingAction.UNDO_ACCEPTED : PendingAction.UNDO_DECLINED;
 	}
 
 	/**
@@ -314,11 +320,7 @@ public abstract class CheckersAI implements Runnable {
 	protected void aiHasFailed(Exception e) {
 		LogUtils.severe(gameDetails + "Unexpected Exception in AI");
 		e.printStackTrace();
-		checkersGame.alert(Messages.getString("AI.AIunexpectedException", e.getMessage())); //$NON-NLS-1$
+		checkersGame.alert(Messages.getString("AI.AIunexpectedException", e.getMessage()));
 		hasFailed = true;
-	}
-
-	public static boolean isAIPlayer(String playerName) {
-		return playerName.startsWith(AI_PREFIX);
 	}
 }

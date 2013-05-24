@@ -122,6 +122,11 @@ public class AICheckersPlayer extends CheckersPlayer {
 	}
 
 	@Override
+	public void undoOffered() {
+		ai.offerUndo();
+	}
+
+	@Override
 	public void undoLastMove() {
 		ai.setActive(false);
 		ai.undoLastMove();
@@ -163,10 +168,10 @@ public class AICheckersPlayer extends CheckersPlayer {
 						}
 					}
 				} catch (IllegalMoveException e) {
-					getGame().alert(Messages.getString("AI.AIunexpectedException", e.getMessage())); //$NON-NLS-1$
+					getGame().alert(Messages.getString("AI.AIunexpectedException", e.getMessage()));
 					ai.setFailed(true);
 				} catch (CheckersException e) {
-					getGame().alert(Messages.getString("AI.AIunexpectedException", e.getMessage())); //$NON-NLS-1$
+					getGame().alert(Messages.getString("AI.AIunexpectedException", e.getMessage()));
 					ai.setFailed(true);
 				}
 				break;
@@ -175,13 +180,24 @@ public class AICheckersPlayer extends CheckersPlayer {
 				break;
 			case DRAW_ACCEPTED:
 				if (otherPlayer != null) {
-					otherPlayer.alert(Messages.getString("Misc.drawOfferAccepted", getName()));
+					otherPlayer.alert(Messages.getString("Offers.drawOfferAccepted", getName()));
 				}
 				game.drawn(GameResult.DRAW);
 				break;
 			case DRAW_DECLINED:
 				if (otherPlayer != null) {
-					otherPlayer.alert(Messages.getString("Misc.drawOfferDeclined", getName()));
+					otherPlayer.alert(Messages.getString("Offers.drawOfferDeclined", getName()));
+				}
+				break;
+			case UNDO_ACCEPTED:
+				if (otherPlayer != null) {
+					otherPlayer.alert(Messages.getString("Offers.undoOfferAccepted", getName()));
+				}
+				game.undoMove(otherPlayer.getName());
+				break;
+			case UNDO_DECLINED:
+				if (otherPlayer != null) {
+					otherPlayer.alert(Messages.getString("Offers.undoOfferDeclined", getName()));
 				}
 				break;
 			default:
