@@ -1,5 +1,7 @@
 package me.desht.checkers.ai.engines;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 
 import me.desht.checkers.CheckersException;
@@ -9,6 +11,7 @@ import me.desht.checkers.ai.evaluation.Evaluator;
 import me.desht.checkers.ai.evaluation.PositionWeightedEvaluator;
 import me.desht.checkers.game.CheckersGame;
 import me.desht.checkers.model.Move;
+import me.desht.checkers.model.PieceType;
 import me.desht.checkers.model.PlayerColour;
 import me.desht.checkers.model.Position;
 
@@ -120,5 +123,43 @@ public class Standard extends CheckersAI {
 			}
 		}
 		return bestValue;
+	}
+
+	@Override
+	public void offerDraw() {
+		drawOfferResponse(checkForDrawPosition());
+	}
+
+	private boolean checkForDrawPosition() {
+		Position pos = getCheckersGame().getPosition();
+
+		int vWhite = evaluator.evaluate(pos, PlayerColour.WHITE);
+		int vBlack = evaluator.evaluate(pos, PlayerColour.BLACK);
+		if (getColour() == PlayerColour.WHITE && vWhite - vBlack > 10 || getColour() == PlayerColour.BLACK && vWhite - vBlack < -10) {
+			// AI's position is too strong to accept a draw
+			return false;
+		}
+
+		Map<PlayerColour, Integer> count = new HashMap<PlayerColour, Integer>();
+		count.put(PlayerColour.WHITE, 0);
+		count.put(PlayerColour.BLACK, 0);
+		for (int row = 0; row < 8; row++) {
+			for (int col = 0; col < 8; col++) {
+				PieceType p = pos.getPieceAt(row, col);
+				if (p == PieceType.NONE) {
+					continue;
+				}
+				if (!p.isKing()) {
+					// not going to accept a draw if there any regular pieces still on the board
+					return false;
+				}
+				count.put(p.getColour(), count.get(p.getColour()) + 1);
+			}
+		}
+		if (count.get(PlayerColour.WHITE) != count.get(PlayerColour.BLACK) || count.get(PlayerColour.BLACK) > 2) {
+			// both sides must have the same number of kings; only 1 or 2 each
+			return false;
+		}
+		return true;
 	}
 }
