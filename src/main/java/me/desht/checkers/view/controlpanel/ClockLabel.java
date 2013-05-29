@@ -14,26 +14,25 @@ public class ClockLabel extends AbstractSignLabel {
 	};
 
 	private final PlayerColour colour;
-	private TimeControl timeControl;
+	private String timeStr = CheckersUtils.milliSecondsToHMS(0);
 
 	public ClockLabel(ControlPanel panel, PlayerColour colour) {
 		super(panel, colour.getColour(), xPos[colour.getIndex()], 1);
 
 		this.colour = colour;
-		timeControl = null;
 	}
 
-	public TimeControl getTimeControl() {
-		return timeControl;
-	}
-
-	public void setTimeControl(TimeControl timeControl) {
-		this.timeControl = timeControl;
-	}
 
 	@Override
 	public boolean isEnabled() {
 		return getGame() != null;
+	}
+
+	public void setLabel(String timeStr) {
+		if (timeStr == null) {
+			timeStr = CheckersUtils.milliSecondsToHMS(0);
+		}
+		this.timeStr = timeStr;
 	}
 
 	@Override
@@ -41,11 +40,12 @@ public class ClockLabel extends AbstractSignLabel {
 		String[] res = new String[] { "", "", "", "" };
 
 		res[0] = colour.getColour();
+		res[2] = getIndicatorColour() + timeStr;
 
-		if (timeControl == null) {
-			res[2] = getIndicatorColour() + CheckersUtils.milliSecondsToHMS(0);
+		if (getGame() == null) {
+			res[3] = "";
 		} else {
-			res[2] = getIndicatorColour() + timeControl.getClockString();
+			TimeControl timeControl = getView().getGame().getClock().getTimeControl();
 			switch (timeControl.getControlType()) {
 			case NONE:
 				res[3] = Messages.getString("ControlPanel.timeElapsed");

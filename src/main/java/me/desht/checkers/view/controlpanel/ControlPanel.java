@@ -3,7 +3,6 @@ package me.desht.checkers.view.controlpanel;
 import java.util.HashMap;
 import java.util.Map;
 
-import me.desht.checkers.TimeControl;
 import me.desht.checkers.TimeControlDefs;
 import me.desht.checkers.game.CheckersGame;
 import me.desht.checkers.model.PlayerColour;
@@ -93,9 +92,9 @@ public class ControlPanel {
 
 	public void repaintControls() {
 		repaintSignButtons();
-		repaintClocks();
-		halfMoveClockLabel.repaint();
-		plyCountLabel.repaint();
+		updateClocks();
+		updateHalfMoveClock();
+		updatePlyCount();
 		updateToMoveIndicator();
 	}
 
@@ -105,7 +104,7 @@ public class ControlPanel {
 			toPlay = view.getGame().getPosition().getToMove();
 		}
 		updateToMoveIndicator(toPlay);
-}
+	}
 
 	public void updateToMoveIndicator(PlayerColour toPlay) {
 		MaterialWithData mat = getView().getBoard().getBoardStyle().getControlPanelMaterial();
@@ -117,20 +116,29 @@ public class ControlPanel {
 		toMoveIndicator.fill(mat);
 	}
 
-	public void updatePlyCount(int plyCount) {
+	public void updatePlyCount() {
+		CheckersGame game = getView().getGame();
+		int plyCount = game == null ? 0 : game.getPosition().getPlyCount();
 		plyCountLabel.setCount(plyCount);
 		plyCountLabel.repaint();
 	}
 
-	public void updateClock(PlayerColour colour, TimeControl timeControl) {
-		clockLabels[colour.getIndex()].setTimeControl(timeControl);
+	public void updateHalfMoveClock() {
+		CheckersGame game = getView().getGame();
+		int halfMoveClock = game == null ? 0 : game.getPosition().getHalfMoveClock();
+		halfMoveClockLabel.setCount(halfMoveClock);
+		halfMoveClockLabel.repaint();
+	}
+
+	public void updateClock(PlayerColour colour, String timeStr) {
+		clockLabels[colour.getIndex()].setLabel(timeStr);
 		clockLabels[colour.getIndex()].repaint();
 	}
 
-	public void repaintClocks() {
+	public void updateClocks() {
 		CheckersGame game = view.getGame();
-		updateClock(PlayerColour.WHITE, game == null ? null : game.getTimeControl(PlayerColour.WHITE));
-		updateClock(PlayerColour.BLACK, game == null ? null : game.getTimeControl(PlayerColour.BLACK));
+		updateClock(PlayerColour.WHITE, game == null ? null : game.getClock().getClockString(PlayerColour.WHITE));
+		updateClock(PlayerColour.BLACK, game == null ? null : game.getClock().getClockString(PlayerColour.BLACK));
 	}
 
 	public void removeSigns() {

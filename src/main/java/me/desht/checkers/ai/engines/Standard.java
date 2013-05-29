@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.Random;
 
 import me.desht.checkers.CheckersException;
-import me.desht.checkers.TimeControl;
+import me.desht.checkers.TwoPlayerClock;
 import me.desht.checkers.ai.CheckersAI;
 import me.desht.checkers.ai.evaluation.Evaluator;
 import me.desht.checkers.ai.evaluation.PositionWeightedEvaluator;
@@ -70,8 +70,8 @@ public class Standard extends CheckersAI {
 	}
 
 	@Override
-	public void notifyTimeControl(TimeControl timeControl) {
-		if (timeControl.getRemainingTime() < 10000) {
+	public void notifyTimeControl(TwoPlayerClock clock) {
+		if (clock.getRemainingTime(getColour()) < 10000) {
 			if (selectedMove != null) {
 				aiHasMoved(selectedMove.getFromSqi(), selectedMove.getToSqi());
 			} else {

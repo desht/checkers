@@ -15,20 +15,18 @@ public class StakeButton extends AbstractSignButton {
 	}
 
 	@Override
-	public void execute(PlayerInteractEvent event) {		
+	public void execute(PlayerInteractEvent event) {
 		double stakeIncr;
 		if (event.getPlayer().isSneaking()) {
-			stakeIncr = CheckersPlugin.getInstance().getConfig().getDouble("stake.smallIncrement"); //$NON-NLS-1$
+			stakeIncr = CheckersPlugin.getInstance().getConfig().getDouble("stake.smallIncrement");
 		} else {
-			stakeIncr = CheckersPlugin.getInstance().getConfig().getDouble("stake.largeIncrement"); //$NON-NLS-1$
+			stakeIncr = CheckersPlugin.getInstance().getConfig().getDouble("stake.largeIncrement");
 		}
 		if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
 			stakeIncr = -stakeIncr;
 		}
 
 		getGame().adjustStake(event.getPlayer().getName(), stakeIncr);
-
-		repaint();
 	}
 
 	@Override
@@ -47,7 +45,7 @@ public class StakeButton extends AbstractSignButton {
 	}
 
 	@Override
-	protected String[] getCustomSignText() {	
+	protected String[] getCustomSignText() {
 		String[] res = getSignText();
 
 		CheckersGame game = getGame();

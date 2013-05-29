@@ -18,7 +18,7 @@ import org.bukkit.plugin.Plugin;
 public class ReloadCommand extends AbstractCheckersCommand {
 	public ReloadCommand() {
 		super("checkers reload", 1);
-		setPermissionNode("chesscraft.commands.reload");
+		setPermissionNode("checkers.commands.reload");
 		setUsage("/checkers reload <ai|config|gamedata|timecontrols>");
 	}
 

@@ -73,7 +73,7 @@ public class CheckersPlugin extends JavaPlugin implements ConfigurationListener 
 	public void onLoad() {
 		ConfigurationSerialization.registerClass(BoardView.class);
 		ConfigurationSerialization.registerClass(PersistableLocation.class);
-		ConfigurationSerialization.registerClass(TimeControl.class);
+		ConfigurationSerialization.registerClass(TwoPlayerClock.class);
 	}
 
 	@Override
@@ -206,9 +206,9 @@ public class CheckersPlugin extends JavaPlugin implements ConfigurationListener 
 		Plugin p = pm.getPlugin("WorldEdit");
 		if (p != null && p instanceof WorldEditPlugin) {
 			worldEditPlugin = (WorldEditPlugin) p;
-			LogUtils.fine("WorldEdit plugin detected: chess board terrain saving enabled.");
+			LogUtils.fine("WorldEdit plugin detected: board terrain saving enabled.");
 		} else {
-			LogUtils.warning("WorldEdit plugin not detected: chess board terrain saving disabled.");
+			LogUtils.warning("WorldEdit plugin not detected: board terrain saving disabled.");
 		}
 	}
 
@@ -231,7 +231,7 @@ public class CheckersPlugin extends JavaPlugin implements ConfigurationListener 
 	private void updateAllControlPanels() {
 		for (BoardView bv : BoardViewManager.getManager().listBoardViews()) {
 			bv.getControlPanel().repaintControls();
-			bv.getControlPanel().repaintClocks();
+			bv.getControlPanel().updateClocks();
 		}
 	}
 

@@ -1,12 +1,12 @@
 package me.desht.checkers.ai.engines;
 
-import org.bukkit.configuration.ConfigurationSection;
-
-import me.desht.checkers.TimeControl;
+import me.desht.checkers.TwoPlayerClock;
 import me.desht.checkers.ai.CheckersAI;
 import me.desht.checkers.game.CheckersGame;
 import me.desht.checkers.model.Move;
 import me.desht.checkers.model.PlayerColour;
+
+import org.bukkit.configuration.ConfigurationSection;
 
 public class Random extends CheckersAI {
 
@@ -37,7 +37,7 @@ public class Random extends CheckersAI {
 	}
 
 	@Override
-	public void notifyTimeControl(TimeControl timeControl) {
+	public void notifyTimeControl(TwoPlayerClock clock) {
 		// don't care about time controls
 	}
 

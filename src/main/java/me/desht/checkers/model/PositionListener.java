@@ -6,4 +6,5 @@ public interface PositionListener {
 	public void plyCountChanged(int plyCount);
 	public void toMoveChanged(PlayerColour toMove);
 	public void lastMoveUndone(Position position);
+	public void halfMoveClockChanged(int halfMoveClock);
 }

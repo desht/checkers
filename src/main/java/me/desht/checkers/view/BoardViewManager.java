@@ -31,7 +31,7 @@ public class BoardViewManager {
 
 	private static BoardViewManager instance = null;
 
-	private final Map<String, BoardView> chessBoards = new HashMap<String, BoardView>();
+	private final Map<String, BoardView> gameBoards = new HashMap<String, BoardView>();
 	private final Map<String, Set<File>> deferred = new HashMap<String, Set<File>>();
 	private PersistableLocation globalTeleportOutDest = null;
 
@@ -65,7 +65,7 @@ public class BoardViewManager {
 	}
 
 	public void registerView(BoardView view) {
-		chessBoards.put(view.getName(), view);
+		gameBoards.put(view.getName(), view);
 
 		Bukkit.getPluginManager().callEvent(new CheckersBoardCreatedEvent(view));
 	}
@@ -74,7 +74,7 @@ public class BoardViewManager {
 		BoardView bv;
 		try {
 			bv = getBoardView(name);
-			chessBoards.remove(name);
+			gameBoards.remove(name);
 			Bukkit.getPluginManager().callEvent(new CheckersBoardDeletedEvent(bv));
 		} catch (CheckersException  e) {
 			LogUtils.warning("removeBoardView: unknown board name " + name);
@@ -85,29 +85,29 @@ public class BoardViewManager {
 		for (BoardView bv : listBoardViews()) {
 			Bukkit.getPluginManager().callEvent(new CheckersBoardDeletedEvent(bv));
 		}
-		chessBoards.clear();
+		gameBoards.clear();
 	}
 
 	public boolean boardViewExists(String name) {
-		return chessBoards.containsKey(name);
+		return gameBoards.containsKey(name);
 	}
 
 	public BoardView getBoardView(String name) throws CheckersException {
-		if (!chessBoards.containsKey(name)) {
+		if (!gameBoards.containsKey(name)) {
 			throw new CheckersException(Messages.getString("Board.noSuchBoard", name));
 		}
-		return chessBoards.get(name);
+		return gameBoards.get(name);
 	}
 
 	public Collection<BoardView> listBoardViews() {
-		return chessBoards.values();
+		return gameBoards.values();
 	}
 
 	public Collection<BoardView> listBoardViewsSorted() {
-		SortedSet<String> sorted = new TreeSet<String>(chessBoards.keySet());
+		SortedSet<String> sorted = new TreeSet<String>(gameBoards.keySet());
 		List<BoardView> res = new ArrayList<BoardView>();
 		for (String name : sorted) {
-			res.add(chessBoards.get(name));
+			res.add(gameBoards.get(name));
 		}
 		return res;
 	}
@@ -217,7 +217,7 @@ public class BoardViewManager {
 			// go back to previous location
 			CheckersPlugin.getInstance().getPlayerTracker().teleportPlayer(player, prev);
 		} else {
-			throw new CheckersException(Messages.getString("Board.notOnChessboard"));
+			throw new CheckersException(Messages.getString("Board.notOnBoard"));
 		}
 	}
 

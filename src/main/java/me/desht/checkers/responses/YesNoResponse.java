@@ -1,5 +1,6 @@
 package me.desht.checkers.responses;
 
+import me.desht.checkers.CheckersException;
 import me.desht.checkers.CheckersPlugin;
 import me.desht.checkers.game.CheckersGame;
 import me.desht.dhutils.responsehandler.ExpectBase;
@@ -32,7 +33,7 @@ public abstract class YesNoResponse extends ExpectBase {
 	 * 
 	 * @param player
 	 * @param isAccepted
-	 * @throws ChessException
+	 * @throws CheckersException
 	 */
 	public static void handleYesNoResponse(Player player, boolean isAccepted) {
 		ResponseHandler respHandler = CheckersPlugin.getInstance().getResponseHandler();

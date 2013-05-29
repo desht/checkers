@@ -1,6 +1,5 @@
 package me.desht.checkers.player;
 
-import me.desht.checkers.TimeControl;
 import me.desht.checkers.game.CheckersGame;
 import me.desht.checkers.model.PlayerColour;
 
@@ -85,6 +84,6 @@ public abstract class CheckersPlayer {
 
 	public abstract void teleport(Location loc);
 
-	public abstract void timeControlCheck(TimeControl timeControl);
+	public abstract void timeControlCheck();
 
 }

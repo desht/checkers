@@ -40,6 +40,8 @@ public class CheckersBoard {
 
 	// the square currently selected, if any
 	private int selectedSqi = Checkers.NO_SQUARE;
+	// the last moved square, if any
+	private int lastMovedSqi = Checkers.NO_SQUARE;
 
 	// settings related to how the board is drawn
 	private BoardStyle boardStyle = null;
@@ -281,17 +283,30 @@ public class CheckersBoard {
 		highlightSquare(selectedSqi, boardStyle.getSelectedHighlightMaterial());
 	}
 
-	public void setSelected(int row, int col) {
-		if (row >= 0 && row <= 7 && col >= 0 && col <= 7) {
-			setSelected(Checkers.rowColToSqi(row, col));
+	public void clearSelected() {
+		if (selectedSqi == lastMovedSqi) {
+			highlightSquare(lastMovedSqi, boardStyle.getLastMoveHighlightMaterial());
 		} else {
-			clearSelected();
+			paintBoardSquare(Checkers.sqiToRow(selectedSqi), Checkers.sqiToCol(selectedSqi), null);
 		}
+		selectedSqi = -1;
 	}
 
-	public void clearSelected() {
-		paintBoardSquare(Checkers.sqiToRow(selectedSqi), Checkers.sqiToCol(selectedSqi), null);
-		selectedSqi = -1;
+	public void setLastMovedSquare(int sqi) {
+		if (this.lastMovedSqi != Checkers.NO_SQUARE) {
+			clearLastMovedSquare();
+		}
+		this.lastMovedSqi = sqi;
+		highlightSquare(lastMovedSqi, boardStyle.getLastMoveHighlightMaterial());
+	}
+
+	public void clearLastMovedSquare() {
+		if (selectedSqi == lastMovedSqi) {
+			highlightSquare(selectedSqi, boardStyle.getSelectedHighlightMaterial());
+		} else {
+			paintBoardSquare(Checkers.sqiToRow(lastMovedSqi), Checkers.sqiToCol(lastMovedSqi), null);	
+		}
+		lastMovedSqi = -1;
 	}
 
 	void repaint(MassBlockUpdate mbu) {
@@ -300,11 +315,14 @@ public class CheckersBoard {
 		paintFrame(mbu);
 		paintBoard(mbu);
 		highlightSquare(selectedSqi, boardStyle.getSelectedHighlightMaterial());
+		highlightSquare(lastMovedSqi, boardStyle.getLastMoveHighlightMaterial());
 		fullBoard.forceLightLevel(boardStyle.getLightLevel());
 		redrawNeeded = false;
 	}
 
 	void reset() {
+		clearLastMovedSquare();
+		clearSelected();
 		MassBlockUpdate mbu = CraftMassBlockUpdate.createMassBlockUpdater(CheckersPlugin.getInstance(), getWorld());
 		paintBoard(mbu);
 		getBoardSquares().shift(CuboidDirection.Up, 1).expand(CuboidDirection.Up, getBoardStyle().getHeight() - 1).fill(0, (byte)0, mbu);

@@ -13,5 +13,6 @@ public interface Position {
 	public void addPositionListener(PositionListener listener);
 	public void undoLastMove();
 	public int getPlyCount();
+	public int getHalfMoveClock();
 	public Position tryMove(Move move);
 }

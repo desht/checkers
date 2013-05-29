@@ -22,7 +22,7 @@ public class DrawResponse extends YesNoResponse {
 			public void run() {
 				if (accepted) {
 					game.alert(offerer, Messages.getString("Offers.drawOfferAccepted", getPlayerName()));
-					game.drawn(GameResult.DRAW);
+					game.drawn(GameResult.DRAW_AGREED);
 				} else {
 					game.alert(offerer, Messages.getString("Offers.drawOfferDeclined", getPlayerName()));
 					Player player = Bukkit.getPlayer(offeree);

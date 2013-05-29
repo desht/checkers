@@ -14,6 +14,7 @@ import me.desht.checkers.CheckersValidate;
 import me.desht.checkers.DirectoryStructure;
 import me.desht.checkers.Messages;
 import me.desht.checkers.TimeControl;
+import me.desht.checkers.TwoPlayerClock;
 import me.desht.checkers.ai.CheckersAI;
 import me.desht.checkers.model.Checkers;
 import me.desht.checkers.model.Move;
@@ -23,7 +24,6 @@ import me.desht.checkers.model.SimplePosition;
 import me.desht.checkers.player.AICheckersPlayer;
 import me.desht.checkers.player.CheckersPlayer;
 import me.desht.checkers.player.HumanCheckersPlayer;
-import me.desht.checkers.responses.UndoResponse;
 import me.desht.checkers.util.CheckersUtils;
 import me.desht.dhutils.Duration;
 import me.desht.dhutils.LogUtils;
@@ -40,7 +40,7 @@ import org.bukkit.entity.Player;
 
 public class CheckersGame implements CheckersPersistable {
 	public enum GameResult {
-		WIN, DRAW, ABANDONED, NOT_FINISHED, RESIGNED, FORFEIT,
+		WIN, DRAW_AGREED, DRAW_FORCED, ABANDONED, NOT_FINISHED, RESIGNED, FORFEIT,
 	}
 
 	public enum GameState {
@@ -62,8 +62,8 @@ public class CheckersGame implements CheckersPersistable {
 	private long started, finished, lastMoved;
 	private GameResult result;
 	private long lastOpenInvite;
-	private TimeControl tcWhite, tcBlack;
 	private PlayerColour winner = PlayerColour.NONE;
+	private TwoPlayerClock clock;
 
 	public CheckersGame(String gameName, String creatorName, PlayerColour colour, String tcSpec) {
 		this.gameName = gameName;
@@ -76,7 +76,7 @@ public class CheckersGame implements CheckersPersistable {
 		if (creatorName != null) {
 			players[colour.getIndex()] = createPlayer(colour, creatorName);
 		}
-		setTimeControl(tcSpec);
+		this.clock = new TwoPlayerClock(tcSpec);
 	}
 
 	public CheckersGame(Configuration conf) {
@@ -90,8 +90,7 @@ public class CheckersGame implements CheckersPersistable {
 		this.lastMoved = conf.getLong("lastMoved");
 		this.result = GameResult.valueOf(conf.getString("result"));
 		this.stake = conf.getDouble("stake");
-		this.tcWhite = (TimeControl) conf.get("tcWhite");
-		this.tcBlack = (TimeControl) conf.get("tcBlack");
+		this.clock = (TwoPlayerClock) conf.get("clock");
 
 		players[PlayerColour.WHITE.getIndex()] = createPlayer(PlayerColour.WHITE, conf.getString("playerWhite"));
 		players[PlayerColour.BLACK.getIndex()] = createPlayer(PlayerColour.BLACK, conf.getString("playerBlack"));
@@ -103,9 +102,10 @@ public class CheckersGame implements CheckersPersistable {
 			position.makeMove(move);
 		}
 
-		// set chess clock activity appropriately
-		tcWhite.setActive(getPosition().getToMove() == PlayerColour.WHITE);
-		tcBlack.setActive(!tcWhite.isActive());
+		// set clock activity appropriately
+		if (getState() == GameState.RUNNING) {
+			clock.start(getPosition().getToMove());
+		}
 	}
 
 	private CheckersPlayer createPlayer(PlayerColour colour, String playerName) {
@@ -147,8 +147,7 @@ public class CheckersGame implements CheckersPersistable {
 		map.put("lastMoved", lastMoved);
 		map.put("result", result.toString());
 		map.put("stake", stake);
-		map.put("tcWhite", tcWhite);
-		map.put("tcBlack", tcBlack);
+		map.put("clock", clock);
 
 		return map;
 	}
@@ -223,6 +222,10 @@ public class CheckersGame implements CheckersPersistable {
 		return state;
 	}
 
+	public TwoPlayerClock getClock() {
+		return clock;
+	}
+
 	/**
 	 * @param newState the state to set
 	 */
@@ -230,9 +233,11 @@ public class CheckersGame implements CheckersPersistable {
 		if (newState == GameState.RUNNING) {
 			CheckersValidate.isTrue(this.state == GameState.SETTING_UP, "invalid state transition " + state + "->" + newState);
 			started = lastMoved = System.currentTimeMillis();
+			clock.start(PlayerColour.BLACK);
 		} else if (newState == GameState.FINISHED) {
 			CheckersValidate.isTrue(this.state == GameState.RUNNING, "invalid state transition " + state + "->" + newState);
 			finished = System.currentTimeMillis();
+			clock.stop();
 		}
 		this.state = newState;
 	}
@@ -328,9 +333,9 @@ public class CheckersGame implements CheckersPersistable {
 		}
 		res.add(bullet + (getPosition().getToMove() == PlayerColour.WHITE ? 
 				Messages.getString("Game.gameDetail.whiteToPlay") : Messages.getString("Game.gameDetail.blackToPlay")));
-		res.add(bullet + Messages.getString("Game.gameDetail.timeControlType", tcWhite.toString()));
+		res.add(bullet + Messages.getString("Game.gameDetail.timeControlType", clock.getTimeControl()));
 		if (getState() == GameState.RUNNING) {
-			res.add(bullet + Messages.getString("Game.gameDetail.clock", tcBlack.getClockString(), tcWhite.getClockString()));	//$NON-NLS-1$
+			res.add(bullet + Messages.getString("Game.gameDetail.clock", clock.getClockString(PlayerColour.BLACK), clock.getClockString(PlayerColour.WHITE)));
 		}
 		if (getInvited().equals(OPEN_INVITATION)) {
 			res.add(bullet + Messages.getString("Game.gameDetail.openInvitation"));
@@ -414,7 +419,7 @@ public class CheckersGame implements CheckersPersistable {
 		long now = System.currentTimeMillis();
 		Duration cooldown = new Duration(CheckersPlugin.getInstance().getConfig().getString("open_invite_cooldown", "3 mins"));
 		long remaining = (cooldown.getTotalDuration() - (now - lastOpenInvite)) / 1000;
-		CheckersValidate.isTrue(remaining > 0, Messages.getString("Game.inviteCooldown", remaining));
+		CheckersValidate.isTrue(remaining <= 0, Messages.getString("Game.inviteCooldown", remaining));
 
 		MiscUtil.broadcastMessage((Messages.getString("Game.openInviteCreated", inviterName)));
 		if (getStake() > 0.0) {
@@ -496,10 +501,14 @@ public class CheckersGame implements CheckersPersistable {
 
 		getPlayer(prevToMove).cancelOffers();
 
+		int hmcLimit = CheckersPlugin.getInstance().getConfig().getInt("max_moves_without_capture", 0);
 		if (getPosition().getLegalMoves().length == 0) {
 			// no legal moves, therefore the player currently to-play has just lost
 			setState(GameState.FINISHED);
 			gameOver(getPosition().getToMove().getOtherColour(), GameResult.WIN);
+		} else if (hmcLimit > 0 && getPosition().getHalfMoveClock() >= hmcLimit) {
+			setState(GameState.FINISHED);
+			gameOver(PlayerColour.NONE, GameResult.DRAW_FORCED);
 		}
 
 		save();
@@ -555,17 +564,20 @@ public class CheckersGame implements CheckersPersistable {
 	}
 
 	public TimeControl getTimeControl(PlayerColour colour) {
-		switch (colour) {
-		case WHITE: return tcWhite;
-		case BLACK: return tcBlack;
-		default: return null;
-		}
+		return new TimeControl(clock.getTimeControl().getSpec());
 	}
 
-	public void setTimeControl(String spec) {
+	public void setTimeControl(String tcSpec) {
 		ensureGameInState(GameState.SETTING_UP);
-		tcWhite = new TimeControl(spec);
-		tcBlack = new TimeControl(spec);
+		for (GameListener l : listeners) {
+			if (!l.tryTimeControlChange(tcSpec)) {
+				throw new CheckersException(Messages.getString("Game.timeControlLocked"));
+			}
+		}
+		clock.setTimeControl(tcSpec);
+		for (GameListener l : listeners) {
+			l.timeControlChanged(tcSpec);
+		}
 	}
 
 	public void setStake(String playerName, double newStake) {
@@ -594,7 +606,15 @@ public class CheckersGame implements CheckersPersistable {
 			throw new CheckersException(Messages.getString("Game.stakeCantBeChanged"));
 		}
 
+		for (GameListener l : listeners) {
+			if (!l.tryStakeChange(newStake)) {
+				throw new CheckersException(Messages.getString("Game.stakeLocked"));
+			}
+		}
 		this.stake = newStake;
+		for (GameListener l : listeners) {
+			l.stakeChanged(newStake);
+		}
 	}
 
 	public void adjustStake(String playerName, double adjustment) {

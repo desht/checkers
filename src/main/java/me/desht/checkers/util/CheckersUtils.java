@@ -19,7 +19,7 @@ public class CheckersUtils {
 		} catch (Exception e) {
 			LogUtils.warning("Caught exception from " + economy.getName() + " while trying to format quantity " + stake + ":");
 			e.printStackTrace();
-			LogUtils.warning("ChessCraft will continue but you should verify your economy plugin configuration.");
+			LogUtils.warning("Checkers will continue but you should verify your economy plugin configuration.");
 		}
 		return new DecimalFormat("#0.00").format(stake);
 	}

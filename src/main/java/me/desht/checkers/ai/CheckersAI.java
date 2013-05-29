@@ -2,7 +2,7 @@ package me.desht.checkers.ai;
 
 import me.desht.checkers.CheckersPlugin;
 import me.desht.checkers.Messages;
-import me.desht.checkers.TimeControl;
+import me.desht.checkers.TwoPlayerClock;
 import me.desht.checkers.game.CheckersGame;
 import me.desht.checkers.model.Move;
 import me.desht.checkers.model.PlayerColour;
@@ -66,11 +66,11 @@ public abstract class CheckersAI implements Runnable {
 	 */
 	public abstract void undoLastMove();
 
-	public abstract void notifyTimeControl(TimeControl timeControl);
+	public abstract void notifyTimeControl(TwoPlayerClock clock);
 
 	/**
 	 * Perform the implementation-specfic steps needed to update the AI's internal game model with
-	 * the given move.  Square indices are always in Chesspresso sqi format.
+	 * the given move.  Square indices are always in 0-63 sqi format.
 	 * 
 	 * @param fromSqi	Square being moved from
 	 * @param toSqi		Square being move to
@@ -205,9 +205,8 @@ public abstract class CheckersAI implements Runnable {
 	}
 
 	/**
-	 * Inform the AI that the other player has made the given move.  We are assuming the move is legal,
-	 * since it's already been validated by Chesspresso in the ChessGame object.  This also sets this AI to active,
-	 * so it starts calculating the next move.
+	 * Inform the AI that the other player has made the given move.  We are assuming the move is legal.
+	 * This also sets this AI to active, so it starts calculating the next move.
 	 * 
 	 * @param fromSqi	the square the other player has moved from
 	 * @param toSqi		the square the other player has moved to
@@ -230,7 +229,7 @@ public abstract class CheckersAI implements Runnable {
 	}
 
 	/**
-	 * Replay a list of Chesspresso moves into the AI object.  Called when a game is restored
+	 * Replay a list of moves into the AI object.  Called when a game is restored
 	 * from persisted data.
 	 * 
 	 * @param moves
@@ -241,7 +240,7 @@ public abstract class CheckersAI implements Runnable {
 			movePiece(move.getFromSqi(), move.getToSqi(), !active);
 			active = !active;
 		}
-		LogUtils.fine(gameDetails + "ChessAI: replayed " + moves.length + " moves: AI to move = " + active);
+		LogUtils.fine(gameDetails + "CheckersAI: replayed " + moves.length + " moves: AI to move = " + active);
 		if (active) {
 			startThinking();
 		}
@@ -270,7 +269,7 @@ public abstract class CheckersAI implements Runnable {
 
 	/**
 	 * Called when the AI has come up with its next move.  Square indices always use the
-	 * Chesspresso sqi representation.
+	 * 0-63 sqi representation.
 	 * 
 	 * @param fromSqi	the square the AI is moving from
 	 * @param toSqi		the square the AI is moving to.
@@ -291,7 +290,7 @@ public abstract class CheckersAI implements Runnable {
 		LogUtils.fine(gameDetails + "aiHasMoved: " + fromSqi + "->" + toSqi);
 
 		// Moving directly isn't thread-safe: we'd end up altering the Minecraft world from a separate thread,
-		// which is Very Bad.  So we just note the move made now, and let the ChessGame object check for it on
+		// which is Very Bad.  So we just note the move made now, and let the CheckersGame object check for it on
 		// the next clock tick.
 		synchronized (checkersGame) {
 			pendingFrom = fromSqi;

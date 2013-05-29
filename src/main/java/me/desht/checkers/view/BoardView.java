@@ -13,9 +13,11 @@ import me.desht.checkers.CheckersPlugin;
 import me.desht.checkers.DirectoryStructure;
 import me.desht.checkers.Messages;
 import me.desht.checkers.TimeControl;
+import me.desht.checkers.TwoPlayerClock;
 import me.desht.checkers.game.CheckersGame;
 import me.desht.checkers.game.CheckersGame.GameState;
 import me.desht.checkers.game.GameListener;
+import me.desht.checkers.model.Checkers;
 import me.desht.checkers.model.Move;
 import me.desht.checkers.model.PieceType;
 import me.desht.checkers.model.PlayerColour;
@@ -25,6 +27,7 @@ import me.desht.checkers.player.CheckersPlayer;
 import me.desht.checkers.util.CheckersUtils;
 import me.desht.checkers.util.TerrainBackup;
 import me.desht.checkers.view.controlpanel.ControlPanel;
+import me.desht.checkers.view.controlpanel.StakeButton;
 import me.desht.checkers.view.controlpanel.TimeControlButton;
 import me.desht.dhutils.AttributeCollection;
 import me.desht.dhutils.ConfigurationListener;
@@ -157,6 +160,9 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 		if (game != null) {
 			game.getPosition().addPositionListener(this);
 			game.addGameListener(this);
+			if (game.getPosition().getMoveHistory().length > 0) {
+				getBoard().setLastMovedSquare(game.getPosition().getLastMove().getToSqi());
+			}
 		} else {
 			getBoard().reset();
 		}
@@ -317,35 +323,35 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 
 	public void tick() {
 		if (game != null) {
-			updateChessClocks(false);
+			updateClocks(false);
 			game.tick();
 		}
 	}
 
-	private void updateChessClocks(boolean force) {
-		if (game.getState() == GameState.RUNNING) {
-			updateChessClock(PlayerColour.WHITE, force);
-			updateChessClock(PlayerColour.BLACK, force);
-		}
+	private void updateClocks(boolean force) {
+		updateClock(PlayerColour.WHITE, force);
+		updateClock(PlayerColour.BLACK, force);
 	}
 
-	private void updateChessClock(PlayerColour colour, boolean force) {
-		TimeControl timeControl = game.getTimeControl(colour);
-		timeControl.tick();
+	private void updateClock(PlayerColour colour, boolean force) {
+		TwoPlayerClock clock = game.getClock();
+		clock.tick();
 		if (!force && colour != game.getPosition().getToMove()) {
 			return;
 		}
-		getControlPanel().updateClock(colour, timeControl);
+		getControlPanel().updateClock(colour, clock.getClockString(colour));
 
-		CheckersPlayer cp = game.getPlayer(colour);
-		if (timeControl.getRemainingTime() <= 0) {
-			try {
-				game.forfeit(cp.getName());
-			} catch (CheckersException e) {
-				LogUtils.severe("unexpected exception: " + e.getMessage(), e);
+		if (game.getState() == GameState.RUNNING) {
+			CheckersPlayer cp = game.getPlayer(colour);
+			if (clock.getRemainingTime(colour) <= 0) {
+				try {
+					game.forfeit(cp.getName());
+				} catch (CheckersException e) {
+					LogUtils.severe("unexpected exception: " + e.getMessage(), e);
+				}
+			} else {
+				cp.timeControlCheck();
 			}
-		} else {
-			cp.timeControlCheck(timeControl);
 		}
 	}
 
@@ -383,6 +389,8 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 			CheckersPlayer cp = getGame().getPlayer(position.getToMove().getOtherColour());
 			cp.playEffect("piece_moved");
 		}
+
+		getBoard().setLastMovedSquare(move.getToSqi());
 	}
 
 	@Override
@@ -397,15 +405,19 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 
 	@Override
 	public void plyCountChanged(int plyCount) {
-		getControlPanel().updatePlyCount(plyCount);
+		getControlPanel().updatePlyCount();
 	}
 
 	@Override
 	public void toMoveChanged(PlayerColour toMove) {
 		getControlPanel().updateToMoveIndicator(toMove);
-		game.getTimeControl(PlayerColour.WHITE).setActive(toMove == PlayerColour.WHITE);
-		game.getTimeControl(PlayerColour.BLACK).setActive(toMove == PlayerColour.BLACK);
-		updateChessClocks(true);
+		game.getClock().toggle();
+		updateClocks(true);
+	}
+
+	@Override
+	public void halfMoveClockChanged(int halfMoveClock) {
+		getControlPanel().updateHalfMoveClock();
 	}
 
 	@Override
@@ -424,5 +436,28 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 	@Override
 	public void gameStarted(CheckersGame checkersGame) {
 		getControlPanel().repaintControls();
+	}
+
+	@Override
+	public boolean tryStakeChange(double newStake) {
+		return !getLockStake();
+	}
+
+	@Override
+	public void stakeChanged(double newStake) {
+		getControlPanel().getButton(StakeButton.class).repaint();
+	}
+
+	@Override
+	public boolean tryTimeControlChange(String tcSpec) {
+		return !getLockTcSpec();
+	}
+
+	@Override
+	public void timeControlChanged(String tcSpec) {
+		ControlPanel cp = getControlPanel();
+		cp.getTcDefs().addCustomSpec(tcSpec);
+		cp.getButton(TimeControlButton.class).repaint();
+		updateClocks(true);
 	}
 }

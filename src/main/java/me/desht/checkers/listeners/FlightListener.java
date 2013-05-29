@@ -62,7 +62,7 @@ public class FlightListener extends CheckersBaseListener {
 	}
 
 	/**
-	 * Globally enable or disable chessboard flight for all players.
+	 * Globally enable or disable board flight for all players.
 	 */
 	public void setEnabled(boolean enabled) {
 		if (enabled == this.enabled)
@@ -263,7 +263,7 @@ public class FlightListener extends CheckersBaseListener {
 	}
 
 	/**
-	 * Check if the player may fly (in a ChessCraft context) given their current position.
+	 * Check if the player may fly (in a Checkers context) given their current position.
 	 * 
 	 * @param player
 	 * @return
@@ -278,7 +278,7 @@ public class FlightListener extends CheckersBaseListener {
 
 	/**
 	 * Mark the player as being allowed to fly or not.  If the player was previously allowed to fly by
-	 * virtue of creative mode, he can continue to fly even if chess board flying is being disabled.
+	 * virtue of creative mode, he can continue to fly even if board flying is being disabled.
 	 * 
 	 * @param player
 	 * @param flying
@@ -291,7 +291,7 @@ public class FlightListener extends CheckersBaseListener {
 		if (flying && currentlyAllowed || !flying && !currentlyAllowed)
 			return;
 
-		LogUtils.fine("set chess board flight allowed " + player.getName() + " = " + flying);
+		LogUtils.fine("set board flight allowed " + player.getName() + " = " + flying);
 
 		player.setAllowFlight(flying || gameModeAllowsFlight(player));
 
@@ -330,7 +330,7 @@ public class FlightListener extends CheckersBaseListener {
 		}
 
 		if (!player.getAllowFlight()) {
-			// prevent fall damage so players don't fall to their death by flying too far from a chessboard
+			// prevent fall damage so players don't fall to their death by flying too far from a board
 			Location loc = player.getLocation();
 			int dist = player.getWorld().getHighestBlockYAt(loc) - loc.getBlockY();
 			if (dist < -1) {

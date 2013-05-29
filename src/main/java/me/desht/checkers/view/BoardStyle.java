@@ -27,7 +27,7 @@ public class BoardStyle implements Comparable<BoardStyle>, ConfigurationListener
 	private static final String STRUTS = "struts";
 	private static final String PANEL = "panel";
 	private static final String HIGHLIGHT_SELECTED = "highlight_selected";
-	private static final String HIGHLIGHT_LEGAL = "highlight_legal";
+	private static final String HIGHLIGHT_LASTMOVE = "highlight_lastmove";
 	private static final String LIGHT_LEVEL = "light_level";
 	private static final String WHITE_PIECE = "white_piece";
 	private static final String BLACK_PIECE = "black_piece";
@@ -71,7 +71,7 @@ public class BoardStyle implements Comparable<BoardStyle>, ConfigurationListener
 		attributes.registerAttribute(STRUTS, MaterialWithData.get("wood"), "Block for board edge struts");
 		attributes.registerAttribute(PANEL, MaterialWithData.get("wood"), "Block for control panel");
 		attributes.registerAttribute(HIGHLIGHT_SELECTED, MaterialWithData.get("wool:yellow"), "Block for selected square highlight");
-		attributes.registerAttribute(HIGHLIGHT_LEGAL, MaterialWithData.get("wool:cyan"), "Block for legal move highlight");
+		attributes.registerAttribute(HIGHLIGHT_LASTMOVE, MaterialWithData.get("wool:cyan"), "Block for legal move highlight");
 	}
 
 	public static BoardStyle loadStyle(String styleName) {
@@ -119,10 +119,10 @@ public class BoardStyle implements Comparable<BoardStyle>, ConfigurationListener
 			out.write("black_piece: " + getBlackPieceMaterial() + "\n");
 			out.write("# material/data for the control panel (default: 'frame' setting)\n");
 			out.write("panel: '" + getControlPanelMaterial() + "'\n");
-			out.write("# highlighting material for selected piece (default: glowstone)\n");
+			out.write("# highlighting material for selected piece\n");
 			out.write("highlight_selected: '" + getSelectedHighlightMaterial() + "'\n");
-			out.write("# highlighting material for legal moves (default: glowstone)\n");
-			out.write("highlight_legal: '" + getLegalHighlightMaterial() + "'\n");
+			out.write("# highlighting material for the last move made\n");
+			out.write("highlight_lastmove: '" + getLastMoveHighlightMaterial() + "'\n");
 			out.close();
 
 			return loadStyle(newStyleName);
@@ -179,8 +179,8 @@ public class BoardStyle implements Comparable<BoardStyle>, ConfigurationListener
 		return (MaterialWithData) attributes.get(STRUTS);
 	}
 
-	public MaterialWithData getLegalHighlightMaterial() {
-		return (MaterialWithData) attributes.get(HIGHLIGHT_LEGAL);
+	public MaterialWithData getLastMoveHighlightMaterial() {
+		return (MaterialWithData) attributes.get(HIGHLIGHT_LASTMOVE);
 	}
 
 	public MaterialWithData getSelectedHighlightMaterial() {

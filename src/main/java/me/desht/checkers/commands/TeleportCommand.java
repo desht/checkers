@@ -22,7 +22,7 @@ public class TeleportCommand extends AbstractCheckersCommand {
 	public TeleportCommand() {
 		super("checkers tp", 0, 2);
 		addAlias("checkers teleport");
-		setPermissionNode("chesscraft.commands.teleport");
+		setPermissionNode("checkers.commands.teleport");
 		setUsage(new String[] {
 				"/checkers tp [<game-name>]",
 				"/checkers tp -b <board-name>",
@@ -48,7 +48,7 @@ public class TeleportCommand extends AbstractCheckersCommand {
 		Player player = (Player)sender;
 
 		if (getBooleanOption("set")) {
-			PermissionUtils.requirePerms(sender, "chesscraft.commands.teleport.set");
+			PermissionUtils.requirePerms(sender, "checkers.commands.teleport.set");
 			if (args.length == 0) {
 				// set global teleport-out location
 				BoardViewManager.getManager().setGlobalTeleportOutDest(player.getLocation());
@@ -60,7 +60,7 @@ public class TeleportCommand extends AbstractCheckersCommand {
 				MiscUtil.statusMessage(player, Messages.getString("Misc.boardTeleportSet", bv.getName()));
 			}
 		} else if (getBooleanOption("clear")) {
-			PermissionUtils.requirePerms(sender, "chesscraft.commands.teleport.set");
+			PermissionUtils.requirePerms(sender, "checkers.commands.teleport.set");
 			if (args.length == 0) {
 				// clear global teleport-out location
 				BoardViewManager.getManager().setGlobalTeleportOutDest(null);
@@ -73,7 +73,7 @@ public class TeleportCommand extends AbstractCheckersCommand {
 			}
 		} else if (getBooleanOption("b") && args.length > 0) {
 			// teleport to board
-			PermissionUtils.requirePerms(sender, "chesscraft.commands.teleport.board");
+			PermissionUtils.requirePerms(sender, "checkers.commands.teleport.board");
 			BoardView bv = BoardViewManager.getManager().getBoardView(args[0]);
 			((CheckersPlugin) plugin).getPlayerTracker().teleportPlayer(player, bv.getTeleportInDestination());
 		} else if (args.length == 0) {

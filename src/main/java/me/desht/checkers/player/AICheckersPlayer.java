@@ -4,7 +4,6 @@ import me.desht.checkers.CheckersException;
 import me.desht.checkers.CheckersPlugin;
 import me.desht.checkers.IllegalMoveException;
 import me.desht.checkers.Messages;
-import me.desht.checkers.TimeControl;
 import me.desht.checkers.ai.AIFactory.AIDefinition;
 import me.desht.checkers.ai.CheckersAI;
 import me.desht.checkers.game.CheckersGame;
@@ -182,7 +181,7 @@ public class AICheckersPlayer extends CheckersPlayer {
 				if (otherPlayer != null) {
 					otherPlayer.alert(Messages.getString("Offers.drawOfferAccepted", getName()));
 				}
-				game.drawn(GameResult.DRAW);
+				game.drawn(GameResult.DRAW_AGREED);
 				break;
 			case DRAW_DECLINED:
 				if (otherPlayer != null) {
@@ -223,7 +222,7 @@ public class AICheckersPlayer extends CheckersPlayer {
 	}
 
 	@Override
-	public void timeControlCheck(TimeControl timeControl) {
-		ai.notifyTimeControl(timeControl);
+	public void timeControlCheck() {
+		ai.notifyTimeControl(getGame().getClock());
 	}
 }

@@ -13,6 +13,10 @@ import com.google.common.base.Joiner;
  * Represents a checkers board position.
  *
  * This is a fairly simple-minded implementation, using an 8x8 array of piece types.
+ *
+ * TODO: Position and game (move history etc.) are currently all stored in this object.
+ * It mnight be better design to move game details into a separate object which contains
+ * a Position object.
  */
 public class SimplePosition implements Position {
 	private final List<PositionListener> listeners = new ArrayList<PositionListener>();
@@ -22,6 +26,7 @@ public class SimplePosition implements Position {
 	private Move[] legalMoves;
 	private boolean jumpInProgress;
 	private List<Move> moveHistory;
+	private int halfMoveClock; // moves since a capture was made
 
 	public SimplePosition() {
 		board = new PieceType[8][8];
@@ -39,6 +44,7 @@ public class SimplePosition implements Position {
 		toMove = other.getToMove();
 		jumpInProgress = other.isJumpInProgress();
 		moveHistory = new ArrayList<Move>();
+		halfMoveClock = other.getHalfMoveClock();
 		if (copyHistory) {
 			for (Move m : other.getMoveHistory()) {
 				moveHistory.add(m);
@@ -77,6 +83,7 @@ public class SimplePosition implements Position {
 		legalMoves = calculateLegalMoves(toMove);
 		jumpInProgress = false;
 		moveHistory = new ArrayList<Move>();
+		halfMoveClock = 0;
 	}
 
 	@Override
@@ -140,18 +147,22 @@ public class SimplePosition implements Position {
 			setPieceAt(overRow, overCol, PieceType.NONE);
 		}
 		// check for piece promotion
+		boolean justPromoted = false;
 		if (toRow == 7 && movingPiece == PieceType.BLACK) {
+			justPromoted = true;
 			setPieceAt(toRow, toCol, PieceType.BLACK_KING);
 		} else if (toRow == 0 && movingPiece == PieceType.WHITE) {
+			justPromoted = true;
 			setPieceAt(toRow, toCol, PieceType.WHITE_KING);
 		} else {
 			setPieceAt(toRow, toCol, movingPiece);
 		}
 
+		int h = halfMoveClock;
 		if (move.isJump()) {
 			// check for a possible chain of jumps
 			Move[] jumps = getLegalJumps(toRow, toCol);
-			if (jumps.length > 0) {
+			if (jumps.length > 0 && !justPromoted) {
 				// the same player must continue jumping
 				jumpInProgress = true;
 				move.setChainedJump(true);
@@ -161,10 +172,12 @@ public class SimplePosition implements Position {
 				legalMoves = calculateLegalMoves(toMove);
 				jumpInProgress = false;
 			}
+			halfMoveClock = 0;
 		} else {
 			toMove = toMove.getOtherColour();
 			legalMoves = calculateLegalMoves(toMove);
 			jumpInProgress = false;
+			halfMoveClock++;
 		}
 
 		LogUtils.fine("move made by " + toMove.getOtherColour() + ", legal moves now: " + Joiner.on(",").join(legalMoves));
@@ -172,6 +185,9 @@ public class SimplePosition implements Position {
 
 		for (PositionListener l : listeners) {
 			l.moveMade(this, move);
+			if (h != halfMoveClock) {
+				l.halfMoveClockChanged(halfMoveClock);
+			}
 			if (!move.isChainedJump()) {
 				l.plyCountChanged(getPlyCount());
 				l.toMoveChanged(toMove);
@@ -189,6 +205,13 @@ public class SimplePosition implements Position {
 	@Override
 	public PlayerColour getToMove() {
 		return toMove;
+	}
+
+	/**
+	 * @return the halfMoveClock
+	 */
+	public int getHalfMoveClock() {
+		return halfMoveClock;
 	}
 
 	@Override

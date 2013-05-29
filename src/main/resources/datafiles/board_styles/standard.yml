@@ -31,7 +31,7 @@ enclosure: air
 struts: wood
 # the board's light level
 light_level: 15
-# highlight material for the selected square
-highlight_selected: wool:cyan
+# highlight material for the last moved piece
+highlight_lastmove: wool:cyan
 # highlight material for legal move squares
 highlight_selected: wool:yellow

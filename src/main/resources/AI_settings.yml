@@ -10,23 +10,11 @@
 # "payout_multiplier" applies if Economy support is enabled.  Default is 1.0 - it could be
 #   raised for tougher engines and lowered for weaker engines.
 
-ai01:
+standard:
   class: Standard
+  comment: AlphaBeta search
   depth: 3
-  comment: AlphaBeta search, depth 3
-ai02:
-  class: Standard
-  depth: 4
-  comment: AlphaBeta search, depth 4
-ai03:
-  class: Standard
-  depth: 5
-  comment: AlphaBeta search, depth 5
-ai04:
-  class: Standard
-  depth: 6
-  comment: AlphaBeta search, depth 6
-ai99:
+random:
   class: Random
-  comment: Dumb random move selector - testing only
-  payout_multiplier:  0
+  comment: Dumb random search
+

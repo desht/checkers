@@ -21,7 +21,7 @@ public class InvitePlayerButton extends AbstractSignButton {
 
 		if (game != null && !game.isFull()) {
 			CheckersPlugin.getInstance().getResponseHandler().expect(event.getPlayer().getName(), new InvitePlayer());
-			MiscUtil.statusMessage(event.getPlayer(), Messages.getString("ControlPanel.chessInvitePrompt")); //$NON-NLS-1$
+			MiscUtil.statusMessage(event.getPlayer(), Messages.getString("ControlPanel.invitePrompt"));
 		}
 	}
 

@@ -217,9 +217,9 @@ public class DirectoryStructure {
 	 * @param filename
 	 * @param saving
 	 * @return
-	 * @throws ChessException
+	 * @throws CheckersException
 	 */
-	public static File getResourceFileForLoad(File dir, String filename) throws CheckersException {
+	public static File getResourceFileForLoad(File dir, String filename) {
 		// try the lower-cased form first, if that fails try the exact filename
 		File f = new File(dir, "custom" + File.separator + filename.toLowerCase() + ".yml");
 		if (!f.exists()) {
@@ -250,9 +250,9 @@ public class DirectoryStructure {
 	 * @param dir
 	 * @param filename
 	 * @return
-	 * @throws ChessException
+	 * @throws CheckersException
 	 */
-	public static File getResourceFileForSave(File dir, String filename) throws CheckersException {
+	public static File getResourceFileForSave(File dir, String filename) {
 		File f = new File(dir, "custom" + File.separator + filename.toLowerCase() + ".yml");
 		return f;
 	}

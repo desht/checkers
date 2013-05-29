@@ -3,7 +3,8 @@ package me.desht.checkers.player;
 import me.desht.checkers.CheckersException;
 import me.desht.checkers.CheckersPlugin;
 import me.desht.checkers.Messages;
-import me.desht.checkers.TimeControl;
+import me.desht.checkers.TimeControl.ControlType;
+import me.desht.checkers.TwoPlayerClock;
 import me.desht.checkers.game.CheckersGame;
 import me.desht.checkers.model.Move;
 import me.desht.checkers.model.PlayerColour;
@@ -119,7 +120,7 @@ public class HumanCheckersPlayer extends CheckersPlayer {
 	public void withdrawFunds(double amount) {
 		Economy economy = CheckersPlugin.getInstance().getEconomy();
 		economy.withdrawPlayer(getName(), amount);
-		alert(Messages.getString("Game.paidStake", CheckersUtils.formatStakeStr(amount)));
+		alert(Messages.getString("Game.stakePaid", CheckersUtils.formatStakeStr(amount)));
 	}
 
 	@Override
@@ -194,17 +195,21 @@ public class HumanCheckersPlayer extends CheckersPlayer {
 	}
 
 	@Override
-	public void timeControlCheck(TimeControl timeControl) {
-		if (needToWarn(timeControl)) {
-			alert(Messages.getString("Game.timeControlWarning", timeControl.getRemainingTime() / 1000 + 1));
+	public void timeControlCheck() {
+		TwoPlayerClock clock = getGame().getClock();
+		if (needToWarn(clock)) {
+			alert(Messages.getString("Game.timeControlWarning", clock.getRemainingTime(getColour()) / 1000));
 			tcWarned++;
 		}
 	}
 
-	private boolean needToWarn(TimeControl tc) {
-		long remaining = tc.getRemainingTime();
+	private boolean needToWarn(TwoPlayerClock clock) {
+		if (clock.getTimeControl().getControlType() == ControlType.NONE) {
+			return false;
+		}
+		long remaining = clock.getRemainingTime(getColour());
 		long t = CheckersPlugin.getInstance().getConfig().getInt("time_control.warn_seconds") * 1000;
-		long tot = tc.getTotalTime();
+		long tot = clock.getTimeControl().getTotalTime();
 		long warning = Math.min(t, tot) >>> tcWarned;
 
 		int tickInt = (CheckersPlugin.getInstance().getConfig().getInt("tick_interval") * 1000) + 50;	// fudge for inaccuracy of tick timer

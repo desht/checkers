@@ -148,7 +148,7 @@ public class CheckersGameManager {
 	}
 
 	/**
-	 * Convenience method to create a new chess game.
+	 * Convenience method to create a new checkers game.
 	 *
 	 * @param player		The player who is creating the game
 	 * @param gameName		Name of the game - may be null, in which case a name will be generated
@@ -174,9 +174,10 @@ public class CheckersGameManager {
 			gameName = makeGameName(playerName);
 		}
 
-		CheckersGame game = new CheckersGame(gameName, playerName, colour, bv.getDefaultTcSpec());
+		CheckersGame game = new CheckersGame(gameName, playerName, colour, bv.getControlPanel().getTcDefs().currentDef().getSpec());
 		registerGame(game);
 		setCurrentGame(playerName, game);
+		game.setStake(playerName, bv.getDefaultStake());
 
 		bv.setGame(game);
 		MiscUtil.statusMessage(player, Messages.getString("Game.gameCreated", game.getName(), bv.getName()));

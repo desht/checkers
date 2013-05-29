@@ -159,7 +159,7 @@ public class ProtectionListener extends CheckersBaseListener {
 	}
 
 	/**
-	 * Cancelling liquid flow events makes it possible to use water & lava for walls & chess pieces.
+	 * Cancelling liquid flow events makes it possible to use water & lava for walls & pieces.
 	 * 
 	 * @param event
 	 */
@@ -283,7 +283,7 @@ public class ProtectionListener extends CheckersBaseListener {
 	}
 
 	/**
-	 * Safely displace a player out of the way so they are not entombed by a chess piece
+	 * Safely displace a player out of the way so they are not entombed by a piece
 	 * 
 	 * @param event	The suffocation event that triggered this
 	 */

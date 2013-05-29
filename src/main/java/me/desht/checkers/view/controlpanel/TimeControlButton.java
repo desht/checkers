@@ -3,7 +3,6 @@ package me.desht.checkers.view.controlpanel;
 import me.desht.checkers.TimeControlDefs;
 import me.desht.checkers.game.CheckersGame;
 import me.desht.checkers.game.CheckersGame.GameState;
-import me.desht.checkers.model.PlayerColour;
 
 import org.bukkit.event.player.PlayerInteractEvent;
 
@@ -40,10 +39,6 @@ public class TimeControlButton extends AbstractSignButton {
 			break;
 		}
 		game.setTimeControl(tcDefs.currentDef().getSpec());
-		getPanel().updateClock(PlayerColour.WHITE, game.getTimeControl(PlayerColour.WHITE));
-		getPanel().updateClock(PlayerColour.BLACK, game.getTimeControl(PlayerColour.BLACK));
-
-		repaint();
 	}
 
 	@Override
