@@ -16,7 +16,7 @@ public class BoardSaveCommand extends AbstractCheckersCommand {
 	public BoardSaveCommand() {
 		super("checkers board save", 0, 1);
 		setPermissionNode("checkers.commands.board.save");
-		setUsage("/checkers board save [<new-style-name>]");
+		setUsage("/<command> board save [<new-style-name>]");
 	}
 
 	@Override

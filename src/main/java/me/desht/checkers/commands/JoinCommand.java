@@ -15,7 +15,7 @@ public class JoinCommand extends AbstractCheckersCommand {
 	public JoinCommand() {
 		super("checkers join", 0, 1);
 		setPermissionNode("checkers.commands.join");
-		setUsage("/checkers join [<game-name>]");
+		setUsage("/<command> join [<game-name>]");
 	}
 
 	@Override

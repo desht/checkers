@@ -17,7 +17,6 @@ import me.desht.checkers.TwoPlayerClock;
 import me.desht.checkers.game.CheckersGame;
 import me.desht.checkers.game.CheckersGame.GameState;
 import me.desht.checkers.game.GameListener;
-import me.desht.checkers.model.Checkers;
 import me.desht.checkers.model.Move;
 import me.desht.checkers.model.PieceType;
 import me.desht.checkers.model.PlayerColour;

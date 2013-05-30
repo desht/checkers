@@ -13,7 +13,7 @@ public class ResignCommand extends AbstractCheckersCommand {
 	public ResignCommand() {
 		super("checkers resign", 0, 1);
 		setPermissionNode("checkers.commands.resign");
-		setUsage("/checkers resign [<game>]");
+		setUsage("/<command> resign [<game>]");
 	}
 
 	@Override

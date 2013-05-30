@@ -11,7 +11,7 @@ public class OfferDrawCommand extends AbstractCheckersCommand {
 	public OfferDrawCommand() {
 		super("checkers offer draw", 0, 0);
 		setPermissionNode("checkers.commands.offer.draw");
-		setUsage("/checkers offer draw");
+		setUsage("/<command> offer draw");
 	}
 
 	@Override

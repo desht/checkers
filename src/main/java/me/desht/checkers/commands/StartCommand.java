@@ -12,7 +12,7 @@ public class StartCommand extends AbstractCheckersCommand {
 	public StartCommand() {
 		super("checkers start", 0, 1);
 		setPermissionNode("checkers.commands.start");
-		setUsage("/checkers start [<game>]");
+		setUsage("/<command> start [<game>]");
 	}
 
 	@Override

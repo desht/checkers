@@ -563,7 +563,7 @@ public class CheckersGame implements CheckersPersistable {
 		checkForAutoDelete();
 	}
 
-	public TimeControl getTimeControl(PlayerColour colour) {
+	public TimeControl getTimeControl() {
 		return new TimeControl(clock.getTimeControl().getSpec());
 	}
 

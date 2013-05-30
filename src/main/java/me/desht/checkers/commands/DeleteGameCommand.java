@@ -15,7 +15,7 @@ public class DeleteGameCommand extends AbstractCheckersCommand {
 
 	public DeleteGameCommand() {
 		super("checkers delete game", 1, 1);
-		setUsage("/checkers delete game <game-name>");
+		setUsage("/<command> delete game <game-name>");
 	}
 
 	@Override

@@ -15,7 +15,7 @@ public class RedrawCommand extends AbstractCheckersCommand {
 	public RedrawCommand() {
 		super("checkers redraw", 0, 1);
 		setPermissionNode("checkers.commands.redraw");
-		setUsage("/checkers redraw [<board-name>]");
+		setUsage("/<command> redraw [<board-name>]");
 		setOptions("all");
 	}
 

@@ -11,7 +11,7 @@ public class OfferSwapCommand extends AbstractCheckersCommand {
 	public OfferSwapCommand() {
 		super("checkers offer swap", 0, 0);
 		setPermissionNode("checkers.commands.offer.swap");
-		setUsage("/checkers offer swap");
+		setUsage("/<command> offer swap");
 	}
 
 	@Override

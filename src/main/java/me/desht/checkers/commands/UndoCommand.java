@@ -11,7 +11,7 @@ public class UndoCommand extends AbstractCheckersCommand {
 	public UndoCommand() {
 		super("checkers undo");
 		setPermissionNode("checkers.commands.undo");
-		setUsage("/checkers undo");
+		setUsage("/<command> undo");
 	}
 
 	@Override

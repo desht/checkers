@@ -12,7 +12,7 @@ public class SaveCommand extends AbstractCheckersCommand {
 	public SaveCommand() {
 		super("checkers save", 0, 0);
 		setPermissionNode("checkers.commands.save");
-		setUsage("/checkers save");
+		setUsage("/<command> save");
 	}
 
 	@Override

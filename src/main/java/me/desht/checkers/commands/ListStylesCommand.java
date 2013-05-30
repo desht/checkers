@@ -14,7 +14,7 @@ public class ListStylesCommand extends AbstractCheckersCommand {
 	public ListStylesCommand() {
 		super("checkers list style");
 		setPermissionNode("checkers.commands.list.style");
-		setUsage("/checkers list style");
+		setUsage("/<command> list style");
 	}
 
 	@Override

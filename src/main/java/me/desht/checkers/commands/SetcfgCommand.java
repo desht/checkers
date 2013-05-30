@@ -17,7 +17,7 @@ public class SetcfgCommand extends AbstractCheckersCommand {
 	public SetcfgCommand() {
 		super("checkers setcfg", 2);
 		setPermissionNode("checkers.commands.setcfg");
-		setUsage("/checkers setcfg <config-key> <value>");
+		setUsage("/<command> setcfg <config-key> <value>");
 		setQuotedArgs(true);
 	}
 

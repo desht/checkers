@@ -19,7 +19,7 @@ public class WinCommand extends AbstractCheckersCommand {
 	public WinCommand() {
 		super("checkers win", 0, 0);
 		setPermissionNode("checkers.commands.win");
-		setUsage("/checkers win");
+		setUsage("/<command> win");
 	}
 
 	@Override

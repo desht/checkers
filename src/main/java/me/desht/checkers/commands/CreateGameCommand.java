@@ -12,7 +12,7 @@ public class CreateGameCommand extends AbstractCheckersCommand {
 	public CreateGameCommand() {
 		super("checkers create game");
 		setPermissionNode("checkers.commands.create.game");
-		setUsage("/checkers create game [-white] [<game-name>] [<board-name>]");
+		setUsage("/<command> create game [-white] [<game-name>] [<board-name>]");
 		setOptions("black");
 	}
 

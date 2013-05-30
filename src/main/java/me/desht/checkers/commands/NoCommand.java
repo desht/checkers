@@ -10,7 +10,7 @@ public class NoCommand extends AbstractCheckersCommand {
 
 	public NoCommand() {
 		super("checkers no", 0, 0);
-		setUsage("/checkers no");
+		setUsage("/<command> no");
 	}
 
 	@Override

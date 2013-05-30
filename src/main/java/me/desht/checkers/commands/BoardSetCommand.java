@@ -25,7 +25,7 @@ public class BoardSetCommand extends AbstractCheckersCommand {
 	public BoardSetCommand() {
 		super("checkers board set", 2);
 		setPermissionNode("checkers.commands.board.set");
-		setUsage("/checkers board set <attribute> <value> [<attribute> <value>...]");
+		setUsage("/<command> board set <attribute> <value> [<attribute> <value>...]");
 	}
 
 	@Override

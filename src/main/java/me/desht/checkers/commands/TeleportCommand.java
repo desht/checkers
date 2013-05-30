@@ -24,11 +24,11 @@ public class TeleportCommand extends AbstractCheckersCommand {
 		addAlias("checkers teleport");
 		setPermissionNode("checkers.commands.teleport");
 		setUsage(new String[] {
-				"/checkers tp [<game-name>]",
-				"/checkers tp -b <board-name>",
-				"/checkers tp -set [<board-name>]",
-				"/checkers tp -clear [<board-name>]",
-				"/checkers tp -list"
+				"/<command> tp [<game-name>]",
+				"/<command> tp -b <board-name>",
+				"/<command> tp -set [<board-name>]",
+				"/<command> tp -clear [<board-name>]",
+				"/<command> tp -list"
 		});
 		setOptions(new String[] { "b", "set", "clear", "list" });
 	}

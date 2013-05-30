@@ -16,7 +16,7 @@ public class ListAICommand extends AbstractCheckersCommand {
 	public ListAICommand() {
 		super("checkers list ai", 0, 1);
 		setPermissionNode("checkers.commands.list.ai");
-		setUsage("/checkers list ai");
+		setUsage("/<command> list ai");
 	}
 
 	@Override

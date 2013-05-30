@@ -10,7 +10,7 @@ public class YesCommand extends AbstractCheckersCommand {
 
 	public YesCommand() {
 		super("checkers yes", 0, 0);
-		setUsage("/checkers yes");
+		setUsage("/<command> yes");
 	}
 
 	@Override

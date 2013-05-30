@@ -15,7 +15,7 @@ public class DeleteBoardCommand extends AbstractCheckersCommand {
 	public DeleteBoardCommand() {
 		super("checkers delete board", 1);
 		setPermissionNode("checkers.commands.delete.board");
-		setUsage("/checkers delete board <board-name>");
+		setUsage("/<command> delete board <board-name>");
 	}
 
 	@Override

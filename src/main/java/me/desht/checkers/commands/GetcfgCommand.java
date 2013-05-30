@@ -20,7 +20,7 @@ public class GetcfgCommand extends AbstractCheckersCommand {
 	public GetcfgCommand() {
 		super("checkers getcfg", 0, 1);
 		setPermissionNode("checkers.commands.getcfg");
-		setUsage("/checkers getcfg  [<config-key>]");
+		setUsage("/<command> getcfg  [<config-key>]");
 	}
 
 	@Override

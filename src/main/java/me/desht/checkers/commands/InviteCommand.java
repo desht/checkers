@@ -13,7 +13,7 @@ public class InviteCommand extends AbstractCheckersCommand {
 	public InviteCommand() {
 		super("checkers invite", 0, 1);
 		setPermissionNode("checkers.commands.invite");
-		setUsage("/checkers invite [<player-name>]");
+		setUsage("/<command> invite [<player-name>]");
 	}
 
 	@Override

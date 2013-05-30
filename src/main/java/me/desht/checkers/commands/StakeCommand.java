@@ -15,7 +15,7 @@ public class StakeCommand extends AbstractCheckersCommand {
 	public StakeCommand() {
 		super("checkers stake", 1, 1);
 		setPermissionNode("checkers.commands.stake");
-		setUsage("/checkers stake <amount>");
+		setUsage("/<command> stake <amount>");
 	}
 
 	@Override

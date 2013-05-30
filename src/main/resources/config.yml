@@ -36,6 +36,7 @@ flying:
 forfeit_timeout: 5 min
 locale: default
 log_level: info
+max_moves_without_capture: 40
 mcstats: true
 open_invite_cooldown: 3 min
 open_invite_cooldown: 1 min 30 sec

@@ -19,7 +19,7 @@ public class ReloadCommand extends AbstractCheckersCommand {
 	public ReloadCommand() {
 		super("checkers reload", 1);
 		setPermissionNode("checkers.commands.reload");
-		setUsage("/checkers reload <ai|config|gamedata|timecontrols>");
+		setUsage("/<command> reload <ai|config|gamedata|timecontrols>");
 	}
 
 	@Override

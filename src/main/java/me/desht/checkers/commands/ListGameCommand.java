@@ -19,7 +19,7 @@ public class ListGameCommand extends AbstractCheckersCommand {
 
 	public ListGameCommand() {
 		super("checkers list game", 0, 1);
-		setUsage("/checkers list game [<game-name>]");
+		setUsage("/<command> list game [<game-name>]");
 		setPermissionNode("checkers.commands.list.game");
 	}
 

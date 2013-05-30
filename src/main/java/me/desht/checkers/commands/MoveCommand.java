@@ -17,7 +17,7 @@ public class MoveCommand extends AbstractCheckersCommand {
 	public MoveCommand() {
 		super("checkers move", 2, 2);
 		setPermissionNode("checkers.commands.move");
-		setUsage("/checkers move <from> <to>");
+		setUsage("/<command> move <from> <to>");
 	}
 
 	@Override
