@@ -11,6 +11,7 @@ import me.desht.checkers.game.CheckersGame.GameResult;
 import me.desht.checkers.game.CheckersGame.GameState;
 import me.desht.checkers.model.Move;
 import me.desht.checkers.model.PlayerColour;
+import me.desht.checkers.view.BoardView;
 import me.desht.dhutils.LogUtils;
 
 import org.bukkit.Location;
@@ -218,6 +219,11 @@ public class AICheckersPlayer extends CheckersPlayer {
 
 	@Override
 	public void teleport(Location loc) {
+		// do nothing
+	}
+
+	@Override
+	public void teleport(BoardView bv) {
 		// do nothing
 	}
 

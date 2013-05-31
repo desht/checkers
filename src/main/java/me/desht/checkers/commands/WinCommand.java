@@ -9,6 +9,7 @@ import me.desht.checkers.Messages;
 import me.desht.checkers.game.CheckersGame;
 import me.desht.checkers.game.CheckersGameManager;
 import me.desht.checkers.player.CheckersPlayer;
+import me.desht.dhutils.Duration;
 import me.desht.dhutils.MiscUtil;
 
 import org.bukkit.command.CommandSender;
@@ -35,18 +36,28 @@ public class WinCommand extends AbstractCheckersCommand {
 			throw new CheckersException(Messages.getString("Misc.otherPlayerMustBeOffline"));
 		}
 
-		int timeout = plugin.getConfig().getInt("forfeit_timeout");
+		String timeout = plugin.getConfig().getString("forfeit_timeout");
+		Duration duration;
+		try {
+			duration = new Duration(timeout);
+		} catch (IllegalArgumentException e) {
+			throw new CheckersException("invalid timeout: " + timeout);
+		}
 		long leftAt = ((CheckersPlugin)plugin).getPlayerTracker().getPlayerLeftAt(other.getName());
 		if (leftAt == 0) {
-			throw new CheckersException(Messages.getString("Misc.otherPlayerMustBeOffline"));
+			String msg = Messages.getString("Misc.otherPlayerMustBeOffline");
+			if (!other.isAvailable()) {
+				msg += " " + Messages.getString("Misc.otherPlayerNeverRejoined");
+			}
+			throw new CheckersException(msg);
 		}
 
 		long now = System.currentTimeMillis();
-		long elapsed = (now - leftAt) / 1000;
-		if (elapsed >= timeout) {
+		long elapsed = now - leftAt;
+		if (elapsed >= duration.getTotalDuration()) {
 			game.forfeit(other.getName());
 		} else {
-			MiscUtil.statusMessage(sender, Messages.getString("Misc.needToWait", timeout - elapsed));
+			throw new CheckersException(Messages.getString("Misc.needToWait", (duration.getTotalDuration() - elapsed) / 1000));
 		}
 
 		return true;

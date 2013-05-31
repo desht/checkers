@@ -13,7 +13,9 @@ import me.desht.checkers.responses.SwapResponse;
 import me.desht.checkers.responses.UndoResponse;
 import me.desht.checkers.responses.YesNoResponse;
 import me.desht.checkers.util.CheckersUtils;
+import me.desht.checkers.view.BoardView;
 import me.desht.dhutils.MiscUtil;
+import me.desht.dhutils.cuboid.Cuboid.CuboidDirection;
 import net.milkbowl.vault.economy.Economy;
 
 import org.bukkit.Bukkit;
@@ -34,8 +36,9 @@ public class HumanCheckersPlayer extends CheckersPlayer {
 		if (player == null) {
 			player = Bukkit.getPlayerExact(getName());
 		} else {
-			if (!player.isOnline())
+			if (!player.isOnline()) {
 				player = null;
+			}
 		}
 
 		return player;
@@ -195,6 +198,18 @@ public class HumanCheckersPlayer extends CheckersPlayer {
 	}
 
 	@Override
+	public void teleport(BoardView bv) {
+		Player p = getBukkitPlayer();
+		if (p != null) {
+			// only teleport the player if they're not on (or very near) the board already
+			if (!bv.getBoard().getFullBoard().outset(CuboidDirection.Both, 5).contains(p.getLocation())) {
+				Location loc = bv.getTeleportInDestination();
+				CheckersPlugin.getInstance().getPlayerTracker().teleportPlayer(p, loc);
+			}
+		}
+	}
+
+	@Override
 	public void timeControlCheck() {
 		TwoPlayerClock clock = getGame().getClock();
 		if (needToWarn(clock)) {
@@ -218,6 +233,6 @@ public class HumanCheckersPlayer extends CheckersPlayer {
 
 	@Override
 	public boolean isAvailable() {
-		return getBukkitPlayer().isOnline();
+		return getBukkitPlayer() != null;
 	}
 }

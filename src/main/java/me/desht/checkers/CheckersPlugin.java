@@ -237,7 +237,7 @@ public class CheckersPlugin extends JavaPlugin implements ConfigurationListener 
 
 	@Override
 	public void onConfigurationValidate(ConfigurationManager configurationManager, String key, Object oldVal, Object newVal) {
-		if (key.startsWith("auto_delete.") || key.startsWith("timeout")) {
+		if (key.startsWith("auto_delete.") || key.equals("forfeit_timeout")) {
 			String dur = newVal.toString();
 			try {
 				new Duration(dur);

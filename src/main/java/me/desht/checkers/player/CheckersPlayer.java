@@ -2,6 +2,7 @@ package me.desht.checkers.player;
 
 import me.desht.checkers.game.CheckersGame;
 import me.desht.checkers.model.PlayerColour;
+import me.desht.checkers.view.BoardView;
 
 import org.bukkit.Location;
 
@@ -83,6 +84,7 @@ public abstract class CheckersPlayer {
 	public abstract void checkPendingAction();
 
 	public abstract void teleport(Location loc);
+	public abstract void teleport(BoardView bv);
 
 	public abstract void timeControlCheck();
 

@@ -184,6 +184,9 @@ Misc:
   globalTeleportSet: "The global teleport-out destination has been set."
   globalTeleportCleared: "The global teleport-out destination has been cleared."
   invalidNumeric: "Invalid number: {0}"
+  needToWait: "You need to wait {0,number,integer} seconds more."
+  otherPlayerMustBeOffline: "You can only do this if the other player has gone offline."
+  otherPlayerNeverRejoined: "(The other player hasn't rejoined since the last server restart)"
   persistedReloaded: "Persisted board and game data has been reloaded."
   timeControlsReloaded: "Time control definitions have been reloaded."
 

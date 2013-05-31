@@ -809,8 +809,7 @@ public class CheckersGame implements CheckersPersistable {
 			// draw or abandoned; return original stakes
 			getPlayer(PlayerColour.WHITE).depositFunds(stake);
 			getPlayer(PlayerColour.BLACK).depositFunds(stake);
-			getPlayer(PlayerColour.WHITE).alert("Game.stakeReturned");
-			getPlayer(PlayerColour.BLACK).alert("Game.stakeReturned");
+			alert(Messages.getString("Game.stakeReturned", CheckersUtils.formatStakeStr(stake)));
 			break;
 		}
 

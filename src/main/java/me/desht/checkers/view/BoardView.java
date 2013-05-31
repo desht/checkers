@@ -427,7 +427,7 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 	@Override
 	public void playerAdded(CheckersGame checkersGame, CheckersPlayer checkersPlayer) {
 		if (CheckersPlugin.getInstance().getConfig().getBoolean("auto_teleport_on_join")) {
-			checkersPlayer.teleport(getTeleportInDestination());
+			checkersPlayer.teleport(this);
 		}
 		getControlPanel().repaintControls();
 	}

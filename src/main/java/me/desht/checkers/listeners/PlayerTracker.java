@@ -9,6 +9,8 @@ import me.desht.checkers.game.CheckersGame;
 import me.desht.checkers.game.CheckersGameManager;
 import me.desht.checkers.game.CheckersGame.GameState;
 import me.desht.checkers.player.CheckersPlayer;
+import me.desht.dhutils.Duration;
+import me.desht.dhutils.LogUtils;
 import me.desht.dhutils.MessagePager;
 import me.desht.dhutils.MiscUtil;
 import me.desht.dhutils.PersistableLocation;
@@ -51,13 +53,20 @@ public class PlayerTracker extends CheckersBaseListener {
 	@EventHandler
 	public void onPlayerQuit(PlayerQuitEvent event) {
 		String who = event.getPlayer().getName();
-		int timeout = plugin.getConfig().getInt("forfeit_timeout");
+		String timeout = plugin.getConfig().getString("forfeit_timeout");
+		Duration duration;
+		try {
+			duration = new Duration(timeout);
+		} catch (IllegalArgumentException e) {
+			LogUtils.warning("invalid value for forfeit_timeout: " + timeout);
+			duration = new Duration(0);
+		}
 		for (CheckersGame game : CheckersGameManager.getManager().listGames()) {
 			if (game.hasPlayer(who)) {
 				game.playerLeft(who);
 				playerLeft(who);
-				if (timeout > 0 && game.getState() == GameState.RUNNING) {
-					game.alert(Messages.getString("Game.playerQuit", who, timeout));
+				if (duration.getTotalDuration() > 0 && game.getState() == GameState.RUNNING) {
+					game.alert(Messages.getString("Game.playerQuit", who, duration.getTotalDuration() / 1000));
 				}
 			}
 		}
