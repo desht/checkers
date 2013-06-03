@@ -17,4 +17,4 @@ time_controls:
   - label: Official: Move;in 6 minutes
     spec: G/40
   - label: Game in 30;minutes
-    spec: G/40
+    spec: G/30
