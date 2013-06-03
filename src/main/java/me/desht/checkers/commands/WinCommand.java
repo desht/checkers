@@ -10,7 +10,6 @@ import me.desht.checkers.game.CheckersGame;
 import me.desht.checkers.game.CheckersGameManager;
 import me.desht.checkers.player.CheckersPlayer;
 import me.desht.dhutils.Duration;
-import me.desht.dhutils.MiscUtil;
 
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.Plugin;
