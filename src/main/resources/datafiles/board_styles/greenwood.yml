@@ -1,0 +1,33 @@
+# Checkers board style definition
+
+# NOTE: all materials must be quoted, even if they're just integers, or
+# you will get a java.lang.ClassCastException when the style is loaded.
+
+# width/length of the board squares, in blocks
+square_size: 4
+# width in blocks of the frame surrounding the board
+frame_width: 3
+# height of the board - number of squares of clear air between board and enclosure roof
+height: 8
+# material/data for the white squares
+white_square: 'WOOD:2'
+# material/data for the black squares
+black_square: 'WOOL:GREEN'
+# material/data for the frame
+frame: 'WOOD:1'
+# material/data for the enclosure
+enclosure: 'AIR:0'
+# material/data for the enclosure struts (default: 'enclosure' setting)
+struts: 'WOOD:1'
+# board lighting level (0-15)
+light_level: 15
+# material/data for the white pieces
+white_piece: 'WOOL:WHITE'
+# material/data for the black pieces
+black_piece: 'WOOL:RED'
+# material/data for the control panel (default: 'frame' setting)
+panel: 'WOOD:1'
+# highlighting material for selected piece
+highlight_selected: 'WOOL:YELLOW'
+# highlighting material for the last move made
+highlight_lastmove: 'WOOL:CYAN'
