@@ -34,7 +34,7 @@ public enum PlayerColour {
 	public String getDisplayColour() {
 		switch (this) {
 		case WHITE: return ChatColor.WHITE + this.getColour();
-		case BLACK: return ChatColor.BLACK + this.getColour();
+		case BLACK: return ChatColor.DARK_GRAY + this.getColour();  // BLACK is just too dark for chat
 		default: throw new IllegalArgumentException("unexpected colour");
 		}
 	}
