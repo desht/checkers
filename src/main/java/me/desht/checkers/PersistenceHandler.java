@@ -2,6 +2,8 @@ package me.desht.checkers;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map.Entry;
 
 import me.desht.checkers.game.CheckersGame;
@@ -19,10 +21,12 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 public class PersistenceHandler {
 	public void reload() {
-		for (CheckersGame game : CheckersGameManager.getManager().listGames()) {
+		List<CheckersGame> games = new ArrayList<CheckersGame>(CheckersGameManager.getManager().listGames());
+		for (CheckersGame game : games) {
 			game.deleteTemporary();
 		}
-		for (BoardView view : BoardViewManager.getManager().listBoardViews()) {
+		List<BoardView> views = new ArrayList<BoardView>(BoardViewManager.getManager().listBoardViews());
+		for (BoardView view : views) {
 			view.deleteTemporary();
 		}
 

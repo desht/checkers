@@ -19,6 +19,7 @@ public class ListBoardCommand extends AbstractCheckersCommand {
 		setPermissionNode("checkers.commands.list.board");
 		setUsage("/<command> list board");
 	}
+
 	@Override
 	public boolean execute(Plugin plugin, CommandSender sender, String[] args) {
 		if (BoardViewManager.getManager().listBoardViews().isEmpty()) {

@@ -255,30 +255,8 @@ public class PlayerListener extends CheckersBaseListener {
 				cp.promptForContinuedMove();
 				bv.getBoard().setSelected(toSqi);
 			} else {
-				game.getPlayer(game.getPosition().getToMove()).promptForNextMove();
-				maybeAutoSelect(game.getPosition(), bv);
+				game.getPlayerToMove().promptForNextMove();
 			}
-		} else {
-			bv.getBoard().clearSelected();
-		}
-	}
-
-	private void maybeAutoSelect(Position position, BoardView bv) {
-		boolean doAutoSelect = true;
-		int autoSelectSqi = Checkers.NO_SQUARE;
-		if (position.getLegalMoves().length > 0 && position.getLegalMoves()[0].isJump()) {
-			// a jump is required; see if only one piece can move, and if so, auto-select it
-			for (Move m : position.getLegalMoves()) {
-				if (autoSelectSqi != m.getFromSqi() && autoSelectSqi != Checkers.NO_SQUARE) {
-					doAutoSelect = false;
-					break;
-				} else {
-					autoSelectSqi = m.getFromSqi();
-				}
-			}
-		}
-		if (doAutoSelect && autoSelectSqi != Checkers.NO_SQUARE) {
-			bv.getBoard().setSelected(autoSelectSqi);
 		} else {
 			bv.getBoard().clearSelected();
 		}

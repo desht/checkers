@@ -17,10 +17,12 @@ package me.desht.checkers;
     along with Checkers.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import java.io.IOException;
 import java.util.List;
 
 import me.desht.checkers.ai.AIFactory;
 import me.desht.checkers.commands.AbstractCheckersCommand;
+import me.desht.checkers.game.CheckersGameManager;
 import me.desht.checkers.listeners.FlightListener;
 import me.desht.checkers.listeners.PlayerListener;
 import me.desht.checkers.listeners.PlayerTracker;
@@ -49,6 +51,8 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.mcstats.Metrics;
+import org.mcstats.Metrics.Plotter;
 
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 
@@ -120,6 +124,8 @@ public class CheckersPlugin extends JavaPlugin implements ConfigurationListener 
 
 		persistenceHandler.reload();
 
+		setupMetrics();
+
 		tickTask = new TickTask();
 		tickTask.runTaskTimer(this, 20L, 20L);
 	}
@@ -179,6 +185,27 @@ public class CheckersPlugin extends JavaPlugin implements ConfigurationListener 
 
 	public PlayerTracker getPlayerTracker() {
 		return playerTracker;
+	}
+
+	private void setupMetrics() {
+		if (!getConfig().getBoolean("mcstats")) {
+			return;
+		}
+		try {
+			Metrics metrics = new Metrics(this);
+
+			metrics.createGraph("Boards Created").addPlotter(new Plotter() {
+				@Override
+				public int getValue() { return BoardViewManager.getManager().listBoardViews().size();	}
+			});
+			metrics.createGraph("Games in Progress").addPlotter(new Plotter() {
+				@Override
+				public int getValue() { return CheckersGameManager.getManager().listGames().size(); }
+			});
+			metrics.start();
+		} catch (IOException e) {
+			LogUtils.warning("Can't submit metrics data: " + e.getMessage());
+		}
 	}
 
 	private void setupVault(PluginManager pm) {

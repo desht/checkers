@@ -5,6 +5,7 @@ import java.util.List;
 import me.desht.checkers.CheckersPlugin;
 import me.desht.checkers.Messages;
 import me.desht.checkers.responses.BoardCreationHandler;
+import me.desht.checkers.view.BoardStyle;
 import me.desht.dhutils.MiscUtil;
 
 import org.bukkit.command.CommandSender;
@@ -30,9 +31,9 @@ public class CreateBoardCommand extends AbstractCheckersCommand {
 
 		String name = args[0];
 
-		String boardStyleName = getStringOption("style", "Standard");
+		String boardStyleName = getStringOption("style", BoardStyle.DEFAULT_BOARD_STYLE);
 
-		MiscUtil.statusMessage(sender, Messages.getString("Board.boardCreationPrompt", name)); //$NON-NLS-1$
+		MiscUtil.statusMessage(sender, Messages.getString("Board.boardCreationPrompt", name));
 		CheckersPlugin.getInstance().getResponseHandler().expect(sender.getName(), new BoardCreationHandler(name, boardStyleName));
 
 		return true;

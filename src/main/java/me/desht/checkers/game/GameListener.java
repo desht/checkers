@@ -10,4 +10,5 @@ public interface GameListener {
 	public void stakeChanged(double newStake);
 	public boolean tryTimeControlChange(String tcSpec);
 	public void timeControlChanged(String tcSpec);
+	public void selectSquare(int sqi);
 }

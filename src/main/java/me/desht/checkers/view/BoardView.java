@@ -17,6 +17,7 @@ import me.desht.checkers.TwoPlayerClock;
 import me.desht.checkers.game.CheckersGame;
 import me.desht.checkers.game.CheckersGame.GameState;
 import me.desht.checkers.game.GameListener;
+import me.desht.checkers.model.Checkers;
 import me.desht.checkers.model.Move;
 import me.desht.checkers.model.PieceType;
 import me.desht.checkers.model.PlayerColour;
@@ -82,8 +83,7 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 		if (BoardViewManager.getManager().boardViewExists(name)) {
 			throw new CheckersException(Messages.getString("Board.boardExists"));
 		}
-		PersistableLocation where = (PersistableLocation) conf.get("origin");
-
+		this.savedGameName = conf.getString("game", "");
 		this.attributes = new AttributeCollection(this);
 		registerAttributes();
 		for (String attr : attributes.listAttributeKeys(false)) {
@@ -92,11 +92,17 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 			}
 		}
 
-		this.savedGameName = conf.getString("game", "");
+		PersistableLocation where = (PersistableLocation) conf.get("origin");
+		this.worldName = where.getWorldName();
+		if (!where.isWorldAvailable()) {
+			this.checkersBoard = null;
+			this.controlPanel = null;
+			return;
+		}
+
 		BoardRotation dir = BoardRotation.getRotation(conf.getString("rotation"));
 		this.checkersBoard = new CheckersBoard(where.getLocation(), dir, (String)attributes.get(BOARD_STYLE));
 		this.controlPanel = new ControlPanel(this);
-		this.worldName = checkersBoard.getWorld().getName();
 	}
 
 	private void registerAttributes() {
@@ -224,11 +230,12 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 	}
 
 	public boolean isControlPanel(Location loc) {
-		return controlPanel.getPanelBlocks().contains(loc);
+		// outsetting the cuboid allows the signs on the panel to be targeted too
+		return controlPanel.getPanelBlocks().outset(CuboidDirection.Horizontal, 1).contains(loc);
 	}
 
 	public boolean isWorldAvailable() {
-		return getBoard().getA1Center().isWorldAvailable();
+		return getBoard() != null;
 	}
 
 	public int getSquareAt(Location loc) {
@@ -390,6 +397,7 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 		}
 
 		getBoard().setLastMovedSquare(move.getToSqi());
+		getBoard().clearSelected();
 	}
 
 	@Override
@@ -458,5 +466,14 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 		cp.getTcDefs().addCustomSpec(tcSpec);
 		cp.getButton(TimeControlButton.class).repaint();
 		updateClocks(true);
+	}
+
+	@Override
+	public void selectSquare(int sqi) {
+		if (sqi == Checkers.NO_SQUARE) {
+			getBoard().clearSelected();
+		} else {
+			getBoard().setSelected(sqi);
+		}
 	}
 }

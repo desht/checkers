@@ -125,7 +125,7 @@ Board:
   boardTeleportSet: "The teleport-out destination has been set for board &6{0}&-."
   boardTeleportCleared: "The teleport-out destination has been cleared for board &6{0}&-."
   boardTooHigh: This board would be too high for this world.
-  boardWouldIntersect: This board would intersect another board (&6{1}&-).
+  boardWouldIntersect: This board would intersect another board (&6{0}&-).
   goingToSpawn: Sending you to spawn point.
   noBoards: There are currently no boards.
   noFreeBoards: There are no free boards to create a game on right now.

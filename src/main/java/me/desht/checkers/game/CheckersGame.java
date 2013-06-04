@@ -815,4 +815,10 @@ public class CheckersGame implements CheckersPersistable {
 
 		stake = 0.0;
 	}
+
+	public void selectSquare(int sqi) {
+		for (GameListener l : listeners) {
+			l.selectSquare(sqi);
+		}
+	}
 }

@@ -14,7 +14,7 @@
 time_controls:
   - label: None
     spec: None
-  - label: Official: Move;in 6 minutes
-    spec: G/40
+  - label: 'Move;in 6 minutes;(Official)'
+    spec: M/360
   - label: Game in 30;minutes
     spec: G/30
