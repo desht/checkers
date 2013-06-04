@@ -12,8 +12,6 @@ import me.desht.checkers.game.CheckersGame;
 import me.desht.checkers.game.CheckersGame.GameState;
 import me.desht.checkers.game.CheckersGameManager;
 import me.desht.checkers.model.Checkers;
-import me.desht.checkers.model.Move;
-import me.desht.checkers.model.Position;
 import me.desht.checkers.player.CheckersPlayer;
 import me.desht.checkers.responses.BoardCreationHandler;
 import me.desht.checkers.responses.InvitePlayer;
