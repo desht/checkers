@@ -146,19 +146,23 @@ public class SimplePosition implements Position {
 			move.setCapturedPiece(getPieceAt(overRow, overCol));
 			setPieceAt(overRow, overCol, PieceType.NONE);
 		}
+
+		int h = halfMoveClock;
+
 		// check for piece promotion
 		boolean justPromoted = false;
 		if (toRow == 7 && movingPiece == PieceType.BLACK) {
 			justPromoted = true;
+			halfMoveClock = 0;
 			setPieceAt(toRow, toCol, PieceType.BLACK_KING);
 		} else if (toRow == 0 && movingPiece == PieceType.WHITE) {
 			justPromoted = true;
+			halfMoveClock = 0;
 			setPieceAt(toRow, toCol, PieceType.WHITE_KING);
 		} else {
 			setPieceAt(toRow, toCol, movingPiece);
 		}
 
-		int h = halfMoveClock;
 		if (move.isJump()) {
 			// check for a possible chain of jumps
 			Move[] jumps = getLegalJumps(toRow, toCol);
