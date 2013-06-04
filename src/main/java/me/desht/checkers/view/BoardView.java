@@ -2,6 +2,7 @@ package me.desht.checkers.view;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -402,7 +403,8 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 
 	@Override
 	public void lastMoveUndone(Position position) {
-		// nothing to do here?
+		getBoard().setLastMovedSquare(position.getLastMove().getToSqi());
+		getBoard().clearSelected();
 	}
 
 	@Override
