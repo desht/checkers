@@ -63,11 +63,11 @@ public class PlayerTracker extends CheckersBaseListener {
 		}
 		for (CheckersGame game : CheckersGameManager.getManager().listGames()) {
 			if (game.hasPlayer(who)) {
-				game.playerLeft(who);
 				playerLeft(who);
 				if (duration.getTotalDuration() > 0 && game.getState() == GameState.RUNNING) {
 					game.alert(Messages.getString("Game.playerQuit", who, duration.getTotalDuration() / 1000));
 				}
+				game.playerLeft(who);
 			}
 		}
 		MessagePager.deletePager(event.getPlayer());
