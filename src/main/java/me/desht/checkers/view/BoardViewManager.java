@@ -14,6 +14,7 @@ import java.util.TreeSet;
 import me.desht.checkers.CheckersException;
 import me.desht.checkers.CheckersPlugin;
 import me.desht.checkers.Messages;
+import me.desht.checkers.PersistenceHandler;
 import me.desht.checkers.event.CheckersBoardCreatedEvent;
 import me.desht.checkers.event.CheckersBoardDeletedEvent;
 import me.desht.checkers.game.CheckersGame;
@@ -250,7 +251,6 @@ public class BoardViewManager {
 	 * @param f
 	 */
 	public void deferLoading(String worldName, File f) {
-		LogUtils.info("Board load for " + f + " deferred: world " + worldName + " not available at this time");
 		if (!deferred.containsKey(worldName)) {
 			deferred.put(worldName, new HashSet<File>());
 		}
@@ -271,6 +271,22 @@ public class BoardViewManager {
 			CheckersPlugin.getInstance().getPersistenceHandler().loadBoard(f);
 		}
 		deferred.get(worldName).clear();
+	}
+
+	/**
+	 * Called when a world is unloaded.  Put any boards in that world back on the deferred list.
+	 * 
+	 * @param world
+	 */
+	public void unloadBoardsForWorld(String worldName) {
+		for (BoardView bv : new ArrayList<BoardView>(listBoardViews())) {
+			if (bv.getWorldName().equals(worldName)) {
+				bv.deleteTemporary();
+				File f = new File(bv.getSaveDirectory(), PersistenceHandler.makeSafeFileName(bv.getName()) + ".yml");
+				deferLoading(bv.getWorldName(), f);
+				LogUtils.info("unloaded board '" + bv.getName() + "' (world has been unloaded)");
+			}
+		}
 	}
 }
 

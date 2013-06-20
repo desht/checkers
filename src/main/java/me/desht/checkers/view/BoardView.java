@@ -273,6 +273,9 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 	 * Temporarily delete a board; called when reloading saved data.
 	 */
 	public void deleteTemporary() {
+		if (getGame() != null) {
+			getGame().deleteTemporary();
+		}
 		deleteCommon();
 	}
 

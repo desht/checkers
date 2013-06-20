@@ -82,13 +82,15 @@ public class PersistenceHandler {
 						}
 					}
 				} else {
-					BoardViewManager.getManager().deferLoading(bv.getBoard().getA1Center().getWorldName(), f);
+					LogUtils.info("Board load for " + f + " deferred (world " + bv.getWorldName() + " not loaded)");
+					BoardViewManager.getManager().deferLoading(bv.getWorldName(), f);
 				}
 			} else {
 				return false;
 			}
 		} catch (Exception e) {
-			LogUtils.severe("can't load saved board from " + f.getName() + ": " + e.getMessage(), e);
+			e.printStackTrace();
+			LogUtils.severe("can't load saved board from " + f.getName() + ": " + e.getMessage());
 			// TODO: restore terrain, if applicable?
 			return false;
 		}
