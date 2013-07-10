@@ -50,9 +50,9 @@ public class SMSIntegration implements Listener {
 	public void boardCreated(CheckersBoardCreatedEvent event) {
 		BoardView bv = event.getBoardView();
 
-		addItem(TP_BOARD, bv.getName(), "/chess tp -b " + bv.getName());
-		addItem(BOARD_INFO, bv.getName(), "/chess list board " + bv.getName());
-		addItem(CREATE_GAME, bv.getName(), "/chess create game - " + bv.getName());
+		addItem(TP_BOARD, bv.getName(), "/checkers tp -b " + bv.getName());
+		addItem(BOARD_INFO, bv.getName(), "/checkers list board " + bv.getName());
+		addItem(CREATE_GAME, bv.getName(), "/checkers create game - " + bv.getName());
 	}
 
 	@EventHandler
@@ -68,9 +68,9 @@ public class SMSIntegration implements Listener {
 	public void gameCreated(CheckersGameCreatedEvent event) {
 		CheckersGame game = event.getGame();
 
-		addItem(GAME_INFO, game.getName(), "/chess list game " + game.getName());
-		addItem(TP_GAME, game.getName(), "/chess tp " + game.getName());
-		addItem(DEL_GAME, game.getName(), "/chess delete game " + game.getName());
+		addItem(GAME_INFO, game.getName(), "/checkers list game " + game.getName());
+		addItem(TP_GAME, game.getName(), "/checkers tp " + game.getName());
+		addItem(DEL_GAME, game.getName(), "/checkers delete game " + game.getName());
 
 		BoardView bv = BoardViewManager.getManager().findBoardForGame(game);
 		if (bv != null) {
@@ -88,7 +88,7 @@ public class SMSIntegration implements Listener {
 
 		BoardView bv = BoardViewManager.getManager().findBoardForGame(game);
 		if (bv != null) {
-			addItem(CREATE_GAME, bv.getName(), "/chess create game - " + bv.getName());
+			addItem(CREATE_GAME, bv.getName(), "/checkers create game - " + bv.getName());
 		}
 	}
 
