@@ -100,6 +100,8 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 			return;
 		}
 
+		teleportOutDest = conf.contains("teleportOutDest") ? (PersistableLocation) conf.get("teleportOutDest") : null;
+
 		BoardRotation dir = BoardRotation.getRotation(conf.getString("rotation"));
 		this.checkersBoard = new CheckersBoard(where.getLocation(), dir, (String)attributes.get(BOARD_STYLE));
 		this.controlPanel = new ControlPanel(this);
@@ -120,6 +122,9 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 		result.put("game", game == null ? "" : game.getName()); 
 		result.put("origin", checkersBoard.getA1Center());
 		result.put("rotation", checkersBoard.getRotation().name());
+		if (teleportOutDest != null) {
+			result.put("teleportOutDest", teleportOutDest);
+		}
 		for (String k : attributes.listAttributeKeys(false)) {
 			result.put(k, attributes.get(k));
 		}

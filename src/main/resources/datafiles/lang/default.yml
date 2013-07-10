@@ -178,9 +178,10 @@ ControlPanel:
 Misc:
   AIdefsReloaded: "AI definitions have been reloaded."
   anything: "anything"
-  configReloaded: "Configuration (config.yml) has been reloaded"
   boardTeleportSet: "The teleport-out destination has been set for board &6{0}&-."
   boardTeleportCleared: "The teleport-out destination has been cleared for board &6{0}&-."
+  configReloaded: "Configuration (config.yml) has been reloaded"
+  dataSaved: "Checkers board and game data has been saved."
   globalTeleportSet: "The global teleport-out destination has been set."
   globalTeleportCleared: "The global teleport-out destination has been cleared."
   invalidNumeric: "Invalid number: {0}"
