@@ -213,3 +213,11 @@ AI:
   AIpayout: "payout={0,number,integer}%"
   noFreeAI: "No free AI was found"
 
+SMSIntegration:
+  boardInfo: "&1Board Info"
+  createGame: "&1Create Game"
+  gotoGame: "&1Go to Game"
+  gameInfo: "&1Game Info"
+  deleteGame: "&4*Delete Game"
+  gotoBoard: "&1Go to Board"
+

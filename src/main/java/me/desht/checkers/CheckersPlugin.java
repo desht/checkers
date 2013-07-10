@@ -70,6 +70,7 @@ import me.desht.dhutils.SpecialFX;
 import me.desht.dhutils.commands.CommandManager;
 import me.desht.dhutils.nms.NMSHelper;
 import me.desht.dhutils.responsehandler.ResponseHandler;
+import me.desht.scrollingmenusign.ScrollingMenuSign;
 import net.milkbowl.vault.economy.Economy;
 
 import org.bukkit.command.Command;
@@ -100,6 +101,7 @@ public class CheckersPlugin extends JavaPlugin implements ConfigurationListener 
 	private FlightListener flightListener;
 	private PlayerTracker playerTracker;
 	private AIFactory aiFactory;
+	private SMSIntegration sms;
 
 	@Override
 	public void onLoad() {
@@ -145,12 +147,16 @@ public class CheckersPlugin extends JavaPlugin implements ConfigurationListener 
 
 		setupVault(pm);
 		setupWorldEdit(pm);
+		setupSMSIntegration(pm);
 
 		aiFactory = new AIFactory();
 
 		fx = new SpecialFX(getConfig().getConfigurationSection("effects"));
 
 		persistenceHandler.reload();
+		if (sms != null) {
+			sms.setAutosave(true);
+		}
 
 		setupMetrics();
 
@@ -290,6 +296,21 @@ public class CheckersPlugin extends JavaPlugin implements ConfigurationListener 
 			LogUtils.fine("WorldEdit plugin detected: board terrain saving enabled.");
 		} else {
 			LogUtils.warning("WorldEdit plugin not detected: board terrain saving disabled.");
+		}
+	}
+
+	private void setupSMSIntegration(PluginManager pm) {
+		try {
+			Plugin p = pm.getPlugin("ScrollingMenuSign");
+			if (p != null && p instanceof ScrollingMenuSign) {
+				sms = new SMSIntegration(this, (ScrollingMenuSign) p);
+				LogUtils.fine("ScrollingMenuSign plugin detected: Checkers menus created.");
+			} else {
+				LogUtils.fine("ScrollingMenuSign plugin not detected.");
+			}
+		} catch (NoClassDefFoundError e) {
+			// this can happen if ScrollingMenuSign was disabled
+			LogUtils.fine("ScrollingMenuSign plugin not detected (NoClassDefFoundError caught).");
 		}
 	}
 

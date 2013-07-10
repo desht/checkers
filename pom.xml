@@ -4,7 +4,7 @@
 	<groupId>me.desht</groupId>
 	<artifactId>checkers</artifactId>
 	<packaging>jar</packaging>
-	<version>1.0.3</version>
+	<version>1.0.4</version>
 	<name>Checkers</name>
 	<url>http://maven.apache.org</url>
 	<properties>
@@ -40,6 +40,12 @@
 			<groupId>com.sk89q</groupId>
 			<artifactId>worldedit</artifactId>
 			<version>5.3</version>
+			<scope>provided</scope>
+                </dependency>
+                <dependency>
+			<groupId>me.desht</groupId>
+			<artifactId>scrollingmenusign</artifactId>
+			<version>2.1.2</version>
 			<scope>provided</scope>
                 </dependency>
 	</dependencies>
