@@ -4,7 +4,7 @@ author: desht
 website: http://dev.bukkit.org/server-mods/checkers
 main: me.desht.checkers.CheckersPlugin
 version: ${project.version}
-softdepend: [ Vault, WorldEdit, ScrollingMenuSign ]
+softdepend: [ Vault, WorldEdit, ScrollingMenuSign, dynmap ]
 
 commands:
   checkers:

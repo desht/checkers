@@ -80,6 +80,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.dynmap.DynmapAPI;
 import org.mcstats.Metrics;
 import org.mcstats.Metrics.Plotter;
 
@@ -102,6 +103,7 @@ public class CheckersPlugin extends JavaPlugin implements ConfigurationListener 
 	private PlayerTracker playerTracker;
 	private AIFactory aiFactory;
 	private SMSIntegration sms;
+	private DynmapIntegration dynmapIntegration;
 
 	@Override
 	public void onLoad() {
@@ -148,6 +150,7 @@ public class CheckersPlugin extends JavaPlugin implements ConfigurationListener 
 		setupVault(pm);
 		setupWorldEdit(pm);
 		setupSMSIntegration(pm);
+		setupDynmap(pm);
 
 		aiFactory = new AIFactory();
 
@@ -156,6 +159,9 @@ public class CheckersPlugin extends JavaPlugin implements ConfigurationListener 
 		persistenceHandler.reload();
 		if (sms != null) {
 			sms.setAutosave(true);
+		}
+		if (dynmapIntegration != null && dynmapIntegration.isEnabled()) {
+			dynmapIntegration.setActive(true);
 		}
 
 		setupMetrics();
@@ -199,6 +205,10 @@ public class CheckersPlugin extends JavaPlugin implements ConfigurationListener 
 	@Override
 	public void onDisable() {
 		if (startupFailed) return;
+
+		if (dynmapIntegration != null) {
+			dynmapIntegration.setActive(false);
+		}
 
 		persistenceHandler.save();
 
@@ -314,6 +324,16 @@ public class CheckersPlugin extends JavaPlugin implements ConfigurationListener 
 		}
 	}
 
+	private void setupDynmap(PluginManager pm) {
+		Plugin p = pm.getPlugin("dynmap");
+		if (p != null) {
+			dynmapIntegration = new DynmapIntegration(this, (DynmapAPI) p);
+			LogUtils.fine("dynmap plugin detected.  Boards and games will be labelled.");
+		} else {
+			LogUtils.fine("dynmap plugin not detected.");
+		}
+	}
+
 	private boolean setupNMS() {
 		try {
 			NMSHelper.init(this);
@@ -356,40 +376,43 @@ public class CheckersPlugin extends JavaPlugin implements ConfigurationListener 
 	}
 
 	@Override
-		public void onConfigurationChanged(ConfigurationManager configurationManager, String key, Object oldVal, Object newVal) {
-			if (key.equalsIgnoreCase("locale")) {
-				Messages.setMessageLocale(newVal.toString());
-				// redraw control panel signs in the right language
-				updateAllControlPanels();
-			} else if (key.equalsIgnoreCase("log_level")) {
-				LogUtils.setLogLevel(newVal.toString());
-			} else if (key.equalsIgnoreCase("teleporting")) {
-				updateAllControlPanels();
-			} else if (key.equalsIgnoreCase("flying.allowed")) {
-				flightListener.setEnabled((Boolean) newVal);
-			} else if (key.equalsIgnoreCase("flying.captive")) {
-				flightListener.setCaptive((Boolean) newVal);
-			} else if (key.equalsIgnoreCase("flying.upper_limit") || key.equalsIgnoreCase("flying.outer_limit")) {
-				flightListener.recalculateFlightRegions();
-			} else if (key.equalsIgnoreCase("flying.fly_speed") || key.equalsIgnoreCase("flying.walk_speed")) {
-				flightListener.updateSpeeds();
-			} else if (key.equalsIgnoreCase("pager.enabled")) {
-				if ((Boolean) newVal) {
-					MessagePager.setDefaultPageSize();
-				} else {
-					MessagePager.setDefaultPageSize(Integer.MAX_VALUE);
-				}
-			} else if (key.startsWith("effects.")) {
-				fx = new SpecialFX(getConfig().getConfigurationSection("effects"));
-	//		} else if (key.startsWith("database.")) {
-	//			Results.shutdown();
-	//			if (Results.getResultsHandler() == null) {
-	//				LogUtils.warning("DB connection cannot be re-established.  Check your settings.");
-	//			}
-			} else if (key.equals("coloured_console")) {
-				MiscUtil.setColouredConsole((Boolean)newVal);
+	public void onConfigurationChanged(ConfigurationManager configurationManager, String key, Object oldVal, Object newVal) {
+		if (key.equalsIgnoreCase("locale")) {
+			Messages.setMessageLocale(newVal.toString());
+			// redraw control panel signs in the right language
+			updateAllControlPanels();
+		} else if (key.equalsIgnoreCase("log_level")) {
+			LogUtils.setLogLevel(newVal.toString());
+		} else if (key.equalsIgnoreCase("teleporting")) {
+			updateAllControlPanels();
+		} else if (key.equalsIgnoreCase("flying.allowed")) {
+			flightListener.setEnabled((Boolean) newVal);
+		} else if (key.equalsIgnoreCase("flying.captive")) {
+			flightListener.setCaptive((Boolean) newVal);
+		} else if (key.equalsIgnoreCase("flying.upper_limit") || key.equalsIgnoreCase("flying.outer_limit")) {
+			flightListener.recalculateFlightRegions();
+		} else if (key.equalsIgnoreCase("flying.fly_speed") || key.equalsIgnoreCase("flying.walk_speed")) {
+			flightListener.updateSpeeds();
+		} else if (key.equalsIgnoreCase("pager.enabled")) {
+			if ((Boolean) newVal) {
+				MessagePager.setDefaultPageSize();
+			} else {
+				MessagePager.setDefaultPageSize(Integer.MAX_VALUE);
 			}
+		} else if (key.startsWith("effects.")) {
+			fx = new SpecialFX(getConfig().getConfigurationSection("effects"));
+			//		} else if (key.startsWith("database.")) {
+			//			Results.shutdown();
+			//			if (Results.getResultsHandler() == null) {
+			//				LogUtils.warning("DB connection cannot be re-established.  Check your settings.");
+			//			}
+		} else if (key.equals("coloured_console")) {
+			MiscUtil.setColouredConsole((Boolean)newVal);
+		} else if (key.startsWith("dynmap.") && dynmapIntegration != null) {
+			dynmapIntegration.processConfig();
+			dynmapIntegration.setActive(dynmapIntegration.isEnabled());
 		}
+	}
 
 	public AIFactory getAIFactory() {
 		return aiFactory;

@@ -14,6 +14,11 @@ auto_delete:
 autostart: true
 broadcast_results: true
 coloured_console: true
+dynmap:
+  enabled: true
+  hide_by_default: false
+  min_zoom: 0
+  layer_priority: 1
 effects:
   game_lost: sound,name=enderman_death
   game_won: sound,name=level_up

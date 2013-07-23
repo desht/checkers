@@ -48,6 +48,12 @@
 			<version>2.1.2</version>
 			<scope>provided</scope>
                 </dependency>
+		<dependency>
+			<groupId>org.dynmap</groupId>
+			<artifactId>dynmap-api</artifactId>
+			<version>1.8</version>
+			<scope>provided</scope>
+		</dependency>
 	</dependencies>
 	<build>
 		<finalName>${project.name}</finalName>
@@ -111,7 +117,6 @@
 			<filtering>true</filtering>
 			<includes>
 			    <include>plugin.yml</include>
-			    <include>config.yml</include>
 			</includes>
 		    </resource>
 		</resources>
@@ -136,6 +141,10 @@
                 <repository>
                         <id>sk89q-maven</id>
                         <url>http://maven.sk89q.com/repo</url>
+                </repository>
+                <repository>
+                        <id>dynmap-repo</id>
+                        <url>http://repo.mikeprimm.com</url>
                 </repository>
 	</repositories>
 </project>
