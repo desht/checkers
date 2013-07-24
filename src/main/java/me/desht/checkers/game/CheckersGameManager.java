@@ -175,11 +175,11 @@ public class CheckersGameManager {
 		}
 
 		CheckersGame game = new CheckersGame(gameName, playerName, colour, bv.getControlPanel().getTcDefs().currentDef().getSpec());
+		bv.setGame(game);
 		registerGame(game);
 		setCurrentGame(playerName, game);
 		game.setStake(playerName, bv.getDefaultStake());
 
-		bv.setGame(game);
 		MiscUtil.statusMessage(player, Messages.getString("Game.gameCreated", game.getName(), bv.getName()));
 
 		return game;
