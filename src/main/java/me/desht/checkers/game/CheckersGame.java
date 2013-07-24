@@ -16,6 +16,7 @@ import me.desht.checkers.Messages;
 import me.desht.checkers.TimeControl;
 import me.desht.checkers.TwoPlayerClock;
 import me.desht.checkers.ai.CheckersAI;
+import me.desht.checkers.event.CheckersGameStateChangedEvent;
 import me.desht.checkers.model.Checkers;
 import me.desht.checkers.model.Move;
 import me.desht.checkers.model.PlayerColour;
@@ -240,6 +241,7 @@ public class CheckersGame implements CheckersPersistable {
 			clock.stop();
 		}
 		this.state = newState;
+		Bukkit.getPluginManager().callEvent(new CheckersGameStateChangedEvent(this));
 	}
 
 	/**

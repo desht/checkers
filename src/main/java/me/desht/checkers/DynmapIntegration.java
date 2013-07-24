@@ -7,6 +7,7 @@ import me.desht.checkers.event.CheckersBoardCreatedEvent;
 import me.desht.checkers.event.CheckersBoardDeletedEvent;
 import me.desht.checkers.event.CheckersGameCreatedEvent;
 import me.desht.checkers.event.CheckersGameDeletedEvent;
+import me.desht.checkers.event.CheckersGameStateChangedEvent;
 import me.desht.checkers.game.CheckersGame;
 import me.desht.checkers.model.PlayerColour;
 import me.desht.checkers.view.BoardView;
@@ -111,6 +112,15 @@ public class DynmapIntegration implements Listener {
 	}
 
 	@EventHandler
+	public void onBoardDeleted(CheckersBoardDeletedEvent event) {
+		BoardView bv = event.getBoardView();
+		Marker m = markerSet.findMarker(bv.getName());
+		if (m != null) {
+			m.deleteMarker();
+		}
+	}
+
+	@EventHandler
 	public void onGameCreated(CheckersGameCreatedEvent event) {
 		BoardView bv = BoardViewManager.getManager().findBoardForGame(event.getGame());
 		addMarker(bv);
@@ -123,12 +133,9 @@ public class DynmapIntegration implements Listener {
 	}
 
 	@EventHandler
-	public void onBoardDeleted(CheckersBoardDeletedEvent event) {
-		BoardView bv = event.getBoardView();
-		Marker m = markerSet.findMarker(bv.getName());
-		if (m != null) {
-			m.deleteMarker();
-		}
+	public void onGameStateChanged(CheckersGameStateChangedEvent event) {
+		BoardView bv = BoardViewManager.getManager().findBoardForGame(event.getGame());
+		addMarker(bv);
 	}
 
 	private void initMarkerSet() {
