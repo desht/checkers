@@ -188,7 +188,7 @@ public class DynmapIntegration implements Listener {
 			CheckersGame game = bv.getGame();
 			String plb = getPlayerString(game, PlayerColour.BLACK);
 			String plw = getPlayerString(game, PlayerColour.WHITE);
-			label += "<br>" + colour("Game: ", "ffa") + colour(bv.getGame().getName(), "aa0");
+			label += "<br>" + colour("Game: ", "ffa") + colour(bv.getGame().getName() + " (" + bv.getGame().getState() + ")", "aa0");
 			label += "<br>" + colour("Players: ", "ffa") + colour(plb, "888") + colour(" vs. ", "ffa") + colour(plw, "fff");
 		} else {
 			label += "<br><em>" + colour("No game", "ffa") + "</em>";
