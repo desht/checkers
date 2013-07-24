@@ -14,6 +14,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Tameable;
@@ -28,6 +29,7 @@ import org.bukkit.event.block.BlockIgniteEvent;
 import org.bukkit.event.block.BlockPhysicsEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent;
+import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
@@ -278,6 +280,19 @@ public class ProtectionListener extends CheckersBaseListener {
 			if (bv != null) {
 				event.setCancelled(true);
 				event.getEntity().setFireTicks(0);
+			}
+		}
+	}
+
+	@EventHandler
+	public void onEntityChangeBlock(EntityChangeBlockEvent event) {
+		if (BoardViewManager.getManager().partOfBoard(event.getBlock().getLocation(), 0) != null) {
+			event.setCancelled(true);
+			if (event.getEntity() instanceof FallingBlock) {
+				FallingBlock fb = (FallingBlock) event.getEntity();
+				if (fb.getDropItem()) {
+					fb.getWorld().dropItemNaturally(fb.getLocation(), new ItemStack(fb.getMaterial(), 1, fb.getBlockData()));
+				}
 			}
 		}
 	}
