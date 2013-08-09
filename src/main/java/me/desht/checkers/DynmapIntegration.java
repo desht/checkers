@@ -55,6 +55,12 @@ public class DynmapIntegration implements Listener {
 		priority = plugin.getConfig().getInt("dynmap.layer_priority");
 		hideByDefault = plugin.getConfig().getBoolean("dynmap.hide_by_default");
 		minZoom = plugin.getConfig().getInt("dynmap.min_zoom");
+
+		if (active) {
+			initIcon();
+			initMarkerSet();
+			initMarkers();
+		}
 	}
 
 	/**
