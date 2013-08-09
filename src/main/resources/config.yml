@@ -14,6 +14,13 @@ auto_delete:
 autostart: true
 broadcast_results: true
 coloured_console: true
+database:
+  driver: sqlite
+  host: localhost
+  user: checkers
+  password: checkers
+  port: 3306
+  name: checkers
 dynmap:
   enabled: true
   hide_by_default: false
@@ -39,6 +46,12 @@ flying:
   fly_speed: 0.2
   walk_speed: 0.2
 forfeit_timeout: 5 min
+ladder:
+  initial_position: 1000
+league:
+  draw_points: 1
+  loss_points: 0
+  win_points: 2
 locale: default
 log_level: info
 max_moves_without_capture: 50

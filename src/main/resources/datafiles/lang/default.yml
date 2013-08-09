@@ -189,6 +189,7 @@ Misc:
   otherPlayerMustBeOffline: "You can only do this if the other player has gone offline."
   otherPlayerNeverRejoined: "(The other player hasn't rejoined since the last server restart)"
   persistedReloaded: "Persisted board and game data has been reloaded."
+  scoreRecord: "&e{0,number,integer}) &6{1}&-: &f{2}&-"
   timeControlsReloaded: "Time control definitions have been reloaded."
 
 Flight:

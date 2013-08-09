@@ -25,6 +25,7 @@ import me.desht.checkers.model.SimplePosition;
 import me.desht.checkers.player.AICheckersPlayer;
 import me.desht.checkers.player.CheckersPlayer;
 import me.desht.checkers.player.HumanCheckersPlayer;
+import me.desht.checkers.results.Results;
 import me.desht.checkers.util.CheckersUtils;
 import me.desht.dhutils.Duration;
 import me.desht.dhutils.LogUtils;
@@ -168,6 +169,21 @@ public class CheckersGame implements CheckersPersistable {
 
 	public String getName() {
 		return gameName;
+	}
+
+	public long getStarted() {
+		return started;
+	}
+
+	public long getFinished() {
+		return finished;
+	}
+
+	/**
+	 * @return the result
+	 */
+	public GameResult getResult() {
+		return result;
 	}
 
 	public Position getPosition() {
@@ -682,10 +698,20 @@ public class CheckersGame implements CheckersPersistable {
 		}
 	}
 
-	private void checkForAIActivity() {
-		synchronized (this) {
-			getPlayer(PlayerColour.WHITE).checkPendingAction();
-			getPlayer(PlayerColour.BLACK).checkPendingAction();
+	public void selectSquare(int sqi) {
+		for (GameListener l : listeners) {
+			l.selectSquare(sqi);
+		}
+	}
+
+	public String getPDNResult() {
+		switch (result) {
+		case NOT_FINISHED:
+			return "*";
+		case WIN: case RESIGNED: case FORFEIT:
+			return winner == PlayerColour.BLACK ? "0-1" : "1-0";
+		default:
+			return "1/2-1/2";
 		}
 	}
 
@@ -693,6 +719,13 @@ public class CheckersGame implements CheckersPersistable {
 		CheckersPlayer cp = getPlayer(playerName);
 		if (cp != null) {
 			cp.cleanup();
+		}
+	}
+
+	private void checkForAIActivity() {
+		synchronized (this) {
+			getPlayer(PlayerColour.WHITE).checkPendingAction();
+			getPlayer(PlayerColour.BLACK).checkPendingAction();
 		}
 	}
 
@@ -748,7 +781,10 @@ public class CheckersGame implements CheckersPersistable {
 
 		handlePayout();
 
-		// TODO: result logging to database
+		Results handler = Results.getResultsHandler();
+		if (handler != null) {
+			handler.logResult(this);
+		}
 	}
 
 	private void inviteSanityCheck(String inviterName) {
@@ -816,11 +852,5 @@ public class CheckersGame implements CheckersPersistable {
 		}
 
 		stake = 0.0;
-	}
-
-	public void selectSquare(int sqi) {
-		for (GameListener l : listeners) {
-			l.selectSquare(sqi);
-		}
 	}
 }

@@ -34,6 +34,7 @@ import me.desht.checkers.commands.ListAICommand;
 import me.desht.checkers.commands.ListBoardCommand;
 import me.desht.checkers.commands.ListGameCommand;
 import me.desht.checkers.commands.ListStylesCommand;
+import me.desht.checkers.commands.ListTopCommand;
 import me.desht.checkers.commands.MoveCommand;
 import me.desht.checkers.commands.NoCommand;
 import me.desht.checkers.commands.OfferDrawCommand;
@@ -56,6 +57,7 @@ import me.desht.checkers.listeners.PlayerListener;
 import me.desht.checkers.listeners.PlayerTracker;
 import me.desht.checkers.listeners.ProtectionListener;
 import me.desht.checkers.listeners.WorldListener;
+import me.desht.checkers.results.Results;
 import me.desht.checkers.view.BoardView;
 import me.desht.checkers.view.BoardViewManager;
 import me.desht.dhutils.ConfigurationListener;
@@ -147,6 +149,9 @@ public class CheckersPlugin extends JavaPlugin implements ConfigurationListener 
 		MessagePager.setPageCmd("/checkers page [#|n|p]");
 		MessagePager.setDefaultPageSize(getConfig().getInt("pager.lines", 0));
 
+		// this will cause saved results data to start being pulled in (async)
+        Results.getResultsHandler();
+
 		setupVault(pm);
 		setupWorldEdit(pm);
 		setupSMSIntegration(pm);
@@ -184,6 +189,7 @@ public class CheckersPlugin extends JavaPlugin implements ConfigurationListener 
 		cmds.registerCommand(new ListBoardCommand());
 		cmds.registerCommand(new ListGameCommand());
 		cmds.registerCommand(new ListStylesCommand());
+		cmds.registerCommand(new ListTopCommand());
 		cmds.registerCommand(new MoveCommand());
 		cmds.registerCommand(new NoCommand());
 		cmds.registerCommand(new OfferDrawCommand());
