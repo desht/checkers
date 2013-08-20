@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import me.desht.dhutils.JARUtil;
 import me.desht.dhutils.LogUtils;
 import me.desht.dhutils.MiscUtil;
 
@@ -24,8 +25,9 @@ public class Messages {
 		File langDir = DirectoryStructure.getLanguagesDirectory();
 
 		try {
-			for (String lang : MiscUtil.listFilesinJAR(DirectoryStructure.getJarFile(), "datafiles/lang", ".yml")) {
-				DirectoryStructure.extractResource(lang, langDir);
+			JARUtil ju = new JARUtil(CheckersPlugin.getInstance());
+			for (String lang : MiscUtil.listFilesinJAR(ju.getJarFile(), "datafiles/lang", ".yml")) {
+				ju.extractResource(lang, langDir);
 			}
 		} catch (IOException e) {
 			LogUtils.severe("can't determine message files to extract!");

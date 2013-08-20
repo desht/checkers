@@ -131,7 +131,7 @@ public class CheckersPlugin extends JavaPlugin implements ConfigurationListener 
 
 		LogUtils.setLogLevel(getConfig().getString("log_level", "INFO"));
 
-		DirectoryStructure.setup();
+		DirectoryStructure.setup(this);
 
 		Messages.init(getConfig().getString("locale", "default"));
 

@@ -18,6 +18,7 @@ import me.desht.checkers.DirectoryStructure;
 import me.desht.checkers.Messages;
 import me.desht.checkers.game.CheckersGame;
 import me.desht.checkers.model.PlayerColour;
+import me.desht.dhutils.JARUtil;
 import me.desht.dhutils.LogUtils;
 import me.desht.dhutils.MiscUtil;
 
@@ -158,7 +159,8 @@ public class AIFactory {
 
 		// first pull in the core definitions from the JAR file resource...
 		try {
-			InputStream in = DirectoryStructure.openResourceNoCache(AI_CORE_DEFS);
+			JARUtil ju = new JARUtil(CheckersPlugin.getInstance());
+			InputStream in = ju.openResourceNoCache(AI_CORE_DEFS);
 			coreAIdefs = YamlConfiguration.loadConfiguration(in);
 		} catch (Exception e) {
 			LogUtils.severe("Can't load AI definitions: " + e.getMessage());
