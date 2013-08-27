@@ -378,6 +378,8 @@ public class CheckersPlugin extends JavaPlugin implements ConfigurationListener 
 			e.play(null);
 		} else if (key.equals("version")) {
 			throw new DHUtilsException("'version' config item may not be changed");
+		} else if (key.equals("database.table_prefix") && newVal.toString().isEmpty()) {
+			throw new DHUtilsException("'database.table_prefix' may not be empty");
 		}
 	}
 
@@ -407,11 +409,11 @@ public class CheckersPlugin extends JavaPlugin implements ConfigurationListener 
 			}
 		} else if (key.startsWith("effects.")) {
 			fx = new SpecialFX(getConfig().getConfigurationSection("effects"));
-			//		} else if (key.startsWith("database.")) {
-			//			Results.shutdown();
-			//			if (Results.getResultsHandler() == null) {
-			//				LogUtils.warning("DB connection cannot be re-established.  Check your settings.");
-			//			}
+		} else if (key.startsWith("database.")) {
+			Results.shutdown();
+			if (Results.getResultsHandler() == null) {
+				LogUtils.warning("DB connection cannot be re-established.  Check your settings.");
+			}
 		} else if (key.equals("coloured_console")) {
 			MiscUtil.setColouredConsole((Boolean)newVal);
 		} else if (key.startsWith("dynmap.") && dynmapIntegration != null) {

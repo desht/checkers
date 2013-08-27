@@ -110,22 +110,21 @@ public class ResultsDB {
 				"player VARCHAR(32) NOT NULL," +
 				"score INTEGER NOT NULL," +
 				"PRIMARY KEY (player)");
-//		createTableIfNotExists("pgn",
-//				"gameID INTEGER NOT NULL," +
-//				"pgnData TEXT NOT NULL," +
-//				"FOREIGN KEY (gameID) REFERENCES results(gameID) ON DELETE CASCADE");
 	}
 
 	private void createTableIfNotExists(String tableName, String ddl) throws SQLException {
-		if (!tableExists(tableName)) {
-			try {
-				ddl = "CREATE TABLE " + tableName + "(" + ddl + ")";
-				Statement stmt = connection.createStatement();
-				stmt.executeUpdate(ddl);
-			} catch (SQLException e) {
-				LogUtils.warning("can't create table " + tableName + ": " + e.getMessage());
-				throw e;
+		String fullName = CheckersPlugin.getInstance().getConfig().getString("database.table_prefix", "checkers_") + tableName;
+		Statement stmt = connection.createStatement();
+		try {
+			if (tableExists(tableName)) {
+				stmt.executeUpdate("ALTER TABLE " + tableName + " RENAME TO " + fullName);
+				LogUtils.info("renamed DB table " + tableName + " to " + fullName);
+			} else if (!tableExists(fullName)) {
+				stmt.executeUpdate("CREATE TABLE " + fullName + "(" + ddl + ")");
 			}
+		} catch (SQLException e) {
+			LogUtils.warning("can't execute " + stmt + ": " + e.getMessage());
+			throw e;
 		}
 	}
 

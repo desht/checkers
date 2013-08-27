@@ -21,6 +21,7 @@ database:
   password: checkers
   port: 3306
   name: checkers
+  table_prefix: checkers_
 dynmap:
   enabled: true
   hide_by_default: false

@@ -18,7 +18,6 @@ public class ResultEntry implements DatabaseSavable {
 	private final long startTime, endTime;
 	private final GameResult result;
 	private final String pdnResult;
-//	private final String pgnData;
 
 	ResultEntry(CheckersGame game) {
 		playerWhite = game.getPlayer(PlayerColour.WHITE).getName();
@@ -28,7 +27,6 @@ public class ResultEntry implements DatabaseSavable {
 		endTime = game.getFinished();
 		result = game.getResult();
 		pdnResult = game.getPDNResult();
-//		pgnData = CheckersPlugin.getInstance().getConfig().getBoolean("results.pgn_db") ? game.getPDN() : null;
 	}
 
 	ResultEntry(String plw, String plb, String gn, long start, long end, String pdnRes, GameResult rt) {
@@ -39,7 +37,6 @@ public class ResultEntry implements DatabaseSavable {
 		endTime = end;
 		result = rt;
 		pdnResult = pdnRes;
-//		pgnData = null;
 	}
 
 	ResultEntry(ResultSet rs) throws SQLException {
@@ -51,7 +48,6 @@ public class ResultEntry implements DatabaseSavable {
 			endTime = rs.getDate("endTime").getTime();
 			result = GameResult.valueOf(rs.getString("result"));
 			pdnResult = rs.getString("pdnResult");
-//			pgnData = null;
 		} catch (SQLException e) {
 			throw e;
 		}
@@ -106,8 +102,9 @@ public class ResultEntry implements DatabaseSavable {
 	}
 
 	public void saveToDatabase(Connection connection) throws SQLException {
+		String tableName = Results.getResultsHandler().getTableName("results");
 		PreparedStatement stmt = connection.prepareStatement(
-				"INSERT INTO results (playerWhite, playerBlack, gameName, startTime, endTime, result, pdnResult)" +
+				"INSERT INTO " + tableName + " (playerWhite, playerBlack, gameName, startTime, endTime, result, pdnResult)" +
 				" VALUES (?, ?, ?, ?, ?, ?, ?)", PreparedStatement.RETURN_GENERATED_KEYS);
 		stmt.setString(1, playerWhite);
 		stmt.setString(2, playerBlack);
@@ -118,24 +115,6 @@ public class ResultEntry implements DatabaseSavable {
 		stmt.setString(7, pdnResult);
 		LogUtils.fine("execute SQL: " + stmt);
 		stmt.executeUpdate();
-
-//		if (pgnData == null) {
-//			return;
-//		}
-//
-//		ResultSet rs = stmt.getGeneratedKeys();
-//		if (rs.next()) {
-//			int rowId = rs.getInt(1);
-//			if (rowId != -1 && pgnData != null) {
-//				PreparedStatement pgnStmt = connection.prepareStatement("INSERT INTO pgn VALUES(?,?)");
-//				pgnStmt.setInt(1, rowId);
-//				pgnStmt.setString(2, pgnData);
-//				LogUtils.fine("execute SQL: " + pgnStmt);
-//				pgnStmt.executeUpdate();
-//			}
-//		} else {
-//			LogUtils.warning("can't get generated key for SQL insert, aux tables will not be updated");
-//		}
 	}
 }
 
