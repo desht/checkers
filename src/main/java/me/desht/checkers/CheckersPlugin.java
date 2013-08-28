@@ -263,6 +263,10 @@ public class CheckersPlugin extends JavaPlugin implements ConfigurationListener 
 		return playerTracker;
 	}
 
+	public DynmapIntegration getDynmapIntegration() {
+		return dynmapIntegration;
+	}
+
 	private void setupMetrics() {
 		if (!getConfig().getBoolean("mcstats")) {
 			return;

@@ -318,6 +318,9 @@ public class CheckersBoard {
 		highlightSquare(lastMovedSqi, boardStyle.getLastMoveHighlightMaterial());
 		fullBoard.forceLightLevel(boardStyle.getLightLevel());
 		redrawNeeded = false;
+		if (CheckersPlugin.getInstance().getDynmapIntegration() != null) {
+			CheckersPlugin.getInstance().getDynmapIntegration().triggerUpdate(fullBoard);
+		}
 	}
 
 	void reset() {
@@ -356,6 +359,9 @@ public class CheckersBoard {
 		}
 		c = c.expand(CuboidDirection.Up, height - 1);
 		c.fill(mat);
+		if (CheckersPlugin.getInstance().getDynmapIntegration() != null) {
+			CheckersPlugin.getInstance().getDynmapIntegration().triggerUpdate(c);
+		}
 	}
 
 	public void reloadBoardStyle() {
@@ -372,11 +378,14 @@ public class CheckersBoard {
 
 	private void highlightSquare(int row, int col, MaterialWithData mat) {
 		if (row >= 0 && row <= 7 && col >= 0 && col <= 7) {
-			Cuboid sq = getSquare(row, col);
-			sq.getFace(CuboidDirection.East).fill(mat);
-			sq.getFace(CuboidDirection.North).fill(mat);
-			sq.getFace(CuboidDirection.West).fill(mat);
-			sq.getFace(CuboidDirection.South).fill(mat);
+			Cuboid square = getSquare(row, col);
+			square.getFace(CuboidDirection.East).fill(mat);
+			square.getFace(CuboidDirection.North).fill(mat);
+			square.getFace(CuboidDirection.West).fill(mat);
+			square.getFace(CuboidDirection.South).fill(mat);
+			if (CheckersPlugin.getInstance().getDynmapIntegration() != null) {
+				CheckersPlugin.getInstance().getDynmapIntegration().triggerUpdate(square);
+			}
 		}
 	}
 
@@ -395,6 +404,9 @@ public class CheckersBoard {
 			square.fill(black ? boardStyle.getBlackSquareMaterial() : boardStyle.getWhiteSquareMaterial());
 		} else {
 			square.fill(black ? boardStyle.getBlackSquareMaterial() : boardStyle.getWhiteSquareMaterial(), mbu);
+		}
+		if (CheckersPlugin.getInstance().getDynmapIntegration() != null) {
+			CheckersPlugin.getInstance().getDynmapIntegration().triggerUpdate(square);
 		}
 	}
 

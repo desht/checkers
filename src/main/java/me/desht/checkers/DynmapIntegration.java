@@ -13,6 +13,7 @@ import me.desht.checkers.model.PlayerColour;
 import me.desht.checkers.view.BoardView;
 import me.desht.checkers.view.BoardViewManager;
 import me.desht.dhutils.LogUtils;
+import me.desht.dhutils.cuboid.Cuboid;
 
 import org.bukkit.Location;
 import org.bukkit.event.EventHandler;
@@ -61,6 +62,11 @@ public class DynmapIntegration implements Listener {
 			initMarkerSet();
 			initMarkers();
 		}
+	}
+
+	public void triggerUpdate(Cuboid c) {
+		LogUtils.finer("dynmap: triggering render of " + c);
+		dynmap.triggerRenderOfVolume(c.getLowerNE(), c.getUpperSW());
 	}
 
 	/**
