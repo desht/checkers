@@ -443,14 +443,15 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 
 	@Override
 	public void playerAdded(CheckersGame checkersGame, CheckersPlayer checkersPlayer) {
-		if (CheckersPlugin.getInstance().getConfig().getBoolean("auto_teleport_on_join")) {
-			checkersPlayer.teleport(this);
-		}
 		getControlPanel().repaintControls();
 	}
 
 	@Override
 	public void gameStarted(CheckersGame checkersGame) {
+		if (CheckersPlugin.getInstance().getConfig().getBoolean("auto_teleport_on_join")) {
+			checkersGame.getPlayer(PlayerColour.WHITE).teleport(this);
+			checkersGame.getPlayer(PlayerColour.BLACK).teleport(this);
+		}
 		getControlPanel().repaintControls();
 	}
 
