@@ -7,6 +7,7 @@ ai:
   name_format: '[AI]<NAME>'
   lose_on_fail: false
 auto_teleport_on_join: true
+auto_teleport_on_start: true
 auto_delete:
   finished: 15 sec
   not_started: 1 min 30 sec

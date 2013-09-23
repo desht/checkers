@@ -173,11 +173,12 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 			if (game.getPosition().getMoveHistory().length > 0) {
 				getBoard().setLastMovedSquare(game.getPosition().getLastMove().getToSqi());
 			}
+			playerAdded(game, game.getPlayer(PlayerColour.BLACK));
+			playerAdded(game, game.getPlayer(PlayerColour.WHITE));
 		} else {
 			getBoard().reset();
+			getControlPanel().repaintControls();
 		}
-
-		getControlPanel().repaintControls();
 
 		save();
 	}
@@ -443,12 +444,17 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 
 	@Override
 	public void playerAdded(CheckersGame checkersGame, CheckersPlayer checkersPlayer) {
-		getControlPanel().repaintControls();
+		if (checkersPlayer != null) {
+			getControlPanel().repaintControls();
+			if (CheckersPlugin.getInstance().getConfig().getBoolean("auto_teleport_on_join")) {
+				checkersPlayer.teleport(this);
+			}
+		}
 	}
 
 	@Override
 	public void gameStarted(CheckersGame checkersGame) {
-		if (CheckersPlugin.getInstance().getConfig().getBoolean("auto_teleport_on_join")) {
+		if (CheckersPlugin.getInstance().getConfig().getBoolean("auto_teleport_on_start")) {
 			checkersGame.getPlayer(PlayerColour.WHITE).teleport(this);
 			checkersGame.getPlayer(PlayerColour.BLACK).teleport(this);
 		}

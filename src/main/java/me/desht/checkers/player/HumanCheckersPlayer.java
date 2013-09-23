@@ -78,12 +78,12 @@ public class HumanCheckersPlayer extends CheckersPlayer {
 
 	@Override
 	public void promptForNextMove() {
-		Player p = getBukkitPlayer();
-		if (p == null)
-			return;
-		Move m = getGame().getPosition().getLastMove();
-		alert(Messages.getString("Game.playerPlayedMove", getColour().getOtherColour().getDisplayColour(), m.toString(), getColour().getDisplayColour()));
-		maybeAutoSelect();
+		Player player = getBukkitPlayer();
+		if (player != null) {
+			Move m = getGame().getPosition().getLastMove();
+			alert(Messages.getString("Game.playerPlayedMove", getColour().getOtherColour().getDisplayColour(), m.toString(), getColour().getDisplayColour()));
+			maybeAutoSelect();
+		}
 	}
 
 	private void maybeAutoSelect() {
@@ -113,17 +113,17 @@ public class HumanCheckersPlayer extends CheckersPlayer {
 
 	@Override
 	public void alert(String message) {
-		Player p = getBukkitPlayer();
-		if (p != null) {
-			MiscUtil.alertMessage(p, Messages.getString("Game.alertPrefix", getGame().getName()) + message);
+		Player player = getBukkitPlayer();
+		if (player != null) {
+			MiscUtil.alertMessage(player, Messages.getString("Game.alertPrefix", getGame().getName()) + message);
 		}
 	}
 
 	@Override
 	public void statusMessage(String message) {
-		Player p = getBukkitPlayer();
-		if (p != null) {
-			MiscUtil.statusMessage(p, message);
+		Player player = getBukkitPlayer();
+		if (player != null) {
+			MiscUtil.statusMessage(player, message);
 		}
 	}
 
@@ -157,10 +157,10 @@ public class HumanCheckersPlayer extends CheckersPlayer {
 
 	@Override
 	public void cancelOffers() {
-		Player p = getBukkitPlayer();
-		if (p != null) {
-			// making a move after a draw/swap/undo offer has been made is equivalent to declining the offer
-			YesNoResponse.handleYesNoResponse(p, false);
+		Player player = getBukkitPlayer();
+		if (player != null) {
+			// making a move after a draw/swap/undo offer has been made effectively declines the offer
+			YesNoResponse.handleYesNoResponse(player, false);
 		}
 	}
 
@@ -214,20 +214,20 @@ public class HumanCheckersPlayer extends CheckersPlayer {
 
 	@Override
 	public void teleport(Location loc) {
-		if (getBukkitPlayer() != null) {
-			Player p = getBukkitPlayer();
-			CheckersPlugin.getInstance().getPlayerTracker().teleportPlayer(p, loc);
+		Player player = getBukkitPlayer();
+		if (player != null) {
+			CheckersPlugin.getInstance().getPlayerTracker().teleportPlayer(player, loc);
 		}
 	}
 
 	@Override
 	public void teleport(BoardView bv) {
-		Player p = getBukkitPlayer();
-		if (p != null) {
+		Player player = getBukkitPlayer();
+		if (player != null) {
 			// only teleport the player if they're not on (or very near) the board already
-			if (!bv.getBoard().getFullBoard().outset(CuboidDirection.Both, 5).contains(p.getLocation())) {
+			if (!bv.getBoard().getFullBoard().outset(CuboidDirection.Both, 5).contains(player.getLocation())) {
 				Location loc = bv.getTeleportInDestination();
-				CheckersPlugin.getInstance().getPlayerTracker().teleportPlayer(p, loc);
+				CheckersPlugin.getInstance().getPlayerTracker().teleportPlayer(player, loc);
 			}
 		}
 	}
