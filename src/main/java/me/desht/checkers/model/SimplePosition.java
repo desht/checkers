@@ -27,7 +27,7 @@ public class SimplePosition implements Position {
 	private boolean jumpInProgress;
 	private List<Move> moveHistory;
 	private int halfMoveClock; // moves since a capture was made
-
+	private boolean forcedJump = true;
 	public SimplePosition() {
 		board = new PieceType[8][8];
 		newGame();
@@ -50,6 +50,16 @@ public class SimplePosition implements Position {
 				moveHistory.add(m);
 			}
 		}
+	}
+
+	@Override
+	public boolean isForcedJump() {
+		return forcedJump;
+	}
+
+	@Override
+	public void setForcedJump(boolean forcedJump) {
+		this.forcedJump = forcedJump;
 	}
 
 	@Override
@@ -305,7 +315,7 @@ public class SimplePosition implements Position {
 		}
 
 		// if there are any jumps, the player *must* jump, so don't calculate any non-jump moves
-		if (moves.isEmpty()) {
+		if (moves.isEmpty() || !forcedJump) {
 			for (int row = 0; row < 8; row++) {
 				for (int col = 0; col < 8; col++) {
 					if (board[row][col].getColour() == who) {

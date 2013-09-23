@@ -1,6 +1,8 @@
 package me.desht.checkers.model;
 
 public interface Position {
+	public void setForcedJump(boolean forcedJump);
+	public boolean isForcedJump();
 	public PieceType getPieceAt(int row, int col);
 	public Move[] getLegalMoves();
 	public Move[] getLegalMoves(int row, int col);

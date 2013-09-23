@@ -70,6 +70,8 @@ public class CheckersGame implements CheckersPersistable {
 	public CheckersGame(String gameName, String creatorName, PlayerColour colour, String tcSpec) {
 		this.gameName = gameName;
 		this.position = new SimplePosition();
+		// TODO: forced jump setting should really be an attribute of individual games, not a global setting
+		this.position.setForcedJump(CheckersPlugin.getInstance().getConfig().getBoolean("forced_jump"));
 		this.state = GameState.SETTING_UP;
 		this.invited = "";
 		this.stake = 0.0;
@@ -84,6 +86,7 @@ public class CheckersGame implements CheckersPersistable {
 	public CheckersGame(Configuration conf) {
 		this.gameName = conf.getString("name");
 		this.position = new SimplePosition();
+		this.position.setForcedJump(conf.getBoolean("forcedJump", true));
 		this.state = GameState.valueOf(conf.getString("state"));
 		this.invited = conf.getString("invited");
 		this.created = conf.getLong("created");
@@ -150,7 +153,7 @@ public class CheckersGame implements CheckersPersistable {
 		map.put("result", result.toString());
 		map.put("stake", stake);
 		map.put("clock", clock);
-
+		map.put("forcedJump", getPosition().isForcedJump());
 		return map;
 	}
 
@@ -496,6 +499,8 @@ public class CheckersGame implements CheckersPersistable {
 			getPlayer(PlayerColour.BLACK).withdrawFunds(stake);
 		}
 
+		gameRulesReminder();
+
 		clearInvitation();
 		setState(GameState.RUNNING);
 
@@ -506,6 +511,10 @@ public class CheckersGame implements CheckersPersistable {
 		for (GameListener l : listeners) {
 			l.gameStarted(this);
 		}
+	}
+
+	private void gameRulesReminder() {
+		alert(getPosition().isForcedJump() ? Messages.getString("Game.forceJumpEnabled") : Messages.getString("Game.forceJumpDisabled"));
 	}
 
 	public void doMove(String playerName, int fromSqi, int toSqi) {

@@ -370,7 +370,6 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 		}
 	}
 
-
 	@Override
 	public void onConfigurationValidate(ConfigurationManager configurationManager, String key, Object oldVal,
 			Object newVal) {

@@ -11,6 +11,8 @@ Game:
   cantAffordToJoin: "You can''t afford the stake for this game (need {0})!"
   cantWriteArchive: "Can''t write PGN archive {0}: {1}"
   currentGames: "Your current checkers games: {0}"
+  forceJumpEnabled: "If you can jump an opposing piece, you MUST make a jump."
+  forceJumpDisabled: "You are NOT required to always jump opposing pieces."
   gameCreated: "Checkers game &6{0}&- has been created on board &6{1}&-."
   gameDeleted: "Game &6{0}&- has been deleted."
   gameDeletedAlert: "Game deleted by &6{0}&-!"
