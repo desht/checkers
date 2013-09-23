@@ -41,6 +41,7 @@ Game:
   joinPromptGlobal: "Type &f/checkers join {0}&- to join the game."
   moveUndone: "The last move has been undone.  &f{0}&- to play."
   mustContinueJumping: "You must continue to jump."
+  mustBeInSetup: "This can only be done during game setup phase."
   newTimeControlPhase: "New time control phase started: &6{0}&-."
   noActiveGame: "No active game - set one with &f/checkers game <name>&-."
   noNegativeStakes: "Negative stakes are not permitted!"

@@ -27,6 +27,7 @@ import me.desht.checkers.commands.CreateBoardCommand;
 import me.desht.checkers.commands.CreateGameCommand;
 import me.desht.checkers.commands.DeleteBoardCommand;
 import me.desht.checkers.commands.DeleteGameCommand;
+import me.desht.checkers.commands.ForceJumpCommand;
 import me.desht.checkers.commands.GetcfgCommand;
 import me.desht.checkers.commands.InviteCommand;
 import me.desht.checkers.commands.JoinCommand;
@@ -182,6 +183,7 @@ public class CheckersPlugin extends JavaPlugin implements ConfigurationListener 
 		cmds.registerCommand(new CreateGameCommand());
 		cmds.registerCommand(new DeleteBoardCommand());
 		cmds.registerCommand(new DeleteGameCommand());
+		cmds.registerCommand(new ForceJumpCommand());
 		cmds.registerCommand(new GetcfgCommand());
 		cmds.registerCommand(new InviteCommand());
 		cmds.registerCommand(new JoinCommand());
