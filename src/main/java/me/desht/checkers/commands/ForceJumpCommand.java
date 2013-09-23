@@ -19,6 +19,8 @@ public class ForceJumpCommand extends AbstractCheckersCommand {
 
 	@Override
 	public boolean execute(Plugin plugin, CommandSender sender, String[] args) {
+		notFromConsole(sender);
+
 		CheckersGame game = CheckersGameManager.getManager().getCurrentGame(sender.getName(), true);
 
 		CheckersValidate.isTrue(game.getState() == GameState.SETTING_UP, Messages.getString("Game.mustBeInSetup"));
