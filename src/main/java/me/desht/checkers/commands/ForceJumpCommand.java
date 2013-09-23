@@ -14,7 +14,7 @@ public class ForceJumpCommand extends AbstractCheckersCommand {
 	public ForceJumpCommand() {
 		super("checkers forcejump", 0, 0);
 		setPermissionNode("checkers.commands.forcejump");
-		setUsage("/checkers forcejump");
+		setUsage("/<command> forcejump");
 	}
 
 	@Override

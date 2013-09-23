@@ -17,7 +17,7 @@ public class ListTopCommand extends AbstractCheckersCommand {
 	public ListTopCommand() {
 		super("checkers list top", 0, 3);
 		setPermissionNode("checkers.commands.list.top");
-		setUsage("/checkers list top [<n>] [ladder|league] [-ai] [-r]");
+		setUsage("/<command> list top [<n>] [ladder|league] [-ai] [-r]");
 		setOptions(new String[] { "ai", "r" });
 	}
 
