@@ -21,10 +21,10 @@ import org.bukkit.block.Block;
 public class CheckersBoard {
 	// the center of the A1 square (lower-left on the board)
 	private final PersistableLocation a1Center;
-	// the lower-left-most part (outer corner) of the a1 square (depends on rotation)
-	private final PersistableLocation a1Corner;
-	// the upper-right-most part (outer corner) of the h8 square (depends on rotation)
-	private final PersistableLocation h8Corner;
+	// the lower-left-most part (outer corner) of the bottom left square (depends on rotation)
+	private final PersistableLocation bottomLeftCorner;
+	// the upper-right-most part (outer corner) of the top right square (depends on rotation)
+	private final PersistableLocation topRightCorner;
 	// region that defines the board itself - just the squares
 	private final Cuboid boardSquares;
 	// area above the board squares
@@ -37,6 +37,8 @@ public class CheckersBoard {
 	private final Cuboid fullBoard;
 	// this is the direction white faces
 	private final BoardRotation rotation;
+	// number of squares on the edge
+	private final int size;
 
 	// the square currently selected, if any
 	private int selectedSqi = Checkers.NO_SQUARE;
@@ -48,14 +50,24 @@ public class CheckersBoard {
 	// note a full redraw needed if the board or piece style change
 	private boolean redrawNeeded;
 
-	public CheckersBoard(Location origin, BoardRotation rotation, String boardStyleName) {
+	/**
+	 * Constructor.
+	 *
+	 * @param origin board origin (where the player clicked; the centre of the bottom left square)
+	 * @param rotation board rotation
+	 * @param boardStyleName name of the board style to use for this board
+	 * @param size board size; the number of squares on an edge of the board
+	 */
+	public CheckersBoard(Location origin, BoardRotation rotation, String boardStyleName, int size) {
 		setBoardStyle(boardStyleName);
 		this.rotation = rotation;
+		this.size = size;
+
 		a1Center = new PersistableLocation(origin);
 		a1Center.setSavePitchAndYaw(false);
-		a1Corner = initA1Corner(origin);
-		h8Corner = initH8Corner(a1Corner.getLocation());
-		boardSquares = new Cuboid(a1Corner.getLocation(), h8Corner.getLocation());
+		bottomLeftCorner = initBottomLeftCorner(origin);
+		topRightCorner = initTopRightCorner();
+		boardSquares = new Cuboid(bottomLeftCorner.getLocation(), topRightCorner.getLocation());
 		aboveSquares = boardSquares.expand(CuboidDirection.Up, boardStyle.getHeight());
 		frameBoard = boardSquares.outset(CuboidDirection.Horizontal, boardStyle.getFrameWidth());
 		aboveFullBoard = frameBoard.shift(CuboidDirection.Up, 1).expand(CuboidDirection.Up, boardStyle.getHeight() - 1);
@@ -63,7 +75,7 @@ public class CheckersBoard {
 		validateBoardPosition();
 	}
 
-	private PersistableLocation initA1Corner(Location origin) {
+	private PersistableLocation initBottomLeftCorner(Location origin) {
 		Location a1 = new Location(origin.getWorld(), origin.getBlockX(), origin.getBlockY(), origin.getBlockZ());
 		int offset = -boardStyle.getSquareSize() / 2;
 		BoardRotation toRight = rotation.getRight();
@@ -72,13 +84,14 @@ public class CheckersBoard {
 		return new PersistableLocation(a1);
 	}
 
-	private PersistableLocation initH8Corner(Location a1) {
-		Location h8 = new Location(a1.getWorld(), a1.getBlockX(), a1.getBlockY(), a1.getBlockZ());
-		int size = (boardStyle.getSquareSize() * 8) - 1;
+	private PersistableLocation initTopRightCorner() {
+		Location bottomLeft = bottomLeftCorner.getLocation();
+		Location topRight = new Location(bottomLeft.getWorld(), bottomLeft.getBlockX(), bottomLeft.getBlockY(), bottomLeft.getBlockZ());
+		int size = (boardStyle.getSquareSize() * getSize()) - 1;
 		BoardRotation toRight = rotation.getRight();
-		h8.add(rotation.getXadjustment(size), 0, rotation.getZadjustment(size));
-		h8.add(toRight.getXadjustment(size), 0, toRight.getZadjustment(size));
-		return new PersistableLocation(h8);
+		topRight.add(rotation.getXadjustment(size), 0, rotation.getZadjustment(size));
+		topRight.add(toRight.getXadjustment(size), 0, toRight.getZadjustment(size));
+		return new PersistableLocation(topRight);
 	}
 
 	private void validateBoardPosition() {
@@ -100,6 +113,8 @@ public class CheckersBoard {
 	}
 
 	/**
+	 * Get the board style
+	 *
 	 * @return the boardStyle
 	 */
 	public BoardStyle getBoardStyle() {
@@ -109,6 +124,15 @@ public class CheckersBoard {
 	public void setBoardStyle(String boardStyleName) {
 		BoardStyle newStyle = BoardStyle.loadStyle(boardStyleName);
 		setBoardStyle(newStyle);
+	}
+
+	/**
+	 * Get the board size (the number of squares on an edge)
+	 *
+	 * @return the board size
+	 */
+	public int getSize() {
+		return size;
 	}
 
 	/**
@@ -127,17 +151,17 @@ public class CheckersBoard {
 	}
 
 	/**
-	 * @return the a1Corner
+	 * @return the bottomLeftCorner
 	 */
-	public PersistableLocation getA1Corner() {
-		return a1Corner;
+	public PersistableLocation getBottomLeftCorner() {
+		return bottomLeftCorner;
 	}
 
 	/**
-	 * @return the h8Corner
+	 * @return the topRightCorner
 	 */
-	public PersistableLocation getH8Corner() {
-		return h8Corner;
+	public PersistableLocation getTopRightCorner() {
+		return topRightCorner;
 	}
 
 	/**
@@ -193,7 +217,7 @@ public class CheckersBoard {
 
 	/**
 	 * Check if the location is a part of the board itself.
-	 * 
+	 *
 	 * @param loc	location to check
 	 * @return true if the location is part of the board itself
 	 */
@@ -203,7 +227,7 @@ public class CheckersBoard {
 
 	/**
 	 * Check if the location is above the board but below the enclosure roof.
-	 * 
+	 *
 	 * @param loc	location to check
 	 * @return true if the location is above the board AND within the board's height range
 	 */
@@ -213,7 +237,7 @@ public class CheckersBoard {
 
 	/**
 	 * Check if this is somewhere within the board bounds.
-	 * 
+	 *
 	 * @param loc		location to check
 	 * @param fudge		fudge factor - check within a slightly larger area
 	 * @return true if the location is *anywhere* within the board <br>
@@ -234,16 +258,16 @@ public class CheckersBoard {
 	/**
 	 * Get the Cuboid region for this square of the board itself.
 	 *
-	 * @param row
-	 * @param col
+	 * @param row the row number
+	 * @param col the column number
 	 * @return a Cuboid representing the square
 	 */
 	public Cuboid getSquare(int row, int col) {
 		if (row < 0 || col < 0 || row > 7 || col > 7) {
-			throw new CheckersException("CheckersBoard: getSquare: bad (row, col): (" + row + "," + col + ")");	
+			throw new CheckersException("CheckersBoard: getSquare: bad (row, col): (" + row + "," + col + ")");
 		}
 
-		Cuboid sq = new Cuboid(a1Corner.getLocation());
+		Cuboid sq = new Cuboid(bottomLeftCorner.getLocation());
 
 		int s = boardStyle.getSquareSize();
 		CuboidDirection dir = rotation.getDirection();
@@ -258,8 +282,8 @@ public class CheckersBoard {
 	/**
 	 * Get the region above the given square, expanded to the board's height.
 	 *
-	 * @param row
-	 * @param col
+	 * @param row the row number
+	 * @param col the column number
 	 * @return
 	 */
 	public Cuboid getPieceRegion(int row, int col) {
@@ -304,7 +328,7 @@ public class CheckersBoard {
 		if (selectedSqi == lastMovedSqi) {
 			highlightSquare(selectedSqi, boardStyle.getSelectedHighlightMaterial());
 		} else {
-			paintBoardSquare(Checkers.sqiToRow(lastMovedSqi), Checkers.sqiToCol(lastMovedSqi), null);	
+			paintBoardSquare(Checkers.sqiToRow(lastMovedSqi), Checkers.sqiToCol(lastMovedSqi), null);
 		}
 		lastMovedSqi = -1;
 	}
@@ -333,8 +357,8 @@ public class CheckersBoard {
 	}
 
 	public void paintPieces(Position position) {
-		for (int row = 0; row < 8; ++row) {
-			for (int col = 0; col < 8; ++col) {
+		for (int row = 0; row < getSize(); ++row) {
+			for (int col = 0; col < getSize(); ++col) {
 				paintPiece(row, col, position.getPieceAt(row, col));
 			}
 		}
@@ -377,7 +401,7 @@ public class CheckersBoard {
 	}
 
 	private void highlightSquare(int row, int col, MaterialWithData mat) {
-		if (row >= 0 && row <= 7 && col >= 0 && col <= 7) {
+		if (row >= 0 && row < getSize() && col >= 0 && col < getSize()) {
 			Cuboid square = getSquare(row, col);
 			square.getFace(CuboidDirection.East).fill(mat);
 			square.getFace(CuboidDirection.North).fill(mat);
@@ -390,8 +414,8 @@ public class CheckersBoard {
 	}
 
 	private void paintBoard(MassBlockUpdate mbu) {
-		for (int row = 0; row < 8; row++) {
-			for (int col = 0; col < 8; col++) {
+		for (int row = 0; row < getSize(); row++) {
+			for (int col = 0; col < getSize(); col++) {
 				paintBoardSquare(row, col, mbu);
 			}
 		}
@@ -468,15 +492,16 @@ public class CheckersBoard {
 		int zOff = (loc.getBlockZ() - boardSquares.getLowerZ()) / boardStyle.getSquareSize();
 
 		LogUtils.fine("loc = " + loc + ", xOff = " + xOff + ", zOff = " + zOff);
+		int sz = getSize() - 1;
 		switch (getRotation()) {
 		case NORTH:
-			return Checkers.rowColToSqi(7 - zOff, xOff);
+			return Checkers.rowColToSqi(sz - zOff, xOff);
 		case SOUTH:
-			return Checkers.rowColToSqi(zOff, 7 - xOff);
+			return Checkers.rowColToSqi(zOff, sz - xOff);
 		case EAST:
 			return Checkers.rowColToSqi(xOff, zOff);
 		case WEST:
-			return Checkers.rowColToSqi(7 - xOff, 7 - zOff);
+			return Checkers.rowColToSqi(sz - xOff, sz - zOff);
 		default:
 			return Checkers.NO_SQUARE;
 		}

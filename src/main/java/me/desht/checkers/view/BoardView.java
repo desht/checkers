@@ -73,7 +73,7 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 		this.attributes = new AttributeCollection(this);
 		registerAttributes();
 		attributes.set(BOARD_STYLE, boardStyle);
-		this.checkersBoard = new CheckersBoard(loc, rot, boardStyle);
+		this.checkersBoard = new CheckersBoard(loc, rot, boardStyle, 8);
 		this.worldName = checkersBoard.getWorld().getName();
 		this.controlPanel = new ControlPanel(this);
 	}
@@ -103,7 +103,7 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 		teleportOutDest = conf.contains("teleportOutDest") ? (PersistableLocation) conf.get("teleportOutDest") : null;
 
 		BoardRotation dir = BoardRotation.getRotation(conf.getString("rotation"));
-		this.checkersBoard = new CheckersBoard(where.getLocation(), dir, (String)attributes.get(BOARD_STYLE));
+		this.checkersBoard = new CheckersBoard(where.getLocation(), dir, (String)attributes.get(BOARD_STYLE), 8);
 		this.controlPanel = new ControlPanel(this);
 	}
 
@@ -119,7 +119,7 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 	public Map<String, Object> serialize() {
 		Map<String, Object> result = new HashMap<String, Object>();
 		result.put("name", name);
-		result.put("game", game == null ? "" : game.getName()); 
+		result.put("game", game == null ? "" : game.getName());
 		result.put("origin", checkersBoard.getA1Center());
 		result.put("rotation", checkersBoard.getRotation().name());
 		if (teleportOutDest != null) {

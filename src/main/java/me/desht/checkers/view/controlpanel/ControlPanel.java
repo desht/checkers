@@ -169,7 +169,7 @@ public class ControlPanel {
 		BoardStyle style = view.getBoard().getBoardStyle();
 		BoardRotation dir = view.getBoard().getRotation();
 		BoardRotation dirLeft = dir.getLeft();
-		Location a1 = view.getBoard().getA1Corner().getLocation();
+		Location a1 = view.getBoard().getBottomLeftCorner().getLocation();
 
 		int panelOffset = 4 * style.getSquareSize() - PANEL_WIDTH / 2;
 		int frameOffset = (int) Math.ceil((style.getFrameWidth() + .5) / 2);
