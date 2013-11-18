@@ -17,11 +17,7 @@ import me.desht.checkers.TimeControl;
 import me.desht.checkers.TwoPlayerClock;
 import me.desht.checkers.ai.CheckersAI;
 import me.desht.checkers.event.CheckersGameStateChangedEvent;
-import me.desht.checkers.model.Checkers;
-import me.desht.checkers.model.Move;
-import me.desht.checkers.model.PlayerColour;
-import me.desht.checkers.model.Position;
-import me.desht.checkers.model.SimplePosition;
+import me.desht.checkers.model.*;
 import me.desht.checkers.player.AICheckersPlayer;
 import me.desht.checkers.player.CheckersPlayer;
 import me.desht.checkers.player.HumanCheckersPlayer;
@@ -69,9 +65,9 @@ public class CheckersGame implements CheckersPersistable {
 
 	public CheckersGame(String gameName, String creatorName, PlayerColour colour, String tcSpec) {
 		this.gameName = gameName;
-		this.position = new SimplePosition();
+		this.position = new SimplePosition(EnglishDraughts.class);  // TODO
 		// TODO: forced jump setting should really be an attribute of individual games, not a global setting
-		this.position.setForcedJump(CheckersPlugin.getInstance().getConfig().getBoolean("forced_jump"));
+//		this.position.setForcedJump(CheckersPlugin.getInstance().getConfig().getBoolean("forced_jump"));
 		this.state = GameState.SETTING_UP;
 		this.invited = "";
 		this.stake = 0.0;
@@ -85,8 +81,8 @@ public class CheckersGame implements CheckersPersistable {
 
 	public CheckersGame(Configuration conf) {
 		this.gameName = conf.getString("name");
-		this.position = new SimplePosition();
-		this.position.setForcedJump(conf.getBoolean("forcedJump", true));
+		this.position = new SimplePosition(EnglishDraughts.class);  // TODO
+//		this.position.setForcedJump(conf.getBoolean("forcedJump", true));
 		this.state = GameState.valueOf(conf.getString("state"));
 		this.invited = conf.getString("invited");
 		this.created = conf.getLong("created");
@@ -153,7 +149,7 @@ public class CheckersGame implements CheckersPersistable {
 		map.put("result", result.toString());
 		map.put("stake", stake);
 		map.put("clock", clock);
-		map.put("forcedJump", getPosition().isForcedJump());
+//		map.put("forcedJump", getPosition().isForcedJump());
 		return map;
 	}
 
@@ -336,7 +332,7 @@ public class CheckersGame implements CheckersPersistable {
 
 	/**
 	 * Return detailed information about the game.
-	 * 
+	 *
 	 * @return a string list of game information
 	 */
 	public List<String> getGameDetail() {
@@ -352,7 +348,7 @@ public class CheckersGame implements CheckersPersistable {
 		if (CheckersPlugin.getInstance().getEconomy() != null) {
 			res.add(bullet + Messages.getString("Game.gameDetail.stake", CheckersUtils.formatStakeStr(getStake())));
 		}
-		res.add(bullet + (getPosition().getToMove() == PlayerColour.WHITE ? 
+		res.add(bullet + (getPosition().getToMove() == PlayerColour.WHITE ?
 				Messages.getString("Game.gameDetail.whiteToPlay") : Messages.getString("Game.gameDetail.blackToPlay")));
 		res.add(bullet + Messages.getString("Game.gameDetail.timeControlType", clock.getTimeControl()));
 		if (getState() == GameState.RUNNING) {
@@ -376,12 +372,12 @@ public class CheckersGame implements CheckersPersistable {
 
 		int c = 1;
 		for (int i = 0; i < moves.length; i++) {
-			sb.append(ChatColor.WHITE + Integer.toString(c) + ". ");
+			sb.append(ChatColor.WHITE).append(Integer.toString(c)).append(". ");
 
-			sb.append(ChatColor.YELLOW + moves[i].toString());
+			sb.append(ChatColor.YELLOW).append(moves[i].toString());
 			while (moves[i].isChainedJump() && i < moves.length) {
 				i++;
-				sb.append(ChatColor.YELLOW + moves[i].toChainedString());
+				sb.append(ChatColor.YELLOW).append(moves[i].toChainedString());
 			}
 
 			sb.append(" ");
@@ -390,10 +386,10 @@ public class CheckersGame implements CheckersPersistable {
 				break;
 			}
 
-			sb.append(ChatColor.YELLOW + moves[i].toString());
+			sb.append(ChatColor.YELLOW).append(moves[i].toString());
 			while (moves[i].isChainedJump() && i < moves.length) {
 				i++;
-				sb.append(ChatColor.YELLOW + moves[i].toChainedString());
+				sb.append(ChatColor.YELLOW).append(moves[i].toChainedString());
 			}
 			sb.append(" ");
 			c++;
@@ -514,7 +510,7 @@ public class CheckersGame implements CheckersPersistable {
 	}
 
 	private void gameRulesReminder() {
-		alert(getPosition().isForcedJump() ? Messages.getString("Game.forceJumpEnabled") : Messages.getString("Game.forceJumpDisabled"));
+		alert(getPosition().getRules().isForcedJump() ? Messages.getString("Game.forceJumpEnabled") : Messages.getString("Game.forceJumpDisabled"));
 	}
 
 	public void doMove(String playerName, int fromSqi, int toSqi) {
