@@ -1,5 +1,6 @@
 package me.desht.checkers.game;
 
+import me.desht.checkers.model.RowCol;
 import me.desht.checkers.player.CheckersPlayer;
 
 public interface GameListener {
@@ -10,5 +11,5 @@ public interface GameListener {
 	public void stakeChanged(double newStake);
 	public boolean tryTimeControlChange(String tcSpec);
 	public void timeControlChanged(String tcSpec);
-	public void selectSquare(int sqi);
+	public void selectSquare(RowCol square);
 }

@@ -6,6 +6,7 @@ import me.desht.checkers.game.CheckersGame;
 import me.desht.checkers.model.Move;
 import me.desht.checkers.model.PlayerColour;
 
+import me.desht.checkers.model.RowCol;
 import org.bukkit.configuration.ConfigurationSection;
 
 public class Random extends CheckersAI {
@@ -28,7 +29,7 @@ public class Random extends CheckersAI {
 		// just pick a random move from the list of legal moves
 		Move[] moves = getCheckersGame().getPosition().getLegalMoves();
 		Move picked = moves[rnd.nextInt(moves.length)];
-		aiHasMoved(picked.getFromSqi(), picked.getToSqi());
+		aiHasMoved(picked.getFrom(), picked.getTo());
 	}
 
 	@Override
@@ -42,7 +43,7 @@ public class Random extends CheckersAI {
 	}
 
 	@Override
-	protected void movePiece(int fromSqi, int toSqi, boolean otherPlayer) {
+	protected void movePiece(RowCol fromSquare, RowCol toSquare, boolean otherPlayer) {
 		// nothing to do here - no internal model
 	}
 

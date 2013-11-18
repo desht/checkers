@@ -11,6 +11,7 @@ import me.desht.checkers.game.CheckersGame.GameResult;
 import me.desht.checkers.game.CheckersGame.GameState;
 import me.desht.checkers.model.Move;
 import me.desht.checkers.model.PlayerColour;
+import me.desht.checkers.model.RowCol;
 import me.desht.checkers.view.BoardView;
 import me.desht.dhutils.LogUtils;
 
@@ -34,7 +35,7 @@ public class AICheckersPlayer extends CheckersPlayer {
 	@Override
 	public void promptForNextMove() {
 		Move m = getGame().getPosition().getLastMove();
-		ai.userHasMoved(m.getFromSqi(), m.getToSqi());
+		ai.userHasMoved(m.getFrom(), m.getTo());
 	}
 
 	@Override
@@ -54,10 +55,10 @@ public class AICheckersPlayer extends CheckersPlayer {
 		// do nothing here
 	}
 
-	@Override
-	public void replayMoves() {
-		ai.replayMoves(getGame().getPosition().getMoveHistory());
-	}
+//	@Override
+//	public void replayMoves() {
+//		ai.replayMoves(getGame().getPosition().getMoveHistory());
+//	}
 
 	@Override
 	public String getDisplayName() {
@@ -154,8 +155,8 @@ public class AICheckersPlayer extends CheckersPlayer {
 			// see if the AI has any pending actions from the other thread that we need to pick up
 			switch (ai.getPendingAction()) {
 			case MOVED:
-				int from = ai.getPendingFrom();
-				int to = ai.getPendingTo();
+				RowCol from = ai.getPendingFrom();
+				RowCol to = ai.getPendingTo();
 				try {
 					PlayerColour toMove = game.getPosition().getToMove();
 					game.doMove(getName(), from, to);

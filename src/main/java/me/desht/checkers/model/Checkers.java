@@ -1,42 +1,15 @@
 package me.desht.checkers.model;
 
 public class Checkers {
-	public static final int NO_SQUARE = -1;
+	public static final RowCol NO_SQUARE = null;
 
-	private static int[] cnToSqi = new int[32];
-
-	static {
-		for (int row = 0; row < 7; row++) {
-			for (int col = 0; col < 7; col++) {
-				if (row % 2 == col % 2) {
-					int cn = rowColToCheckersNotation(row, col);
-					cnToSqi[cn - 1] = rowColToSqi(row, col);
-				}
-			}
+	public static RowCol checkersNotationToSquare(int cn, int size) {
+		int n = cn * 2 - 1;
+		int row = size - 1 - (n / size);
+		int col = ((cn - 1) % (size / 2)) * 2;
+		if (row % 2 != 0) {
+			col++;
 		}
-	}
-
-	public static int rowColToSqi(int row, int col) {
-		return (row << 3) | col;
-	}
-
-	public static int sqiToRow(int sqi) {
-		return (sqi >> 3) & 0x07;
-	}
-
-	public static int sqiToCol(int sqi) {
-		return sqi & 0x07;
-	}
-
-	public static int sqiToCheckersNotation(int sqi) {
-		return rowColToCheckersNotation(sqiToRow(sqi), sqiToCol(sqi));
-	}
-
-	public static int rowColToCheckersNotation(int row, int col) {
-		return row * 4 + (4 - (col / 2));
-	}
-
-	public static int checkersNotationToSqi(int cn) {
-		return cnToSqi[cn - 1];
+		return new RowCol(row, col);
 	}
 }

@@ -7,6 +7,7 @@ import me.desht.checkers.Messages;
 import me.desht.dhutils.LogUtils;
 import me.desht.dhutils.block.MaterialWithData;
 import net.milkbowl.vault.economy.Economy;
+import org.bukkit.Material;
 
 public class CheckersUtils {
 
@@ -24,19 +25,19 @@ public class CheckersUtils {
 		return new DecimalFormat("#0.00").format(stake);
 	}
 
-	public static int getWandId() {
+	public static Material getWandMaterial() {
 		String wand = CheckersPlugin.getInstance().getConfig().getString("wand_item"); //$NON-NLS-1$
 		if (wand.isEmpty() || wand.equalsIgnoreCase("*")) {
-			return -1;
+			return null;
 		}
 		MaterialWithData mat = MaterialWithData.get(wand);
-		return mat == null ? 0 : mat.getId();
+		return mat == null ? null : mat.getBukkitMaterial();
 	}
 
 	public static String getWandDescription() {
-		int id = getWandId();
+		Material mat = getWandMaterial();
 
-		return id < 0 ? Messages.getString("Misc.anything") : MaterialWithData.get(id).toString();
+		return mat == null ? Messages.getString("Misc.anything") : mat.toString();
 	}
 
 	public static String milliSecondsToHMS(long l) {

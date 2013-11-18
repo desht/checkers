@@ -6,10 +6,7 @@ import me.desht.checkers.Messages;
 import me.desht.checkers.TimeControl.ControlType;
 import me.desht.checkers.TwoPlayerClock;
 import me.desht.checkers.game.CheckersGame;
-import me.desht.checkers.model.Checkers;
-import me.desht.checkers.model.Move;
-import me.desht.checkers.model.PlayerColour;
-import me.desht.checkers.model.Position;
+import me.desht.checkers.model.*;
 import me.desht.checkers.responses.DrawResponse;
 import me.desht.checkers.responses.SwapResponse;
 import me.desht.checkers.responses.UndoResponse;
@@ -66,7 +63,7 @@ public class HumanCheckersPlayer extends CheckersPlayer {
 	@Override
 	public void validateInvited(String error) {
 		String invited = getGame().getInvited();
-		if (!invited.equals(CheckersGame.OPEN_INVITATION) && !invited.equalsIgnoreCase(getName())) { 
+		if (!invited.equals(CheckersGame.OPEN_INVITATION) && !invited.equalsIgnoreCase(getName())) {
 			throw new CheckersException(Messages.getString(error));
 		}
 	}
@@ -88,21 +85,21 @@ public class HumanCheckersPlayer extends CheckersPlayer {
 
 	private void maybeAutoSelect() {
 		boolean doAutoSelect = true;
-		int autoSelectSqi = Checkers.NO_SQUARE;
+		RowCol autoSelectSquare = null;
 		Position position = getGame().getPosition();
 		if (position.getLegalMoves().length > 0 && position.getLegalMoves()[0].isJump()) {
 			// a jump is required; see if only one piece can move, and if so, auto-select it
 			for (Move m : position.getLegalMoves()) {
-				if (autoSelectSqi != m.getFromSqi() && autoSelectSqi != Checkers.NO_SQUARE) {
+				if (autoSelectSquare != null && !autoSelectSquare.equals(m.getFrom())) {
 					doAutoSelect = false;
 					break;
 				} else {
-					autoSelectSqi = m.getFromSqi();
+					autoSelectSquare = m.getFrom();
 				}
 			}
 		}
 		if (doAutoSelect) {
-			getGame().selectSquare(autoSelectSqi);
+			getGame().selectSquare(autoSelectSquare);
 		}
 	}
 
@@ -127,10 +124,10 @@ public class HumanCheckersPlayer extends CheckersPlayer {
 		}
 	}
 
-	@Override
-	public void replayMoves() {
-		// nothing to do here
-	}
+//	@Override
+//	public void replayMoves() {
+//		// nothing to do here
+//	}
 
 	@Override
 	public void cleanup() {

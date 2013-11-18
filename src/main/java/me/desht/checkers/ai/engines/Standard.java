@@ -10,10 +10,7 @@ import me.desht.checkers.ai.CheckersAI;
 import me.desht.checkers.ai.evaluation.Evaluator;
 import me.desht.checkers.ai.evaluation.PositionWeightedEvaluator;
 import me.desht.checkers.game.CheckersGame;
-import me.desht.checkers.model.Move;
-import me.desht.checkers.model.PieceType;
-import me.desht.checkers.model.PlayerColour;
-import me.desht.checkers.model.Position;
+import me.desht.checkers.model.*;
 
 import org.bukkit.configuration.ConfigurationSection;
 
@@ -58,7 +55,7 @@ public class Standard extends CheckersAI {
 		}
 
 		if (selectedMove != null) {
-			aiHasMoved(selectedMove.getFromSqi(), selectedMove.getToSqi());
+			aiHasMoved(selectedMove.getFrom(), selectedMove.getTo());
 		} else {
 			aiHasFailed(new CheckersException("Failed to find a move"));
 		}
@@ -73,7 +70,7 @@ public class Standard extends CheckersAI {
 	public void notifyTimeControl(TwoPlayerClock clock) {
 		if (clock.getRemainingTime(getColour()) < 10000) {
 			if (selectedMove != null) {
-				aiHasMoved(selectedMove.getFromSqi(), selectedMove.getToSqi());
+				aiHasMoved(selectedMove.getFrom(), selectedMove.getTo());
 			} else {
 				aiHasFailed(new CheckersException("Failed to find a move"));
 			}
@@ -81,7 +78,7 @@ public class Standard extends CheckersAI {
 	}
 
 	@Override
-	protected void movePiece(int fromSqi, int toSqi, boolean otherPlayer) {
+	protected void movePiece(RowCol fromSquare, RowCol toSquare, boolean otherPlayer) {
 		// nothing to do here
 	}
 

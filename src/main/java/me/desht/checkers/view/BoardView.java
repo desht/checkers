@@ -17,12 +17,7 @@ import me.desht.checkers.TwoPlayerClock;
 import me.desht.checkers.game.CheckersGame;
 import me.desht.checkers.game.CheckersGame.GameState;
 import me.desht.checkers.game.GameListener;
-import me.desht.checkers.model.Checkers;
-import me.desht.checkers.model.Move;
-import me.desht.checkers.model.PieceType;
-import me.desht.checkers.model.PlayerColour;
-import me.desht.checkers.model.Position;
-import me.desht.checkers.model.PositionListener;
+import me.desht.checkers.model.*;
 import me.desht.checkers.player.CheckersPlayer;
 import me.desht.checkers.util.CheckersUtils;
 import me.desht.checkers.util.TerrainBackup;
@@ -171,7 +166,7 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 			game.getPosition().addPositionListener(this);
 			game.addGameListener(this);
 			if (game.getPosition().getMoveHistory().length > 0) {
-				getBoard().setLastMovedSquare(game.getPosition().getLastMove().getToSqi());
+				getBoard().setLastMovedSquare(game.getPosition().getLastMove().getTo());
 			}
 			playerAdded(game, game.getPlayer(PlayerColour.BLACK));
 			playerAdded(game, game.getPlayer(PlayerColour.WHITE));
@@ -244,7 +239,7 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 		return getBoard() != null;
 	}
 
-	public int getSquareAt(Location loc) {
+	public RowCol getSquareAt(Location loc) {
 		return getBoard().getSquareAt(loc);
 	}
 
@@ -397,26 +392,26 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 		if (move.isJump()) {
 			int cr = (move.getFromRow() + move.getToRow()) / 2;
 			int cc = (move.getFromCol() + move.getToCol()) / 2;
-			Location loc = getBoard().getSquare(cr, cc).getCenter();
+			Location loc = getBoard().getSquare(new RowCol(cr, cc)).getCenter();
 			CheckersPlugin.getInstance().getFX().playEffect(loc.add(0, 2, 0), "piece_captured");
 		} else {
 			CheckersPlayer cp = getGame().getPlayer(position.getToMove().getOtherColour());
 			cp.playEffect("piece_moved");
 		}
 
-		getBoard().setLastMovedSquare(move.getToSqi());
+		getBoard().setLastMovedSquare(move.getTo());
 		getBoard().clearSelected();
 	}
 
 	@Override
 	public void lastMoveUndone(Position position) {
-		getBoard().setLastMovedSquare(position.getLastMove().getToSqi());
+		getBoard().setLastMovedSquare(position.getLastMove().getTo());
 		getBoard().clearSelected();
 	}
 
 	@Override
-	public void squareChanged(int row, int col, PieceType piece) {
-		checkersBoard.paintPiece(row, col, piece);
+	public void squareChanged(RowCol square, PieceType piece) {
+		checkersBoard.paintPiece(square, piece);
 	}
 
 	@Override
@@ -484,11 +479,11 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 	}
 
 	@Override
-	public void selectSquare(int sqi) {
-		if (sqi == Checkers.NO_SQUARE) {
+	public void selectSquare(RowCol square) {
+		if (square == null) {
 			getBoard().clearSelected();
 		} else {
-			getBoard().setSelected(sqi);
+			getBoard().setSelected(square);
 		}
 	}
 }

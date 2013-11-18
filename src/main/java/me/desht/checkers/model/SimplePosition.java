@@ -1,9 +1,9 @@
 package me.desht.checkers.model;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import me.desht.checkers.CheckersException;
@@ -30,7 +30,7 @@ public class SimplePosition implements Position {
 	private boolean jumpInProgress;
 	private List<Move> moveHistory;
 	private int halfMoveClock; // moves since a capture was made
-	private boolean forcedJump = true;
+//	private boolean forcedJump = true;
 
 	public SimplePosition(Class <? extends GameRules> ruleClass) {
 		try {
@@ -48,7 +48,8 @@ public class SimplePosition implements Position {
 		board = new PieceType[getSize()][getSize()];
 		for (int row = 0; row < getSize(); row++) {
 			for (int col = 0; col < getSize(); col++) {
-				setPieceAt(row, col, other.getPieceAt(row, col));
+				RowCol square = new RowCol(row, col);
+				setPieceAt(square, other.getPieceAt(square));
 			}
 		}
 		legalMoves = Arrays.copyOf(other.getLegalMoves(), other.getLegalMoves().length);
@@ -57,9 +58,7 @@ public class SimplePosition implements Position {
 		moveHistory = new ArrayList<Move>();
 		halfMoveClock = other.getHalfMoveClock();
 		if (copyHistory) {
-			for (Move m : other.getMoveHistory()) {
-				moveHistory.add(m);
-			}
+			Collections.addAll(moveHistory, other.getMoveHistory());
 		}
 	}
 
@@ -72,7 +71,8 @@ public class SimplePosition implements Position {
 		listeners.add(listener);
 		for (int row = 0; row < getSize(); row++) {
 			for (int col = 0; col < getSize(); col++) {
-				listener.squareChanged(row, col, getPieceAt(row, col));
+				RowCol square = new RowCol(row, col);
+				listener.squareChanged(square, getPieceAt(square));
 			}
 		}
 	}
@@ -110,8 +110,20 @@ public class SimplePosition implements Position {
 	}
 
 	@Override
+	public PieceType getPieceAt(RowCol square) {
+		return board[square.getRow()][square.getCol()];
+	}
+
+	@Override
 	public PieceType getPieceAt(int row, int col) {
 		return board[row][col];
+	}
+
+	private void setPieceAt(RowCol square, PieceType piece) {
+		board[square.getRow()][square.getCol()] = piece;
+		for (PositionListener l : listeners) {
+			l.squareChanged(square, piece);
+		}
 	}
 
 	@Override
@@ -140,38 +152,34 @@ public class SimplePosition implements Position {
 			throw new IllegalMoveException();
 		}
 
-		int fromRow = move.getFromRow();
-		int fromCol = move.getFromCol();
-		int toRow = move.getToRow();
-		int toCol = move.getToCol();
-
-		PieceType movingPiece = getPieceAt(fromRow, fromCol);
+		RowCol fromSquare = move.getFrom();
+		RowCol toSquare = move.getTo();
+		PieceType movingPiece = getPieceAt(fromSquare);
 		move.setMovedPiece(movingPiece);
-		setPieceAt(fromRow, fromCol, PieceType.NONE);
+		setPieceAt(fromSquare, PieceType.NONE);
 
 		if (move.isJump()) {
 			// move is a jump - remove the intervening piece
-			int overRow = (fromRow + toRow) / 2;
-			int overCol = (fromCol + toCol) / 2;
-			move.setCapturedPiece(getPieceAt(overRow, overCol));
-			setPieceAt(overRow, overCol, PieceType.NONE);
+			RowCol over = new RowCol((fromSquare.getRow() + toSquare.getRow()) / 2, (fromSquare.getCol() + toSquare.getCol()) / 2);
+			move.setCapturedPiece(getPieceAt(over));
+			setPieceAt(over, PieceType.NONE);
 		}
 
 		int h = halfMoveClock;
 
 		// check for piece promotion
 		boolean justPromoted = false;
-		if (toRow == getPromotionRow(movingPiece)) {
+		if (toSquare.getRow() == getPromotionRow(movingPiece)) {
 			justPromoted = true;
 			halfMoveClock = 0;
-			setPieceAt(toRow, toCol, movingPiece.toKing());
+			setPieceAt(toSquare, movingPiece.toKing());
 		} else {
-			setPieceAt(toRow, toCol, movingPiece);
+			setPieceAt(toSquare, movingPiece);
 		}
 
 		if (move.isJump()) {
 			// check for a possible chain of jumps
-			Move[] jumps = rules.getLegalMoves(toRow, toCol, true);
+			Move[] jumps = rules.getLegalMoves(toSquare, true);
 			if (jumps.length > 0 && !justPromoted) {
 				// the same player must continue jumping
 				jumpInProgress = true;
@@ -190,7 +198,7 @@ public class SimplePosition implements Position {
 			halfMoveClock++;
 		}
 
-		LogUtils.fine("move made by " + toMove.getOtherColour() + ", legal moves now: " + Joiner.on(",").join(legalMoves));
+		LogUtils.finer("move made by " + toMove.getOtherColour() + ", legal moves now: " + Joiner.on(",").join(legalMoves));
 		moveHistory.add(move);
 
 		for (PositionListener l : listeners) {
@@ -249,12 +257,12 @@ public class SimplePosition implements Position {
 		int idx = moveHistory.size() - 1;
 		do {
 			Move move = moveHistory.get(idx);
-			setPieceAt(move.getToRow(), move.getToCol(), PieceType.NONE);
-			setPieceAt(move.getFromRow(), move.getFromCol(), move.getMovedPiece());
+			setPieceAt(move.getTo(), PieceType.NONE);
+			setPieceAt(move.getFrom(), move.getMovedPiece());
 			if (move.isJump()) {
 				int overRow = (move.getFromRow() + move.getToRow()) / 2;
 				int overCol = (move.getFromCol() + move.getToCol()) / 2;
-				setPieceAt(overRow, overCol, move.getCapturedPiece());
+				setPieceAt(new RowCol(overRow, overCol), move.getCapturedPiece());
 			}
 			idx--;
 		} while (idx >= 0 && moveHistory.get(idx).isChainedJump());
@@ -287,12 +295,5 @@ public class SimplePosition implements Position {
 			}
 		}
 		return count;
-	}
-
-	private void setPieceAt(int row, int col, PieceType piece) {
-		board[row][col] = piece;
-		for (PositionListener l : listeners) {
-			l.squareChanged(row, col, piece);
-		}
 	}
 }

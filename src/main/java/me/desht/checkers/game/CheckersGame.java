@@ -96,10 +96,11 @@ public class CheckersGame implements CheckersPersistable {
 		players[PlayerColour.WHITE.getIndex()] = createPlayer(PlayerColour.WHITE, conf.getString("playerWhite"));
 		players[PlayerColour.BLACK.getIndex()] = createPlayer(PlayerColour.BLACK, conf.getString("playerBlack"));
 
+		int saveVersion = conf.getInt("version", 1);
 		// replay the saved move history
 		List<Integer> encoded = conf.getIntegerList("moves");
-		for (int m : encoded) {
-			Move move = new Move(m);
+		for (int enc : encoded) {
+			Move move = saveVersion < 2 ? Move.getOldFormatMove(enc) : new Move(enc);
 			position.makeMove(move);
 		}
 
@@ -149,6 +150,7 @@ public class CheckersGame implements CheckersPersistable {
 		map.put("result", result.toString());
 		map.put("stake", stake);
 		map.put("clock", clock);
+		map.put("version", 2);
 //		map.put("forcedJump", getPosition().isForcedJump());
 		return map;
 	}
@@ -377,7 +379,7 @@ public class CheckersGame implements CheckersPersistable {
 			sb.append(ChatColor.YELLOW).append(moves[i].toString());
 			while (moves[i].isChainedJump() && i < moves.length) {
 				i++;
-				sb.append(ChatColor.YELLOW).append(moves[i].toChainedString());
+				sb.append(ChatColor.YELLOW).append(moves[i].toChainedString(getPosition().getRules().getSize()));
 			}
 
 			sb.append(" ");
@@ -389,7 +391,7 @@ public class CheckersGame implements CheckersPersistable {
 			sb.append(ChatColor.YELLOW).append(moves[i].toString());
 			while (moves[i].isChainedJump() && i < moves.length) {
 				i++;
-				sb.append(ChatColor.YELLOW).append(moves[i].toChainedString());
+				sb.append(ChatColor.YELLOW).append(moves[i].toChainedString(getPosition().getRules().getSize()));
 			}
 			sb.append(" ");
 			c++;
@@ -513,11 +515,11 @@ public class CheckersGame implements CheckersPersistable {
 		alert(getPosition().getRules().isForcedJump() ? Messages.getString("Game.forceJumpEnabled") : Messages.getString("Game.forceJumpDisabled"));
 	}
 
-	public void doMove(String playerName, int fromSqi, int toSqi) {
+	public void doMove(String playerName, RowCol fromSquare, RowCol toSquare) {
 		ensureGameInState(GameState.RUNNING);
 		ensurePlayerToMove(playerName);
 
-		Move move = new Move(Checkers.sqiToRow(fromSqi), Checkers.sqiToCol(fromSqi), Checkers.sqiToRow(toSqi), Checkers.sqiToCol(toSqi));
+		Move move = new Move(fromSquare, toSquare);
 		PlayerColour prevToMove = getPosition().getToMove();
 		getPosition().makeMove(move);  // this will cause a board redraw
 		lastMoved = System.currentTimeMillis();
@@ -703,9 +705,9 @@ public class CheckersGame implements CheckersPersistable {
 		}
 	}
 
-	public void selectSquare(int sqi) {
+	public void selectSquare(RowCol square) {
 		for (GameListener l : listeners) {
-			l.selectSquare(sqi);
+			l.selectSquare(square);
 		}
 	}
 

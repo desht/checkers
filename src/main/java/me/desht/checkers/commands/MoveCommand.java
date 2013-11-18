@@ -7,6 +7,7 @@ import me.desht.checkers.game.CheckersGameManager;
 import me.desht.checkers.game.CheckersGame.GameState;
 import me.desht.checkers.model.Checkers;
 import me.desht.checkers.model.PlayerColour;
+import me.desht.checkers.model.RowCol;
 import me.desht.dhutils.MiscUtil;
 
 import org.bukkit.command.CommandSender;
@@ -34,10 +35,10 @@ public class MoveCommand extends AbstractCheckersCommand {
 			throw new CheckersException(Messages.getString("Misc.invalidNumeric", args[0] + "-" + args[1]));
 		}
 
-		int fromSqi = Checkers.checkersNotationToSqi(from);
-		int toSqi = Checkers.checkersNotationToSqi(to);
+		RowCol fromSquare = Checkers.checkersNotationToSquare(from, game.getPosition().getRules().getSize());
+		RowCol toSquare = Checkers.checkersNotationToSquare(to, game.getPosition().getRules().getSize());
 		PlayerColour prevToMove = game.getPosition().getToMove();
-		game.doMove(sender.getName(), fromSqi, toSqi);
+		game.doMove(sender.getName(), fromSquare, toSquare);
 
 		MiscUtil.statusMessage(sender, Messages.getString("Game.youPlayed", from, to));
 

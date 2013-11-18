@@ -12,6 +12,7 @@ import me.desht.checkers.game.CheckersGame;
 import me.desht.checkers.game.CheckersGame.GameState;
 import me.desht.checkers.game.CheckersGameManager;
 import me.desht.checkers.model.Checkers;
+import me.desht.checkers.model.RowCol;
 import me.desht.checkers.player.CheckersPlayer;
 import me.desht.checkers.responses.BoardCreationHandler;
 import me.desht.checkers.responses.InvitePlayer;
@@ -110,13 +111,13 @@ public class PlayerListener extends CheckersBaseListener {
 		}
 		lastAnimation.put(player.getName(), System.currentTimeMillis());
 
-		Block targetBlock = null;
+		Block targetBlock;
 		BoardView bv = null;
 
 		try {
 			if (event.getAnimationType() == PlayerAnimationType.ARM_SWING) {
-				int wandId = CheckersUtils.getWandId();
-				if (wandId < 0 || player.getItemInHand().getTypeId() == wandId) {
+				Material wandMat = CheckersUtils.getWandMaterial();
+				if (wandMat == null || player.getItemInHand().getType() == wandMat) {
 					targetBlock = player.getTargetBlock(transparent, 120);
 					LogUtils.finer("Player " + player.getName() + " waved at block " + targetBlock);
 					Location loc = targetBlock.getLocation();
@@ -195,36 +196,34 @@ public class PlayerListener extends CheckersBaseListener {
 		}
 
 		CheckersGameManager.getManager().setCurrentGame(player.getName(), game);
-		int sqi = bv.getSquareAt(loc);
-		if (bv.getBoard().getSelectedSqi() != Checkers.NO_SQUARE) {
-			if (sqi == bv.getBoard().getSelectedSqi()) {
+		RowCol clickedSquare = bv.getSquareAt(loc);
+		if (bv.getBoard().getSelectedSquare() != null) {
+			if (clickedSquare.equals(bv.getBoard().getSelectedSquare())) {
 				// cancel current selection
 				bv.getBoard().clearSelected();
 				plugin.getFX().playEffect(player.getLocation(), "piece_unselected");
 			} else {
 				// try to move the current piece
-				tryMove(player, bv, sqi);
+				tryMove(player, bv, clickedSquare);
 			}
 		} else {
 			// select this square if the piece is the right colour
-			if (game.getPosition().getPieceAt(Checkers.sqiToRow(sqi), Checkers.sqiToCol(sqi)).getColour() == cp.getColour()) {
-				bv.getBoard().setSelected(sqi);
+			if (game.getPosition().getPieceAt(clickedSquare).getColour() == cp.getColour()) {
+				bv.getBoard().setSelected(clickedSquare);
 				plugin.getFX().playEffect(player.getLocation(), "piece_selected");
 			}
 		}
 	}
 
 	private void boardClicked(Player player, Location loc, BoardView bv) {
-		int sqi = bv.getSquareAt(loc);
+		RowCol square = bv.getSquareAt(loc);
 		CheckersGame game = bv.getGame();
-		if (game != null && bv.getBoard().getSelectedSqi() != Checkers.NO_SQUARE) {
-			tryMove(player, bv, sqi);
+		if (game != null && bv.getBoard().getSelectedSquare() != null) {
+			tryMove(player, bv, square);
 		} else {
 			if (player.isSneaking()) {
-				int row = Checkers.sqiToRow(sqi);
-				int col = Checkers.sqiToCol(sqi);
-				if (row % 2 == col % 2) {
-					MiscUtil.statusMessage(player, Messages.getString("Board.squareMessage", Checkers.rowColToCheckersNotation(row, col), bv.getName()));
+				if (square.getRow() % 2 == square.getCol() % 2) {
+					MiscUtil.statusMessage(player, Messages.getString("Board.squareMessage", square.toCheckersNotation(bv.getBoard().getSize()), bv.getName()));
 				}
 				if (bv.getBoard().isPartOfBoard(player.getLocation())) {
 					// allow teleporting around the board, but only if the player is already on the board
@@ -237,21 +236,22 @@ public class PlayerListener extends CheckersBaseListener {
 		}
 	}
 
-	private void tryMove(Player player, BoardView bv, int toSqi) {
-		if (Checkers.sqiToRow(toSqi) % 2 != Checkers.sqiToCol(toSqi) % 2) {
+	private void tryMove(Player player, BoardView bv, RowCol toSquare) {
+		if (toSquare.getRow() % 2 != toSquare.getCol() % 2) {
 			// ignore attempt to move to a light square
 			return;
 		}
-		int fromSqi = bv.getBoard().getSelectedSqi();
+		RowCol fromSquare = bv.getBoard().getSelectedSquare();
 		CheckersGame game = bv.getGame();
 		CheckersPlayer cp = game.getPlayerToMove();
-		game.doMove(player.getName(), fromSqi, toSqi);
-		MiscUtil.statusMessage(player, Messages.getString("Game.youPlayed", Checkers.sqiToCheckersNotation(fromSqi), Checkers.sqiToCheckersNotation(toSqi)));
+		game.doMove(player.getName(), fromSquare, toSquare);
+		int size = bv.getBoard().getSize();
+		MiscUtil.statusMessage(player, Messages.getString("Game.youPlayed", fromSquare.toCheckersNotation(size), toSquare.toCheckersNotation(size)));
 		if (game.getState() != GameState.FINISHED) {
 			if (game.getPosition().getToMove() == cp.getColour()) {
 				// still the same player to move - must be a chained jump
 				cp.promptForContinuedMove();
-				bv.getBoard().setSelected(toSqi);
+				bv.getBoard().setSelected(toSquare);
 			} else {
 				game.getPlayerToMove().promptForNextMove();
 			}
