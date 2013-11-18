@@ -25,9 +25,9 @@ public class ForceJumpCommand extends AbstractCheckersCommand {
 
 		CheckersValidate.isTrue(game.getState() == GameState.SETTING_UP, Messages.getString("Game.mustBeInSetup"));
 
-		game.getPosition().setForcedJump(!game.getPosition().isForcedJump());
-
-		game.alert(game.getPosition().isForcedJump() ? Messages.getString("Game.forceJumpEnabled") : Messages.getString("Game.forceJumpDisabled"));
+//		game.getPosition().setForcedJump(!game.getPosition().isForcedJump());
+//
+//		game.alert(game.getPosition().isForcedJump() ? Messages.getString("Game.forceJumpEnabled") : Messages.getString("Game.forceJumpDisabled"));
 
 		return true;
 	}

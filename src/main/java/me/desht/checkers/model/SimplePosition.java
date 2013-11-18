@@ -1,9 +1,12 @@
 package me.desht.checkers.model;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import me.desht.checkers.CheckersException;
 import me.desht.checkers.IllegalMoveException;
 import me.desht.dhutils.LogUtils;
 
@@ -12,8 +15,6 @@ import com.google.common.base.Joiner;
 /**
  * Represents a checkers board position.
  *
- * This is a fairly simple-minded implementation, using an 8x8 array of piece types.
- *
  * TODO: Position and game (move history etc.) are currently all stored in this object.
  * It mnight be better design to move game details into a separate object which contains
  * a Position object.
@@ -21,22 +22,32 @@ import com.google.common.base.Joiner;
 public class SimplePosition implements Position {
 	private final List<PositionListener> listeners = new ArrayList<PositionListener>();
 	private final PieceType[][] board;
+	private final GameRules rules;
 
 	private PlayerColour toMove;
+
 	private Move[] legalMoves;
 	private boolean jumpInProgress;
 	private List<Move> moveHistory;
 	private int halfMoveClock; // moves since a capture was made
 	private boolean forcedJump = true;
-	public SimplePosition() {
-		board = new PieceType[8][8];
-		newGame();
+
+	public SimplePosition(Class <? extends GameRules> ruleClass) {
+		try {
+			Constructor<? extends GameRules> ctor = ruleClass.getDeclaredConstructor(Position.class);
+			rules = ctor.newInstance(this);
+			board = new PieceType[getSize()][getSize()];
+			newGame();
+		} catch (Exception e) {
+			throw new CheckersException("can't instantiate a position: " + e.getMessage());
+		}
 	}
 
 	public SimplePosition(SimplePosition other, boolean copyHistory) {
-		board = new PieceType[8][8];
-		for (int row = 0; row < 8; row++) {
-			for (int col = 0; col < 8; col++) {
+		rules = other.rules;
+		board = new PieceType[getSize()][getSize()];
+		for (int row = 0; row < getSize(); row++) {
+			for (int col = 0; col < getSize(); col++) {
 				setPieceAt(row, col, other.getPieceAt(row, col));
 			}
 		}
@@ -52,21 +63,15 @@ public class SimplePosition implements Position {
 		}
 	}
 
-	@Override
-	public boolean isForcedJump() {
-		return forcedJump;
-	}
-
-	@Override
-	public void setForcedJump(boolean forcedJump) {
-		this.forcedJump = forcedJump;
+	public int getSize() {
+		return rules.getSize();
 	}
 
 	@Override
 	public void addPositionListener(PositionListener listener) {
 		listeners.add(listener);
-		for (int row = 0; row < 8; row++) {
-			for (int col = 0; col < 8; col++) {
+		for (int row = 0; row < getSize(); row++) {
+			for (int col = 0; col < getSize(); col++) {
 				listener.squareChanged(row, col, getPieceAt(row, col));
 			}
 		}
@@ -74,13 +79,13 @@ public class SimplePosition implements Position {
 
 	@Override
 	public void newGame() {
-		for (int row = 0; row < 8; row++) {
-			for (int col = 0; col < 8; col++) {
+		for (int row = 0; row < getSize(); row++) {
+			for (int col = 0; col < getSize(); col++) {
 				if (row % 2 == col % 2) {
-					if (row < 3) {
-						board[row][col] = PieceType.BLACK;
-					} else if (row > 4) {
-						board[row][col] = PieceType.WHITE;
+					if (row < rules.getPieceRowCount()) {
+						board[row][col] = getPieceForColour(rules.getWhoMovesFirst());
+					} else if (row > getSize() - 1 - rules.getPieceRowCount()) {
+						board[row][col] = getPieceForColour(rules.getWhoMovesFirst().getOtherColour());
 					} else {
 						board[row][col] = PieceType.NONE;
 					}
@@ -90,10 +95,18 @@ public class SimplePosition implements Position {
 			}
 		}
 		toMove = PlayerColour.BLACK;
-		legalMoves = calculateLegalMoves(toMove);
+		legalMoves = rules.calculateLegalMoves(toMove);
 		jumpInProgress = false;
 		moveHistory = new ArrayList<Move>();
 		halfMoveClock = 0;
+	}
+
+	private PieceType getPieceForColour(PlayerColour colour) {
+		switch (colour) {
+			case WHITE: return PieceType.WHITE;
+			case BLACK: return PieceType.BLACK;
+			default: return PieceType.NONE;
+		}
 	}
 
 	@Override
@@ -106,25 +119,12 @@ public class SimplePosition implements Position {
 		return legalMoves;
 	}
 
-	@Override
-	public Move[] getLegalMoves(int row, int col) {
-		if (getPieceAt(row, col).getColour() != getToMove()) {
-			return new Move[0];
+	private int getPromotionRow(PieceType movingPiece) {
+		switch (rules.getWhoMovesFirst()) {
+			case BLACK: return movingPiece == PieceType.BLACK ? getSize() - 1 : 0;
+			case WHITE: return movingPiece == PieceType.WHITE ? getSize() - 1 : 0;
+			default: return -1;
 		}
-		List<Move> moves = new ArrayList<Move>();
-		for (MoveDirection dir : MoveDirection.values()) {
-			if (canJump(getToMove(), row, col, dir)) {
-				moves.add(new Move(row, col, row + dir.getRowOffset(), col + dir.getColOffset()));
-			}
-		}
-		if (moves.isEmpty()) {
-			for (MoveDirection dir : MoveDirection.values()) {
-				if (canMove(getToMove(), row, col, dir)) {
-					moves.add(new Move(row, col, row + dir.getRowOffset(), col + dir.getColOffset()));
-				}
-			}
-		}
-		return moves.toArray(new Move[moves.size()]);
 	}
 
 	@Override
@@ -161,21 +161,17 @@ public class SimplePosition implements Position {
 
 		// check for piece promotion
 		boolean justPromoted = false;
-		if (toRow == 7 && movingPiece == PieceType.BLACK) {
+		if (toRow == getPromotionRow(movingPiece)) {
 			justPromoted = true;
 			halfMoveClock = 0;
-			setPieceAt(toRow, toCol, PieceType.BLACK_KING);
-		} else if (toRow == 0 && movingPiece == PieceType.WHITE) {
-			justPromoted = true;
-			halfMoveClock = 0;
-			setPieceAt(toRow, toCol, PieceType.WHITE_KING);
+			setPieceAt(toRow, toCol, movingPiece.toKing());
 		} else {
 			setPieceAt(toRow, toCol, movingPiece);
 		}
 
 		if (move.isJump()) {
 			// check for a possible chain of jumps
-			Move[] jumps = getLegalJumps(toRow, toCol);
+			Move[] jumps = rules.getLegalMoves(toRow, toCol, true);
 			if (jumps.length > 0 && !justPromoted) {
 				// the same player must continue jumping
 				jumpInProgress = true;
@@ -183,13 +179,13 @@ public class SimplePosition implements Position {
 				legalMoves = jumps;
 			} else {
 				toMove = toMove.getOtherColour();
-				legalMoves = calculateLegalMoves(toMove);
+				legalMoves = rules.calculateLegalMoves(toMove);
 				jumpInProgress = false;
 			}
 			halfMoveClock = 0;
 		} else {
 			toMove = toMove.getOtherColour();
-			legalMoves = calculateLegalMoves(toMove);
+			legalMoves = rules.calculateLegalMoves(toMove);
 			jumpInProgress = false;
 			halfMoveClock++;
 		}
@@ -217,13 +213,15 @@ public class SimplePosition implements Position {
 	}
 
 	@Override
+	public GameRules getRules() {
+		return rules;
+	}
+
+	@Override
 	public PlayerColour getToMove() {
 		return toMove;
 	}
 
-	/**
-	 * @return the halfMoveClock
-	 */
 	public int getHalfMoveClock() {
 		return halfMoveClock;
 	}
@@ -262,7 +260,7 @@ public class SimplePosition implements Position {
 		} while (idx >= 0 && moveHistory.get(idx).isChainedJump());
 
 		toMove = toMove.getOtherColour();
-		legalMoves = calculateLegalMoves(toMove);
+		legalMoves = rules.calculateLegalMoves(toMove);
 		jumpInProgress = false;
 
 		// truncate the move history
@@ -281,8 +279,8 @@ public class SimplePosition implements Position {
 
 	@Override
 	public int getPlyCount() {
-		// need to account for chained jumps
 		int count = 0;
+		// need to account for chained jumps
 		for (Move m : moveHistory) {
 			if (!m.isChainedJump()) {
 				count++;
@@ -296,98 +294,5 @@ public class SimplePosition implements Position {
 		for (PositionListener l : listeners) {
 			l.squareChanged(row, col, piece);
 		}
-	}
-
-	private Move[] calculateLegalMoves(PlayerColour who) {
-		List<Move> moves = new ArrayList<Move>();
-
-		// get all the possible jumps that can be made
-		for (int row = 0; row < 8; row++) {
-			for (int col = 0; col < 8; col++) {
-				if (board[row][col].getColour() == who) {
-					for (MoveDirection dir : MoveDirection.values()) {
-						if (canJump(who, row, col, dir)) {
-							moves.add(new Move(row, col, row + dir.getRowOffset() * 2, col + dir.getColOffset() * 2));
-						}
-					}
-				}
-			}
-		}
-
-		// if there are any jumps, the player *must* jump, so don't calculate any non-jump moves
-		if (moves.isEmpty() || !forcedJump) {
-			for (int row = 0; row < 8; row++) {
-				for (int col = 0; col < 8; col++) {
-					if (board[row][col].getColour() == who) {
-						for (MoveDirection dir : MoveDirection.values()) {
-							if (canMove(who, row, col, dir)) {
-								moves.add(new Move(row, col, row + dir.getRowOffset(), col + dir.getColOffset()));
-							}
-						}
-					}
-				}
-			}
-		}
-
-		return moves.toArray(new Move[moves.size()]);
-	}
-
-	private Move[] getLegalJumps(int row, int col) {
-		if (getPieceAt(row, col).getColour() != getToMove()) {
-			return new Move[0];
-		}
-		List<Move> moves = new ArrayList<Move>();
-		for (MoveDirection dir : MoveDirection.values()) {
-			if (canJump(getToMove(), row, col, dir)) {
-				moves.add(new Move(row, col, row + dir.getRowOffset() * 2, col + dir.getColOffset() * 2));
-			}
-		}
-		return moves.toArray(new Move[moves.size()]);
-	}
-
-	private boolean canMove(PlayerColour who, int fromRow, int fromCol, MoveDirection direction) {
-		int toRow = fromRow + direction.getRowOffset();
-		int toCol = fromCol + direction.getColOffset();
-		if (toRow < 0 || toRow > 7 || toCol < 0 || toCol > 7) {
-			return false;
-		}
-		PieceType moving = getPieceAt(fromRow, fromCol);
-		PieceType target = getPieceAt(toRow, toCol);
-		if (target != PieceType.NONE) {
-			return false;
-		}
-		if (moving == PieceType.WHITE && toRow > fromRow) {
-			return false;
-		}
-		if (moving == PieceType.BLACK && toRow < fromRow) {
-			return false;
-		}
-		return true;
-	}
-
-	private boolean canJump(PlayerColour who, int fromRow, int fromCol, MoveDirection direction) {
-		int overRow = fromRow + direction.getRowOffset();
-		int overCol = fromCol + direction.getColOffset();
-		int toRow = fromRow + direction.getRowOffset(2);
-		int toCol = fromCol + direction.getColOffset(2);
-		if (toRow < 0 || toRow > 7 || toCol < 0 || toCol > 7) {
-			return false;
-		}
-		PieceType moving = getPieceAt(fromRow, fromCol);
-		PieceType victim = getPieceAt(overRow, overCol);
-		PieceType target = getPieceAt(toRow, toCol);
-		if (target != PieceType.NONE) {
-			return false;
-		}
-		if (moving == PieceType.WHITE && toRow > fromRow) {
-			return false;
-		}
-		if (moving == PieceType.BLACK && toRow < fromRow) {
-			return false;
-		}
-		if (victim.getColour() != moving.getColour().getOtherColour()) {
-			return false;
-		}
-		return true;
 	}
 }
