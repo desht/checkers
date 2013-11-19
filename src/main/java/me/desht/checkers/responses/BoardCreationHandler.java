@@ -16,11 +16,13 @@ public class BoardCreationHandler extends ExpectBase {
 
 	private final String boardName;
 	private final String boardStyle;
+	private final int size;
 	private Location loc;
 
-	public BoardCreationHandler(String boardName, String boardStyle) {
+	public BoardCreationHandler(String boardName, String boardStyle, int size) {
 		this.boardName = boardName;
 		this.boardStyle = boardStyle;
+		this.size = size;
 	}
 
 	public void setLocation(Location loc) {
@@ -35,7 +37,7 @@ public class BoardCreationHandler extends ExpectBase {
 			return;
 		}
 
-		BoardView view = BoardViewManager.getManager().createBoard(boardName, loc, BoardRotation.getRotation(player), boardStyle);
+		BoardView view = BoardViewManager.getManager().createBoard(boardName, loc, BoardRotation.getRotation(player), boardStyle, size);
 
 		MiscUtil.statusMessage(player, Messages.getString("Board.boardCreated", //$NON-NLS-1$
 		                                                  view.getName(), MiscUtil.formatLocation(view.getBoard().getA1Center().getLocation())));

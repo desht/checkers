@@ -171,7 +171,7 @@ public class ControlPanel {
 		BoardRotation dirLeft = dir.getLeft();
 		Location a1 = view.getBoard().getBottomLeftCorner().getLocation();
 
-		int panelOffset = 4 * style.getSquareSize() - PANEL_WIDTH / 2;
+		int panelOffset = view.getBoard().getSize() / 2 * style.getSquareSize() - PANEL_WIDTH / 2;
 		int frameOffset = (int) Math.ceil((style.getFrameWidth() + .5) / 2);
 
 		// for the control panel edge, move <panelOffset> blocks in the board's direction, then
@@ -194,6 +194,7 @@ public class ControlPanel {
 		createSignButton(new InvitePlayerButton(this));
 		createSignButton(new OfferDrawButton(this));
 		createSignButton(new ResignButton(this));
+		createSignButton(new SelectRulesButton(this));
 		createSignButton(new StakeButton(this));
 		createSignButton(new StartButton(this));
 		createSignButton(new TeleportButton(this));

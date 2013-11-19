@@ -33,6 +33,7 @@ permissions:
       checkers.commands.start: true
       checkers.commands.teleport: true
       checkers.commands.timecontrol: true
+      checkers.commands.rules: true
   checkers.admin:
     description: Gives access to all commands
     default: op

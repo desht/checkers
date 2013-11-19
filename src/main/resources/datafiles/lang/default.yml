@@ -32,6 +32,7 @@ Game:
   gameIsFull: "This game already has two players."
   getStakeBack: "You get your stake of {0} back."
   illegalMove: "Illegal move."
+  invalidBoardSize: "This board is the wrong size for ruleset &6{0}&- (size {1,number,integer}x{1,number,integer} required)."
   inviteCooldown: "You must wait {0,number,integer} seconds before sending another open invitation."
   invited: " [invited: &6{0}&-]"
   inviteSent: "An invitation has been sent to &6{0}&-."
@@ -130,6 +131,7 @@ Board:
   boardTooHigh: This board would be too high for this world.
   boardWouldIntersect: This board would intersect another board (&6{0}&-).
   goingToSpawn: Sending you to spawn point.
+  invalidSize: Invalid board size {0,number,integer}.  Valid sizes are 8, 10, 12.
   noBoards: There are currently no boards.
   noFreeBoards: There are no free boards to create a game on right now.
   noSuchBoard: No such board &6{0}&-.
@@ -171,6 +173,7 @@ ControlPanel:
   resignBtn: ";Resign"
   stakeBtn: "Stake;;"
   startGameBtn: ";Start;Game"
+  selectRulesBtn: "Select Rules"
   teleportOutBtn: ";Teleport;Out"
   timeControl: "Time Control"
   timeElapsed: "Elapsed"
@@ -226,3 +229,20 @@ SMSIntegration:
   deleteGame: "&4*Delete Game"
   gotoBoard: "&1Go to Board"
 
+Rules:
+  headerMessage: "&eRules for &6{0}&e:"
+  unknownRuleset: "Unknown ruleset '{0}'."
+  englishDraughts:
+    label: English;Draughts;forced jump
+    summary:
+      - "You MUST jump if a jump is available."
+      - "Men may only move and capture forward."
+      - "Kings may move and capture forward or backward."
+      - "No flying kings; kings may only move or jump one square."
+  englishDraughtsNFJ:
+    label: English;Draughts;&mforced jump
+    summary:
+      - "You may choose not to jump if a jump is available."
+      - "Men may only move and capture forward."
+      - "Kings may move and capture forward or backward."
+      - "No flying kings; kings may only move or jump one square."

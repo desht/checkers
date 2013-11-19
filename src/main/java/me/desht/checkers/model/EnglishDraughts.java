@@ -5,7 +5,12 @@ import java.util.List;
 
 public class EnglishDraughts extends GameRules {
 	public EnglishDraughts(Position position) {
-		super("englishdraughts", position);
+		super(position);
+	}
+
+	@Override
+	public String getId() {
+		return "englishDraughts";
 	}
 
 	@Override

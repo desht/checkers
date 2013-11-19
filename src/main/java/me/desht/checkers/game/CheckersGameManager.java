@@ -133,7 +133,7 @@ public class CheckersGameManager {
 
 	/**
 	 * Create a unique game name based on the player's name.
-	 * 
+	 *
 	 * @param playerName
 	 * @return
 	 */
@@ -156,7 +156,7 @@ public class CheckersGameManager {
 	 * @return	The game object
 	 * @throws CheckersException	if there is any problem creating the game
 	 */
-	public CheckersGame createGame(Player player, String gameName, String boardName, PlayerColour colour) {
+	public CheckersGame createGame(Player player, String gameName, String boardName, PlayerColour colour, String ruleId) {
 		BoardView bv;
 		if (boardName == null) {
 			bv = BoardViewManager.getManager().getFreeBoard();
@@ -164,17 +164,17 @@ public class CheckersGameManager {
 			bv = BoardViewManager.getManager().getBoardView(boardName);
 		}
 
-		return createGame(player, gameName, bv, colour);
+		return createGame(player, gameName, bv, colour, ruleId);
 	}
 
-	public CheckersGame createGame(Player player, String gameName, BoardView bv, PlayerColour colour) {
+	public CheckersGame createGame(Player player, String gameName, BoardView bv, PlayerColour colour, String ruleId) {
 		String playerName = player.getName();
 
 		if (gameName == null || gameName.equals("-")) {
 			gameName = makeGameName(playerName);
 		}
 
-		CheckersGame game = new CheckersGame(gameName, playerName, colour, bv.getControlPanel().getTcDefs().currentDef().getSpec());
+		CheckersGame game = new CheckersGame(gameName, playerName, colour, bv.getControlPanel().getTcDefs().currentDef().getSpec(), ruleId);
 		bv.setGame(game);
 		registerGame(game);
 		setCurrentGame(playerName, game);

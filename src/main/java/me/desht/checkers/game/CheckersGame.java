@@ -63,11 +63,9 @@ public class CheckersGame implements CheckersPersistable {
 	private PlayerColour winner = PlayerColour.NONE;
 	private TwoPlayerClock clock;
 
-	public CheckersGame(String gameName, String creatorName, PlayerColour colour, String tcSpec) {
+	public CheckersGame(String gameName, String creatorName, PlayerColour colour, String tcSpec, String ruleId) {
 		this.gameName = gameName;
-		this.position = new SimplePosition(EnglishDraughts.class);  // TODO
-		// TODO: forced jump setting should really be an attribute of individual games, not a global setting
-//		this.position.setForcedJump(CheckersPlugin.getInstance().getConfig().getBoolean("forced_jump"));
+		this.position = new SimplePosition(ruleId);
 		this.state = GameState.SETTING_UP;
 		this.invited = "";
 		this.stake = 0.0;
@@ -81,8 +79,11 @@ public class CheckersGame implements CheckersPersistable {
 
 	public CheckersGame(Configuration conf) {
 		this.gameName = conf.getString("name");
-		this.position = new SimplePosition(EnglishDraughts.class);  // TODO
-//		this.position.setForcedJump(conf.getBoolean("forcedJump", true));
+		String rules = conf.getString("rules", "englishDraughts");
+		if (!conf.contains("rules") && !conf.getBoolean("forcedJump")) {
+			rules = rules + "NFJ";  // backwards compatibility
+		}
+		this.position = new SimplePosition(rules);
 		this.state = GameState.valueOf(conf.getString("state"));
 		this.invited = conf.getString("invited");
 		this.created = conf.getLong("created");
@@ -107,6 +108,7 @@ public class CheckersGame implements CheckersPersistable {
 		// set clock activity appropriately
 		if (getState() == GameState.RUNNING) {
 			clock.start(getPosition().getToMove());
+			getPlayerToMove().promptForNextMove();
 		}
 	}
 
@@ -151,7 +153,7 @@ public class CheckersGame implements CheckersPersistable {
 		map.put("stake", stake);
 		map.put("clock", clock);
 		map.put("version", 2);
-//		map.put("forcedJump", getPosition().isForcedJump());
+		map.put("rules", getPosition().getRules().getId());
 		return map;
 	}
 
@@ -180,9 +182,6 @@ public class CheckersGame implements CheckersPersistable {
 		return finished;
 	}
 
-	/**
-	 * @return the result
-	 */
 	public GameResult getResult() {
 		return result;
 	}
@@ -233,20 +232,10 @@ public class CheckersGame implements CheckersPersistable {
 		}
 	}
 
-	/**
-	 * @return the state
-	 */
 	public GameState getState() {
 		return state;
 	}
 
-	public TwoPlayerClock getClock() {
-		return clock;
-	}
-
-	/**
-	 * @param newState the state to set
-	 */
 	public void setState(GameState newState) {
 		if (newState == GameState.RUNNING) {
 			CheckersValidate.isTrue(this.state == GameState.SETTING_UP, "invalid state transition " + state + "->" + newState);
@@ -259,6 +248,10 @@ public class CheckersGame implements CheckersPersistable {
 		}
 		this.state = newState;
 		Bukkit.getPluginManager().callEvent(new CheckersGameStateChangedEvent(this));
+	}
+
+	public TwoPlayerClock getClock() {
+		return clock;
 	}
 
 	/**

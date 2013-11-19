@@ -96,8 +96,8 @@ public abstract class AbstractSignLabel {
 	/**
 	 * Override this in subclasses if the button/label needs some special
 	 * processing to display its text.
-	 * 
-	 * @return
+	 *
+	 * @return the custom sign text
 	 */
 	protected String[] getCustomSignText() {
 		return null;

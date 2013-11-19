@@ -19,4 +19,5 @@ public interface Position {
 	public int getHalfMoveClock();
 	public Position tryMove(Move move);
 	public GameRules getRules();
+	public void setRules(String ruleId);
 }

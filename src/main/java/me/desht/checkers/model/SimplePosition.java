@@ -11,6 +11,7 @@ import me.desht.checkers.IllegalMoveException;
 import me.desht.dhutils.LogUtils;
 
 import com.google.common.base.Joiner;
+import org.apache.commons.lang.Validate;
 
 /**
  * Represents a checkers board position.
@@ -21,8 +22,8 @@ import com.google.common.base.Joiner;
  */
 public class SimplePosition implements Position {
 	private final List<PositionListener> listeners = new ArrayList<PositionListener>();
-	private final PieceType[][] board;
-	private final GameRules rules;
+	private PieceType[][] board;
+	private GameRules rules;
 
 	private PlayerColour toMove;
 
@@ -32,15 +33,8 @@ public class SimplePosition implements Position {
 	private int halfMoveClock; // moves since a capture was made
 //	private boolean forcedJump = true;
 
-	public SimplePosition(Class <? extends GameRules> ruleClass) {
-		try {
-			Constructor<? extends GameRules> ctor = ruleClass.getDeclaredConstructor(Position.class);
-			rules = ctor.newInstance(this);
-			board = new PieceType[getSize()][getSize()];
-			newGame();
-		} catch (Exception e) {
-			throw new CheckersException("can't instantiate a position: " + e.getMessage());
-		}
+	public SimplePosition(String ruleset) {
+		setRules(ruleset);
 	}
 
 	public SimplePosition(SimplePosition other, boolean copyHistory) {
@@ -79,6 +73,7 @@ public class SimplePosition implements Position {
 
 	@Override
 	public void newGame() {
+		board = new PieceType[getSize()][getSize()];
 		for (int row = 0; row < getSize(); row++) {
 			for (int col = 0; col < getSize(); col++) {
 				if (row % 2 == col % 2) {
@@ -223,6 +218,20 @@ public class SimplePosition implements Position {
 	@Override
 	public GameRules getRules() {
 		return rules;
+	}
+
+	@Override
+	public void setRules(String ruleId) {
+		try {
+			GameRules rulesTmp = GameRules.getRules(ruleId);
+			Validate.notNull(rulesTmp, "Unknown ruleset " + ruleId);
+			Constructor<? extends GameRules> ctor = rulesTmp.getClass().getDeclaredConstructor(Position.class);
+			rules = ctor.newInstance(this);
+			newGame();
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new CheckersException("can't instantiate a position: " + e.getMessage());
+		}
 	}
 
 	@Override

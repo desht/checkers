@@ -1,21 +1,24 @@
 package me.desht.checkers.model;
 
+import me.desht.checkers.CheckersException;
+import me.desht.dhutils.MiscUtil;
+
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public abstract class GameRules {
-	private final String name;
+	private static final Map<String,GameRules> allRulesets = new LinkedHashMap<String, GameRules>();
 
 	private final Position position;
 
-	public GameRules(String name, Position position) {
-		this.name = name;
+	public GameRules(Position position) {
 		this.position = position;
 	}
 
-	public String getName() {
-		return name;
-	}
+	public abstract String getId();
 
 	protected Position getPosition() {
 		return position;
@@ -140,5 +143,35 @@ public abstract class GameRules {
 			}
 		}
 		return moves.toArray(new Move[moves.size()]);
+	}
+
+	private static void registerRules(Class<? extends GameRules> ruleClass) {
+		try {
+			Constructor<? extends GameRules> ctor = ruleClass.getDeclaredConstructor(Position.class);
+			GameRules rules = ctor.newInstance((Position) null);
+			allRulesets.put(rules.getId(), rules);
+		} catch (Exception e) {
+			throw new CheckersException("can't instantiate ruleset: " + ruleClass.getName() + ": " + e.getMessage());
+		}
+	}
+
+	public static void registerRulesets() {
+		registerRules(EnglishDraughts.class);
+		registerRules(EnglishDraughtsNFJ.class);
+	}
+
+	public static GameRules getRules(String ruleId) {
+		return allRulesets.get(ruleId);
+	}
+
+	public static List<GameRules> getMatchingRules(int size) {
+		List<GameRules> res = new ArrayList<GameRules>();
+		for (String ruleId : MiscUtil.asSortedList(allRulesets.keySet())) {
+			GameRules r = getRules(ruleId);
+			if (r.getSize() == size) {
+				res.add(r);
+			}
+		}
+		return res;
 	}
 }

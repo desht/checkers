@@ -115,7 +115,7 @@ public class BoardViewManager {
 
 	/**
 	 * Get a board that does not have a game running.
-	 * 
+	 *
 	 * @return the first free board found
 	 * @throws CheckersException if no free board was found
 	 */
@@ -130,9 +130,8 @@ public class BoardViewManager {
 
 	/**
 	 * Check if a location is any part of any board including the frame & enclosure.
-	 * 
+	 *
 	 * @param loc	location to check
-	 * @param fudge	fudge factor - check a larger area around the board
 	 * @return the boardview that matches, or null if none
 	 */
 	public BoardView partOfBoard(Location loc) {
@@ -150,7 +149,7 @@ public class BoardViewManager {
 
 	/**
 	 * Check if location is above a board square but below the roof
-	 * 
+	 *
 	 * @param loc  location to check
 	 * @return the boardview that matches, or null if none
 	 */
@@ -165,7 +164,7 @@ public class BoardViewManager {
 
 	/**
 	 * Check if location is part of a board square
-	 * 
+	 *
 	 * @param loc	location to check
 	 * @return the boardview that matches, or null if none
 	 */
@@ -189,7 +188,7 @@ public class BoardViewManager {
 
 	/**
 	 * Teleport the player in a sensible manner, depending on where they are now.
-	 * 
+	 *
 	 * @param player
 	 * @throws CheckersException
 	 */
@@ -224,15 +223,15 @@ public class BoardViewManager {
 
 	/**
 	 * Convenience method to create a new board and do all the associated setup tasks.
-	 * 
-	 * @param boardName
-	 * @param loc
-	 * @param style
-	 * @param pieceStyle
+	 *
+	 * @param boardName name of the board to create
+	 * @param loc location of the origin (centre of A1 square)
+	 * @param rotation the board rotation (which direction black faces)
+	 * @param style the board style name
 	 * @return a fully initialised and painted board
 	 */
-	public BoardView createBoard(String boardName, Location loc, BoardRotation rotation, String style) {
-		BoardView view = new BoardView(boardName, loc, rotation, style);
+	public BoardView createBoard(String boardName, Location loc, BoardRotation rotation, String style, int size) {
+		BoardView view = new BoardView(boardName, loc, rotation, style, size);
 		registerView(view);
 		if (CheckersPlugin.getInstance().getWorldEdit() != null) {
 			TerrainBackup.save(view);
@@ -246,9 +245,9 @@ public class BoardViewManager {
 	/**
 	 * Mark a board as deferred loading - its world wasn't available so we'll record the board
 	 * file name for later.
-	 * 
-	 * @param worldName
-	 * @param f
+	 *
+	 * @param worldName name of the world
+	 * @param f file from which the board is loaded
 	 */
 	public void deferLoading(String worldName, File f) {
 		if (!deferred.containsKey(worldName)) {
@@ -259,8 +258,8 @@ public class BoardViewManager {
 
 	/**
 	 * Load any deferred boards for the given world.
-	 * 
-	 * @param worldName
+	 *
+	 * @param worldName name of the world
 	 */
 	public void loadDeferred(String worldName) {
 		if (!deferred.containsKey(worldName)) {
@@ -275,8 +274,8 @@ public class BoardViewManager {
 
 	/**
 	 * Called when a world is unloaded.  Put any boards in that world back on the deferred list.
-	 * 
-	 * @param world
+	 *
+	 * @param worldName name of the world
 	 */
 	public void unloadBoardsForWorld(String worldName) {
 		for (BoardView bv : new ArrayList<BoardView>(listBoardViews())) {

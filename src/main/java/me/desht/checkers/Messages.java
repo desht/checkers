@@ -3,6 +3,7 @@ package me.desht.checkers;
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -118,6 +119,26 @@ public class Messages {
 			s = Joiner.on("\n").join(l);
 		}
 		return s;
+	}
+
+	public static List<String> getStringList(String key) {
+		List<String> l;
+		if (messages == null) {
+			LogUtils.warning("**No messages catalog!?!");
+			l = new ArrayList<String>();
+			l.add("!" + key + "!");
+		} else {
+			l = messages.getStringList(key);
+			if (l == null) {
+				LogUtils.warning("Missing message key '" + key + "'");
+				l = fallbackMessages.getStringList(key);
+				if (l == null) {
+					l = new ArrayList<String>();
+					l.add("!" + key + "!");
+				}
+			}
+		}
+		return l;
 	}
 
 	public static String getString(String key) {

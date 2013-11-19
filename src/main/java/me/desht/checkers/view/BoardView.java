@@ -7,13 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import me.desht.checkers.CheckersException;
-import me.desht.checkers.CheckersPersistable;
-import me.desht.checkers.CheckersPlugin;
-import me.desht.checkers.DirectoryStructure;
-import me.desht.checkers.Messages;
-import me.desht.checkers.TimeControl;
-import me.desht.checkers.TwoPlayerClock;
+import me.desht.checkers.*;
 import me.desht.checkers.game.CheckersGame;
 import me.desht.checkers.game.CheckersGame.GameState;
 import me.desht.checkers.game.GameListener;
@@ -61,14 +55,14 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 	private CheckersGame game;
 	private PersistableLocation teleportOutDest;
 
-	public BoardView(String name, Location loc, BoardRotation rot, String boardStyle) {
+	public BoardView(String name, Location loc, BoardRotation rot, String boardStyle, int size) {
 		this.name = name;
 		this.game = null;
 		this.savedGameName = "";
 		this.attributes = new AttributeCollection(this);
 		registerAttributes();
 		attributes.set(BOARD_STYLE, boardStyle);
-		this.checkersBoard = new CheckersBoard(loc, rot, boardStyle, 8);
+		this.checkersBoard = new CheckersBoard(loc, rot, boardStyle, size);
 		this.worldName = checkersBoard.getWorld().getName();
 		this.controlPanel = new ControlPanel(this);
 	}
@@ -98,7 +92,8 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 		teleportOutDest = conf.contains("teleportOutDest") ? (PersistableLocation) conf.get("teleportOutDest") : null;
 
 		BoardRotation dir = BoardRotation.getRotation(conf.getString("rotation"));
-		this.checkersBoard = new CheckersBoard(where.getLocation(), dir, (String)attributes.get(BOARD_STYLE), 8);
+		int size = conf.getInt("size", 8);
+		this.checkersBoard = new CheckersBoard(where.getLocation(), dir, (String)attributes.get(BOARD_STYLE), size);
 		this.controlPanel = new ControlPanel(this);
 	}
 
@@ -114,6 +109,7 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 	public Map<String, Object> serialize() {
 		Map<String, Object> result = new HashMap<String, Object>();
 		result.put("name", name);
+		result.put("size", checkersBoard.getSize());
 		result.put("game", game == null ? "" : game.getName());
 		result.put("origin", checkersBoard.getA1Center());
 		result.put("rotation", checkersBoard.getRotation().name());
@@ -163,6 +159,9 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 		this.game = game;
 
 		if (game != null) {
+			int ruleSize = game.getPosition().getRules().getSize();
+			CheckersValidate.isTrue(ruleSize == getBoard().getSize(),
+					Messages.getString("Game.invalidBoardSize", game.getPosition().getRules().getId(), ruleSize));
 			game.getPosition().addPositionListener(this);
 			game.addGameListener(this);
 			if (game.getPosition().getMoveHistory().length > 0) {

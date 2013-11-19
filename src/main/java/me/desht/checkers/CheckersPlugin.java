@@ -58,6 +58,7 @@ import me.desht.checkers.listeners.PlayerListener;
 import me.desht.checkers.listeners.PlayerTracker;
 import me.desht.checkers.listeners.ProtectionListener;
 import me.desht.checkers.listeners.WorldListener;
+import me.desht.checkers.model.GameRules;
 import me.desht.checkers.results.Results;
 import me.desht.checkers.view.BoardView;
 import me.desht.checkers.view.BoardViewManager;
@@ -157,6 +158,8 @@ public class CheckersPlugin extends JavaPlugin implements ConfigurationListener 
 		setupWorldEdit(pm);
 		setupSMSIntegration(pm);
 		setupDynmap(pm);
+
+		GameRules.registerRulesets();
 
 		aiFactory = new AIFactory();
 
