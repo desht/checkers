@@ -5,7 +5,7 @@ import java.util.Map;
 
 import me.desht.checkers.TimeControlDefs;
 import me.desht.checkers.game.CheckersGame;
-import me.desht.checkers.model.GameRules;
+import me.desht.checkers.model.rules.GameRules;
 import me.desht.checkers.model.PlayerColour;
 import me.desht.checkers.view.BoardRotation;
 import me.desht.checkers.view.BoardStyle;

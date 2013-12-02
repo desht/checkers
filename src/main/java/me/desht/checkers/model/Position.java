@@ -1,5 +1,7 @@
 package me.desht.checkers.model;
 
+import me.desht.checkers.model.rules.GameRules;
+
 public interface Position {
 	public PieceType getPieceAt(int row, int col);
 	public PieceType getPieceAt(RowCol square);

@@ -3,7 +3,7 @@ package me.desht.checkers.view.controlpanel;
 import me.desht.checkers.CheckersException;
 import me.desht.checkers.Messages;
 import me.desht.checkers.game.CheckersGame;
-import me.desht.checkers.model.GameRules;
+import me.desht.checkers.model.rules.GameRules;
 import me.desht.dhutils.MessagePager;
 import me.desht.dhutils.MiscUtil;
 import org.bukkit.event.block.Action;

@@ -1,4 +1,4 @@
-package me.desht.checkers.model;
+package me.desht.checkers.model.rules;
 
 public class BrazilianDraughts extends InternationalDraughts {
 	public BrazilianDraughts() {

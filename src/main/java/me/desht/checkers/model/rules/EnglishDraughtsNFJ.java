@@ -1,4 +1,4 @@
-package me.desht.checkers.model;
+package me.desht.checkers.model.rules;
 
 public class EnglishDraughtsNFJ extends EnglishDraughts {
 	public EnglishDraughtsNFJ() {

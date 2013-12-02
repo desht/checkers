@@ -1,4 +1,6 @@
-package me.desht.checkers.model;
+package me.desht.checkers.model.rules;
+
+import me.desht.checkers.model.*;
 
 import java.util.ArrayList;
 import java.util.List;

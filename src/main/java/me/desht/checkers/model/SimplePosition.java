@@ -8,6 +8,7 @@ import java.util.List;
 
 import me.desht.checkers.CheckersException;
 import me.desht.checkers.IllegalMoveException;
+import me.desht.checkers.model.rules.GameRules;
 import me.desht.dhutils.LogUtils;
 
 import com.google.common.base.Joiner;
