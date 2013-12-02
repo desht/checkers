@@ -20,7 +20,7 @@ public class Move {
 	 * @return a new Move object
 	 */
 	public static Move getOldFormatMove(int encoded) {
-		Move m = new Move(new RowCol(encoded & 0x7, (encoded >> 3) & 0x7), new RowCol((encoded >> 6) & 0x7, (encoded >> 9) & 0x7));
+		Move m = new Move(RowCol.get(encoded & 0x7, (encoded >> 3) & 0x7), RowCol.get((encoded >> 6) & 0x7, (encoded >> 9) & 0x7));
 		m.movedPiece = PieceType.decode((encoded >> 15) & 0x3);
 		if (m.isJump()) {
 			m.chainedJump = (encoded & 0x1000) != 0;
@@ -30,7 +30,7 @@ public class Move {
 	}
 
 	public Move(int encoded) {
-		this(new RowCol(encoded & 0xf, (encoded >> 4) & 0xf), new RowCol((encoded >> 8) & 0xf, (encoded >> 12) & 0xf));
+		this(RowCol.get(encoded & 0xf, (encoded >> 4) & 0xf), RowCol.get((encoded >> 8) & 0xf, (encoded >> 12) & 0xf));
 		this.movedPiece = PieceType.decode((encoded >> 18) & 0x3);
 		if (isJump()) {
 			this.chainedJump = (encoded & 0x100000) != 0;
@@ -57,7 +57,7 @@ public class Move {
 	}
 
 	public boolean isJump() {
-		return Math.abs(from.getRow() - to.getRow()) == 2 && Math.abs(from.getCol() - to.getCol()) == 2;
+		return Math.abs(from.getRow() - to.getRow()) > 1 && Math.abs(from.getCol() - to.getCol()) > 1;
 	}
 
 	public boolean isChainedJump() {

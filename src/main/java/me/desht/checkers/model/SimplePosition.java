@@ -23,6 +23,7 @@ import org.apache.commons.lang.Validate;
 public class SimplePosition implements Position {
 	private final List<PositionListener> listeners = new ArrayList<PositionListener>();
 	private PieceType[][] board;
+	private boolean[][] doomed;
 	private GameRules rules;
 
 	private PlayerColour toMove;
@@ -31,20 +32,20 @@ public class SimplePosition implements Position {
 	private boolean jumpInProgress;
 	private List<Move> moveHistory;
 	private int halfMoveClock; // moves since a capture was made
-//	private boolean forcedJump = true;
 
 	public SimplePosition(String ruleset) {
 		setRules(ruleset);
+		newGame();
 	}
 
 	public SimplePosition(SimplePosition other, boolean copyHistory) {
 		rules = other.rules;
-		board = new PieceType[getSize()][getSize()];
-		for (int row = 0; row < getSize(); row++) {
-			for (int col = 0; col < getSize(); col++) {
-				RowCol square = new RowCol(row, col);
-				setPieceAt(square, other.getPieceAt(square));
-			}
+		int l = other.board.length;
+		board = new PieceType[l][l];
+		doomed = new boolean[l][l];
+		for (int row = 0; row < l; row++) {
+			System.arraycopy(other.board[row], 0, board[row], 0, l);
+			System.arraycopy(other.doomed[row], 0, doomed[row], 0, l);
 		}
 		legalMoves = Arrays.copyOf(other.getLegalMoves(), other.getLegalMoves().length);
 		toMove = other.getToMove();
@@ -56,16 +57,16 @@ public class SimplePosition implements Position {
 		}
 	}
 
-	public int getSize() {
-		return rules.getSize();
+	public int getBoardSize() {
+		return rules.getBoardSize();
 	}
 
 	@Override
 	public void addPositionListener(PositionListener listener) {
 		listeners.add(listener);
-		for (int row = 0; row < getSize(); row++) {
-			for (int col = 0; col < getSize(); col++) {
-				RowCol square = new RowCol(row, col);
+		for (int row = 0; row < getBoardSize(); row++) {
+			for (int col = 0; col < getBoardSize(); col++) {
+				RowCol square = RowCol.get(row, col);
 				listener.squareChanged(square, getPieceAt(square));
 			}
 		}
@@ -73,14 +74,16 @@ public class SimplePosition implements Position {
 
 	@Override
 	public void newGame() {
-		board = new PieceType[getSize()][getSize()];
-		for (int row = 0; row < getSize(); row++) {
-			for (int col = 0; col < getSize(); col++) {
+		board = new PieceType[getBoardSize()][getBoardSize()];
+		doomed = new boolean[getBoardSize()][getBoardSize()];
+		toMove = rules.getWhoMovesFirst();
+		for (int row = 0; row < getBoardSize(); row++) {
+			for (int col = 0; col < getBoardSize(); col++) {
 				if (row % 2 == col % 2) {
 					if (row < rules.getPieceRowCount()) {
-						board[row][col] = getPieceForColour(rules.getWhoMovesFirst());
-					} else if (row > getSize() - 1 - rules.getPieceRowCount()) {
-						board[row][col] = getPieceForColour(rules.getWhoMovesFirst().getOtherColour());
+						board[row][col] = getPieceForColour(toMove);
+					} else if (row > getBoardSize() - 1 - rules.getPieceRowCount()) {
+						board[row][col] = getPieceForColour(toMove.getOtherColour());
 					} else {
 						board[row][col] = PieceType.NONE;
 					}
@@ -89,8 +92,7 @@ public class SimplePosition implements Position {
 				}
 			}
 		}
-		toMove = PlayerColour.BLACK;
-		legalMoves = rules.calculateLegalMoves(toMove);
+		legalMoves = rules.calculateLegalMoves(this, toMove);
 		jumpInProgress = false;
 		moveHistory = new ArrayList<Move>();
 		halfMoveClock = 0;
@@ -114,24 +116,9 @@ public class SimplePosition implements Position {
 		return board[row][col];
 	}
 
-	private void setPieceAt(RowCol square, PieceType piece) {
-		board[square.getRow()][square.getCol()] = piece;
-		for (PositionListener l : listeners) {
-			l.squareChanged(square, piece);
-		}
-	}
-
 	@Override
 	public Move[] getLegalMoves() {
 		return legalMoves;
-	}
-
-	private int getPromotionRow(PieceType movingPiece) {
-		switch (rules.getWhoMovesFirst()) {
-			case BLACK: return movingPiece == PieceType.BLACK ? getSize() - 1 : 0;
-			case WHITE: return movingPiece == PieceType.WHITE ? getSize() - 1 : 0;
-			default: return -1;
-		}
 	}
 
 	@Override
@@ -152,43 +139,55 @@ public class SimplePosition implements Position {
 		PieceType movingPiece = getPieceAt(fromSquare);
 		move.setMovedPiece(movingPiece);
 		setPieceAt(fromSquare, PieceType.NONE);
+		setPieceAt(toSquare, movingPiece);
 
+		Move[] moreJumps;
 		if (move.isJump()) {
 			// move is a jump - remove the intervening piece
-			RowCol over = new RowCol((fromSquare.getRow() + toSquare.getRow()) / 2, (fromSquare.getCol() + toSquare.getCol()) / 2);
+			RowCol over = getCapturingSquare(fromSquare, toSquare);
 			move.setCapturedPiece(getPieceAt(over));
-			setPieceAt(over, PieceType.NONE);
+			markCaptured(over);
+			moreJumps = rules.getLegalMoves(this, toSquare, true);
+		} else {
+			moreJumps = new Move[0];
 		}
 
 		int h = halfMoveClock;
 
 		// check for piece promotion
 		boolean justPromoted = false;
-		if (toSquare.getRow() == getPromotionRow(movingPiece)) {
+		if (toSquare.getRow() == getPromotionRow(movingPiece) && (moreJumps.length == 0 || rules.allowChainedJumpPromotion()) && !movingPiece.isKing()) {
 			justPromoted = true;
 			halfMoveClock = 0;
 			setPieceAt(toSquare, movingPiece.toKing());
-		} else {
-			setPieceAt(toSquare, movingPiece);
 		}
 
 		if (move.isJump()) {
 			// check for a possible chain of jumps
-			Move[] jumps = rules.getLegalMoves(toSquare, true);
-			if (jumps.length > 0 && !justPromoted) {
+//			Move[] jumps = rules.getLegalMoves(this, toSquare, true);
+			if (moreJumps.length > 0 && !justPromoted) {
 				// the same player must continue jumping
 				jumpInProgress = true;
 				move.setChainedJump(true);
-				legalMoves = jumps;
+				legalMoves = moreJumps;
 			} else {
+				// this is the final (or only) jump move in the chain
+				for (int r = 0; r < getBoardSize(); r++) {
+					for (int c = 0; c < getBoardSize(); c++) {
+						if (doomed[r][c]) {
+							setPieceAt(RowCol.get(r, c), PieceType.NONE);
+							doomed[r][c] = false;
+						}
+					}
+				}
 				toMove = toMove.getOtherColour();
-				legalMoves = rules.calculateLegalMoves(toMove);
+				legalMoves = rules.calculateLegalMoves(this, toMove);
 				jumpInProgress = false;
 			}
 			halfMoveClock = 0;
 		} else {
 			toMove = toMove.getOtherColour();
-			legalMoves = rules.calculateLegalMoves(toMove);
+			legalMoves = rules.calculateLegalMoves(this, toMove);
 			jumpInProgress = false;
 			halfMoveClock++;
 		}
@@ -208,10 +207,19 @@ public class SimplePosition implements Position {
 		}
 	}
 
+	private void markCaptured(RowCol square) {
+		doomed[square.getRow()][square.getCol()] = true;
+	}
+
+	@Override
+	public boolean isMarkedCaptured(RowCol square) {
+		return doomed[square.getRow()][square.getCol()];
+	}
+
 	@Override
 	public Position tryMove(Move move) {
 		Position newPos = new SimplePosition(this, false);
-		newPos.makeMove(move);
+		newPos.makeMove(new Move(move.getFrom(), move.getTo()));
 		return newPos;
 	}
 
@@ -225,13 +233,37 @@ public class SimplePosition implements Position {
 		try {
 			GameRules rulesTmp = GameRules.getRules(ruleId);
 			Validate.notNull(rulesTmp, "Unknown ruleset " + ruleId);
-			Constructor<? extends GameRules> ctor = rulesTmp.getClass().getDeclaredConstructor(Position.class);
-			rules = ctor.newInstance(this);
-			newGame();
+			Constructor<? extends GameRules> ctor = rulesTmp.getClass().getDeclaredConstructor();
+			rules = ctor.newInstance();
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new CheckersException("can't instantiate a position: " + e.getMessage());
 		}
+	}
+
+	private int getPromotionRow(PieceType movingPiece) {
+		return movingPiece.getColour() == rules.getWhoMovesFirst() ? getBoardSize() - 1 : 0;
+	}
+
+	private void setPieceAt(RowCol square, PieceType piece) {
+		board[square.getRow()][square.getCol()] = piece;
+		for (PositionListener l : listeners) {
+			l.squareChanged(square, piece);
+		}
+	}
+
+	private RowCol getCapturingSquare(RowCol fromSquare, RowCol toSquare) {
+		// find the first square between fromSquare and toSquare with a piece of the opposing colour
+		int fr = fromSquare.getRow(), tr = toSquare.getRow();
+		int fc = fromSquare.getCol(), tc = toSquare.getCol();
+		int roff = Integer.signum(tr - fr), coff = Integer.signum(tc - fc);
+		while (fr != tr) {
+			fr += roff; fc += coff;
+			if (getPieceAt(fr, fc).getColour() == toMove.getOtherColour()) {
+				return RowCol.get(fr, fc);
+			}
+		}
+		throw new IllegalStateException("impossible: no capture candidate found between " + fromSquare + " and " + toSquare);
 	}
 
 	@Override
@@ -271,13 +303,13 @@ public class SimplePosition implements Position {
 			if (move.isJump()) {
 				int overRow = (move.getFromRow() + move.getToRow()) / 2;
 				int overCol = (move.getFromCol() + move.getToCol()) / 2;
-				setPieceAt(new RowCol(overRow, overCol), move.getCapturedPiece());
+				setPieceAt(RowCol.get(overRow, overCol), move.getCapturedPiece());
 			}
 			idx--;
 		} while (idx >= 0 && moveHistory.get(idx).isChainedJump());
 
 		toMove = toMove.getOtherColour();
-		legalMoves = rules.calculateLegalMoves(toMove);
+		legalMoves = rules.calculateLegalMoves(this, toMove);
 		jumpInProgress = false;
 
 		// truncate the move history

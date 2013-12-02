@@ -354,7 +354,7 @@ public class CheckersBoard {
 	public void paintPieces(Position position) {
 		for (int row = 0; row < getSize(); ++row) {
 			for (int col = 0; col < getSize(); ++col) {
-				RowCol square = new RowCol(row, col);
+				RowCol square = RowCol.get(row, col);
 				paintPiece(square, position.getPieceAt(square));
 			}
 		}
@@ -406,7 +406,7 @@ public class CheckersBoard {
 	private void paintBoard(MassBlockUpdate mbu) {
 		for (int row = 0; row < getSize(); row++) {
 			for (int col = 0; col < getSize(); col++) {
-				paintBoardSquare(new RowCol(row, col), mbu);
+				paintBoardSquare(RowCol.get(row, col), mbu);
 			}
 		}
 	}
@@ -485,13 +485,13 @@ public class CheckersBoard {
 		int sz = getSize() - 1;
 		switch (getRotation()) {
 		case NORTH:
-			return new RowCol(sz - zOff, xOff);
+			return RowCol.get(sz - zOff, xOff);
 		case SOUTH:
-			return new RowCol(zOff, sz - xOff);
+			return RowCol.get(zOff, sz - xOff);
 		case EAST:
-			return new RowCol(xOff, zOff);
+			return RowCol.get(xOff, zOff);
 		case WEST:
-			return new RowCol(sz - xOff, sz - zOff);
+			return RowCol.get(sz - xOff, sz - zOff);
 		default:
 			return null;
 		}

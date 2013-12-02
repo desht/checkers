@@ -372,7 +372,7 @@ public class CheckersGame implements CheckersPersistable {
 			sb.append(ChatColor.YELLOW).append(moves[i].toString());
 			while (moves[i].isChainedJump() && i < moves.length) {
 				i++;
-				sb.append(ChatColor.YELLOW).append(moves[i].toChainedString(getPosition().getRules().getSize()));
+				sb.append(ChatColor.YELLOW).append(moves[i].toChainedString(getPosition().getRules().getBoardSize()));
 			}
 
 			sb.append(" ");
@@ -384,7 +384,7 @@ public class CheckersGame implements CheckersPersistable {
 			sb.append(ChatColor.YELLOW).append(moves[i].toString());
 			while (moves[i].isChainedJump() && i < moves.length) {
 				i++;
-				sb.append(ChatColor.YELLOW).append(moves[i].toChainedString(getPosition().getRules().getSize()));
+				sb.append(ChatColor.YELLOW).append(moves[i].toChainedString(getPosition().getRules().getBoardSize()));
 			}
 			sb.append(" ");
 			c++;

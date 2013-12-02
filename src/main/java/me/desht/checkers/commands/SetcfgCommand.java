@@ -32,7 +32,7 @@ public class SetcfgCommand extends AbstractCheckersCommand {
 				List<String> list = new ArrayList<String>(args.length - 1);
 				for (int i = 1; i < args.length; i++)
 					list.add(args[i]);
-				configManager.set(key, list);	
+				configManager.set(key, list);
 			} else {
 				configManager.set(key, val);
 			}
@@ -40,7 +40,7 @@ public class SetcfgCommand extends AbstractCheckersCommand {
 			MiscUtil.statusMessage(sender, key + " is now set to '&e" + res + "&-'");
 		} catch (CheckersException e) {
 			MiscUtil.errorMessage(sender, e.getMessage());
-			MiscUtil.errorMessage(sender, "Use /checkers getcfg to list all valid keys");
+			MiscUtil.errorMessage(sender, "Use /checkers getcfg to list all isValidSquare keys");
 		} catch (IllegalArgumentException e) {
 			MiscUtil.errorMessage(sender, e.getMessage());
 		}

@@ -12,6 +12,7 @@ import me.desht.checkers.ai.evaluation.PositionWeightedEvaluator;
 import me.desht.checkers.game.CheckersGame;
 import me.desht.checkers.model.*;
 
+import me.desht.dhutils.Str;
 import org.bukkit.configuration.ConfigurationSection;
 
 public class Standard extends CheckersAI {
@@ -105,9 +106,11 @@ public class Standard extends CheckersAI {
 			int value;
 			if (nextPos.getToMove() == pos.getToMove()) {
 				// chained jump
-				value = alphaBetaSearch(pos.tryMove(move), depth, alpha1, beta);
+//				value = alphaBetaSearch(pos.tryMove(move), depth, alpha1, beta);
+				value = alphaBetaSearch(nextPos, depth, alpha1, beta);
 			} else {
-				value = -alphaBetaSearch(pos.tryMove(move), depth + 1, -beta, -alpha1);
+//				value = -alphaBetaSearch(pos.tryMove(move), depth + 1, -beta, -alpha1);
+				value = -alphaBetaSearch(nextPos, depth + 1, -beta, -alpha1);
 			}
 			if (value > bestValue) {
 				bestValue = value;

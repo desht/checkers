@@ -21,13 +21,12 @@ public abstract class AbstractSignButton extends AbstractSignLabel {
 	 * @param event	The player interaction event as caught by the plugin's event handler
 	 */
 	public void onClicked(PlayerInteractEvent event) {
-		if (!isEnabled() || !(isReactive() || isReactive(event))) return;
-
-		if (permissionNode != null) {
-			PermissionUtils.requirePerms(event.getPlayer(), "checkers.commands." + permissionNode);
+		if (isEnabled() && (isReactive() || isReactive(event))) {
+			if (permissionNode != null) {
+				PermissionUtils.requirePerms(event.getPlayer(), "checkers.commands." + permissionNode);
+			}
+			execute(event);
 		}
-
-		execute(event);
 	}
 
 	@Override

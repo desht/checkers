@@ -1,12 +1,9 @@
 package me.desht.checkers.model;
 
 public interface Position {
-//	public void setForcedJump(boolean forcedJump);
-//	public boolean isForcedJump();
 	public PieceType getPieceAt(int row, int col);
 	public PieceType getPieceAt(RowCol square);
 	public Move[] getLegalMoves();
-//	public Move[] getLegalMoves(int row, int col);
 	public void makeMove(Move moves);
 	public Move[] getMoveHistory();
 	public Move getLastMove();
@@ -20,4 +17,6 @@ public interface Position {
 	public Position tryMove(Move move);
 	public GameRules getRules();
 	public void setRules(String ruleId);
+
+	boolean isMarkedCaptured(RowCol square);
 }

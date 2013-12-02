@@ -5,6 +5,7 @@ import java.util.Map;
 
 import me.desht.checkers.TimeControlDefs;
 import me.desht.checkers.game.CheckersGame;
+import me.desht.checkers.model.GameRules;
 import me.desht.checkers.model.PlayerColour;
 import me.desht.checkers.view.BoardRotation;
 import me.desht.checkers.view.BoardStyle;
@@ -50,6 +51,10 @@ public class ControlPanel {
 				expand(boardDir.getDirection().opposite(), -((PANEL_WIDTH - 2) / 2));
 
 		createSignButtons();
+
+		// the default colour for creating a new game will let the game creator move first
+		GameRules r = GameRules.getRules(getButton(SelectRulesButton.class).getSelectedRuleset());
+		getButton(CreateGameButton.class).setColour(r.getWhoMovesFirst());
 	}
 
 	public boolean isButton(Location location) {

@@ -12,16 +12,13 @@ import java.util.Map;
 public abstract class GameRules {
 	private static final Map<String,GameRules> allRulesets = new LinkedHashMap<String, GameRules>();
 
-	private final Position position;
-
-	public GameRules(Position position) {
-		this.position = position;
-	}
-
-	public abstract String getId();
-
-	protected Position getPosition() {
-		return position;
+	/**
+	 * Get the rule identifier string, used by getRules(String)
+	 *
+	 * @return the rule ID
+	 */
+	public String getId() {
+		return getClass().getSimpleName();
 	}
 
 	/**
@@ -29,7 +26,7 @@ public abstract class GameRules {
 	 *
 	 * @return the number of squares on an edge
 	 */
-	public abstract int getSize();
+	public abstract int getBoardSize();
 
 	/**
 	 * Get the number of rows of pieces each player has at the start of the game.
@@ -53,6 +50,13 @@ public abstract class GameRules {
 	public abstract boolean isForcedJump();
 
 	/**
+	 * Check if this ruleset allows promotion on a jump which is not the final jump in a chain.
+	 *
+	 * @return true if promotion is allowed, false otherwise
+	 */
+	public abstract boolean allowChainedJumpPromotion();
+
+	/**
 	 * Check if the given player colour can move from the given board square in the given direction
 	 *
 	 * @param who the player colour to check
@@ -60,7 +64,7 @@ public abstract class GameRules {
 	 * @param direction the direction to move
 	 * @return true if the move is legal, false otherwise
 	 */
-	public abstract boolean canMove(PlayerColour who, RowCol square, MoveDirection direction);
+	public abstract List<Move> getMoves(Position position, PlayerColour who, RowCol square, MoveDirection direction);
 
 	/**
 	 * Check if the given player colour can jump from the given board square in the given direction
@@ -70,7 +74,17 @@ public abstract class GameRules {
 	 * @param direction the direction to move
 	 * @return true if the jump is legal, false otherwise
 	 */
-	public abstract boolean canJump(PlayerColour who, RowCol square, MoveDirection direction);
+	public abstract List<Move> getJumps(Position position, PlayerColour who, RowCol square, MoveDirection direction);
+
+	/**
+	 * Check that the given square is actually isValidSquare.
+	 *
+	 * @param square the board square
+	 * @return true if the square is valid for this ruleset, false otherwise
+	 */
+	public boolean isValidSquare(RowCol square) {
+		return square.getCol() >= 0 && square.getRow() >= 0 && square.getCol() < getBoardSize() && square.getRow() < getBoardSize();
+	}
 
 	/**
 	 * Calculate all possible legal moves for the given player colour
@@ -78,34 +92,35 @@ public abstract class GameRules {
 	 * @param who the colour to calculate for
 	 * @return an array of legal moves
 	 */
-	public Move[] calculateLegalMoves(PlayerColour who) {
-		List<Move> moves = new ArrayList<Move>();
+	public Move[] calculateLegalMoves(Position position, PlayerColour who) {
+		List<Move> res = new ArrayList<Move>();
 
 		// get all the possible jumps that can be made
-		for (int row = 0; row < getSize(); row++) {
-			for (int col = 0; col < getSize(); col++) {
-				RowCol square = new RowCol(row, col);
-				if (getPosition().getPieceAt(square).getColour() == who) {
+		for (int row = 0; row < getBoardSize(); row++) {
+			for (int col = 0; col < getBoardSize(); col++) {
+				RowCol square = RowCol.get(row, col);
+				if (position.getPieceAt(square).getColour() == who) {
 					for (MoveDirection dir : MoveDirection.values()) {
-						if (canJump(who, square, dir)) {
-							RowCol square2 = new RowCol(row + dir.getRowOffset() * 2, col + dir.getColOffset() * 2);
-							moves.add(new Move(square, square2));
+						List<Move> jumps = getJumps(position, who, square, dir);
+						if (jumps != null) {
+							res.addAll(jumps);
 						}
 					}
 				}
 			}
 		}
 
-		// if there are any jumps, the player *must* jump, so don't calculate any non-jump moves
-		if (moves.isEmpty() || !isForcedJump()) {
-			for (int row = 0; row < getSize(); row++) {
-				for (int col = 0; col < getSize(); col++) {
-					RowCol square = new RowCol(row, col);
-					if (getPosition().getPieceAt(square).getColour() == who) {
+		// if there are any jumps available and this ruleset enforces jumping,
+		// don't calculate any non-jump moves
+		if (res.isEmpty() || !isForcedJump()) {
+			for (int row = 0; row < getBoardSize(); row++) {
+				for (int col = 0; col < getBoardSize(); col++) {
+					RowCol square = RowCol.get(row, col);
+					if (position.getPieceAt(square).getColour() == who) {
 						for (MoveDirection dir : MoveDirection.values()) {
-							if (canMove(who, square, dir)) {
-								RowCol square2 = new RowCol(row + dir.getRowOffset(), col + dir.getColOffset());
-								moves.add(new Move(square, square2));
+							List<Move> moves = getMoves(position, who, square, dir);
+							if (moves != null) {
+								res.addAll(moves);
 							}
 						}
 					}
@@ -113,7 +128,7 @@ public abstract class GameRules {
 			}
 		}
 
-		return moves.toArray(new Move[moves.size()]);
+		return res.toArray(new Move[res.size()]);
 	}
 
 	/**
@@ -123,32 +138,32 @@ public abstract class GameRules {
 	 * @param onlyJumps true if only jump moves should be returned
 	 * @return a list of the legal moves
 	 */
-	public Move[] getLegalMoves(RowCol square, boolean onlyJumps) {
-		if (getPosition().getPieceAt(square).getColour() != getPosition().getToMove()) {
+	public Move[] getLegalMoves(Position position, RowCol square, boolean onlyJumps) {
+		if (position.getPieceAt(square).getColour() != position.getToMove()) {
 			return new Move[0];
 		}
-		List<Move> moves = new ArrayList<Move>();
+		List<Move> res = new ArrayList<Move>();
 		for (MoveDirection dir : MoveDirection.values()) {
-			if (canJump(getPosition().getToMove(), square, dir)) {
-				RowCol square2 = new RowCol(square.getRow() + dir.getRowOffset() * 2, square.getCol() + dir.getColOffset() * 2);
-				moves.add(new Move(square, square2));
+			List<Move> jumps = getJumps(position, position.getToMove(), square, dir);
+			if (jumps != null) {
+				res.addAll(jumps);
 			}
 		}
-		if (!onlyJumps && (moves.isEmpty() || !isForcedJump())) {
+		if (!onlyJumps && (res.isEmpty() || !isForcedJump())) {
 			for (MoveDirection dir : MoveDirection.values()) {
-				if (canMove(getPosition().getToMove(), square, dir)) {
-					RowCol square2 = new RowCol(square.getRow() + dir.getRowOffset(), square.getCol() + dir.getColOffset());
-					moves.add(new Move(square, square2));
+				List<Move> moves = getMoves(position, position.getToMove(), square, dir);
+				if (moves != null) {
+					res.addAll(moves);
 				}
 			}
 		}
-		return moves.toArray(new Move[moves.size()]);
+		return res.toArray(new Move[res.size()]);
 	}
 
 	private static void registerRules(Class<? extends GameRules> ruleClass) {
 		try {
-			Constructor<? extends GameRules> ctor = ruleClass.getDeclaredConstructor(Position.class);
-			GameRules rules = ctor.newInstance((Position) null);
+			Constructor<? extends GameRules> ctor = ruleClass.getDeclaredConstructor();
+			GameRules rules = ctor.newInstance();
 			allRulesets.put(rules.getId(), rules);
 		} catch (Exception e) {
 			throw new CheckersException("can't instantiate ruleset: " + ruleClass.getName() + ": " + e.getMessage());
@@ -158,17 +173,21 @@ public abstract class GameRules {
 	public static void registerRulesets() {
 		registerRules(EnglishDraughts.class);
 		registerRules(EnglishDraughtsNFJ.class);
+		registerRules(InternationalDraughts.class);
+		registerRules(CanadianCheckers.class);
+		registerRules(BrazilianDraughts.class);
 	}
 
 	public static GameRules getRules(String ruleId) {
 		return allRulesets.get(ruleId);
 	}
 
+
 	public static List<GameRules> getMatchingRules(int size) {
 		List<GameRules> res = new ArrayList<GameRules>();
 		for (String ruleId : MiscUtil.asSortedList(allRulesets.keySet())) {
 			GameRules r = getRules(ruleId);
-			if (r.getSize() == size) {
+			if (r.getBoardSize() == size) {
 				res.add(r);
 			}
 		}

@@ -10,6 +10,6 @@ public class Checkers {
 		if (row % 2 != 0) {
 			col++;
 		}
-		return new RowCol(row, col);
+		return RowCol.get(row, col);
 	}
 }

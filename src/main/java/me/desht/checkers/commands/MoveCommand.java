@@ -35,8 +35,8 @@ public class MoveCommand extends AbstractCheckersCommand {
 			throw new CheckersException(Messages.getString("Misc.invalidNumeric", args[0] + "-" + args[1]));
 		}
 
-		RowCol fromSquare = Checkers.checkersNotationToSquare(from, game.getPosition().getRules().getSize());
-		RowCol toSquare = Checkers.checkersNotationToSquare(to, game.getPosition().getRules().getSize());
+		RowCol fromSquare = Checkers.checkersNotationToSquare(from, game.getPosition().getRules().getBoardSize());
+		RowCol toSquare = Checkers.checkersNotationToSquare(to, game.getPosition().getRules().getBoardSize());
 		PlayerColour prevToMove = game.getPosition().getToMove();
 		game.doMove(sender.getName(), fromSquare, toSquare);
 

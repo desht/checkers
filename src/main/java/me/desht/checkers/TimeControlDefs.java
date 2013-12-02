@@ -97,7 +97,7 @@ public class TimeControlDefs {
 
 	/**
 	 * Get the next time control definition in the list, wrapping round at the end of the list.
-	 * 
+	 *
 	 * @return
 	 */
 	public TCDef nextDef() {
@@ -148,7 +148,7 @@ public class TimeControlDefs {
 			if (this.label.length > 3) {
 				throw new IllegalArgumentException("label can have max. 3 lines: " + label);
 			}
-			new TimeControl(spec);	// ensure the spec. is valid
+			new TimeControl(spec);	// ensure the spec. is isValidSquare
 		}
 
 		public String getSpec() {

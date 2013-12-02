@@ -159,7 +159,7 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 		this.game = game;
 
 		if (game != null) {
-			int ruleSize = game.getPosition().getRules().getSize();
+			int ruleSize = game.getPosition().getRules().getBoardSize();
 			CheckersValidate.isTrue(ruleSize == getBoard().getSize(),
 					Messages.getString("Game.invalidBoardSize", game.getPosition().getRules().getId(), ruleSize));
 			game.getPosition().addPositionListener(this);
@@ -391,7 +391,7 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 		if (move.isJump()) {
 			int cr = (move.getFromRow() + move.getToRow()) / 2;
 			int cc = (move.getFromCol() + move.getToCol()) / 2;
-			Location loc = getBoard().getSquare(new RowCol(cr, cc)).getCenter();
+			Location loc = getBoard().getSquare(RowCol.get(cr, cc)).getCenter();
 			CheckersPlugin.getInstance().getFX().playEffect(loc.add(0, 2, 0), "piece_captured");
 		} else {
 			CheckersPlayer cp = getGame().getPlayer(position.getToMove().getOtherColour());

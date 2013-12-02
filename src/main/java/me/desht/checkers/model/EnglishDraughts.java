@@ -4,17 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class EnglishDraughts extends GameRules {
-	public EnglishDraughts(Position position) {
-		super(position);
+	public EnglishDraughts() {
 	}
 
 	@Override
-	public String getId() {
-		return "englishDraughts";
-	}
-
-	@Override
-	public int getSize() {
+	public int getBoardSize() {
 		return 8;
 	}
 
@@ -34,50 +28,41 @@ public class EnglishDraughts extends GameRules {
 	}
 
 	@Override
-	public boolean canMove(PlayerColour who, RowCol from, MoveDirection direction) {
-		int toRow = from.getRow() + direction.getRowOffset();
-		int toCol = from.getCol() + direction.getColOffset();
-		if (toRow < 0 || toRow >= getSize() || toCol < 0 || toCol >= getSize()) {
-			return false;
-		}
-		PieceType moving = getPosition().getPieceAt(from);
-		PieceType target = getPosition().getPieceAt(toRow, toCol);
-		if (target != PieceType.NONE) {
-			return false;
-		}
-		if (moving == PieceType.WHITE && toRow > from.getRow()) {
-			return false;
-		}
-		if (moving == PieceType.BLACK && toRow < from.getRow()) {
-			return false;
-		}
+	public boolean allowChainedJumpPromotion() {
 		return true;
 	}
 
 	@Override
-	public boolean canJump(PlayerColour who, RowCol from, MoveDirection direction) {
-		int overRow = from.getRow() + direction.getRowOffset();
-		int overCol = from.getCol() + direction.getColOffset();
-		int toRow = from.getRow() + direction.getRowOffset(2);
-		int toCol = from.getCol() + direction.getColOffset(2);
-		if (toRow < 0 || toRow >= getSize() || toCol < 0 || toCol >= getSize()) {
-			return false;
+	public List<Move> getMoves(Position position, PlayerColour who, RowCol from, MoveDirection direction) {
+		RowCol to = from.add(direction);
+		if (!isValidSquare(to) || position.getPieceAt(to) != PieceType.NONE) {
+			return null;
 		}
-		PieceType moving = getPosition().getPieceAt(from);
-		PieceType victim = getPosition().getPieceAt(overRow, overCol);
-		PieceType target = getPosition().getPieceAt(toRow, toCol);
-		if (target != PieceType.NONE) {
-			return false;
+		PieceType moving = position.getPieceAt(from);
+		if (moving == PieceType.WHITE && to.getRow() > from.getRow() || moving == PieceType.BLACK && to.getRow() < from.getRow()) {
+			return null;
 		}
-		if (moving == PieceType.WHITE && toRow > from.getRow()) {
-			return false;
+		List<Move> res = new ArrayList<Move>(1);
+		res.add(new Move(from, to));
+		return res;
+	}
+
+	@Override
+	public List<Move> getJumps(Position position, PlayerColour who, RowCol from, MoveDirection direction) {
+		RowCol to = from.add(direction, 2);
+		if (!isValidSquare(to) || position.getPieceAt(to) != PieceType.NONE) {
+			return null;
 		}
-		if (moving == PieceType.BLACK && toRow < from.getRow()) {
-			return false;
+		PieceType moving = position.getPieceAt(from);
+		if (moving == PieceType.WHITE && to.getRow() > from.getRow() || moving == PieceType.BLACK && to.getRow() < from.getRow()) {
+			return null;
 		}
-		if (victim.getColour() != moving.getColour().getOtherColour()) {
-			return false;
+		RowCol over = from.add(direction);
+		if (position.getPieceAt(over).getColour() != moving.getColour().getOtherColour() || position.isMarkedCaptured(over)) {
+			return null;
 		}
-		return true;
+		List<Move> res = new ArrayList<Move>(1);
+		res.add(new Move(from, to));
+		return res;
 	}
 }

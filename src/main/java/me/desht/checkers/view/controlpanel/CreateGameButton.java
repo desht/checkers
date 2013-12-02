@@ -14,6 +14,11 @@ public class CreateGameButton extends AbstractSignButton {
 		super(panel, "createGameBtn", "create.game", 1, 2);
 	}
 
+	public void setColour(PlayerColour colour) {
+		this.colour = colour;
+		repaint();
+	}
+
 	@Override
 	public void execute(PlayerInteractEvent event) {
 		if (event.getAction() == Action.LEFT_CLICK_BLOCK) {

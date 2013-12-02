@@ -173,7 +173,7 @@ ControlPanel:
   resignBtn: ";Resign"
   stakeBtn: "Stake;;"
   startGameBtn: ";Start;Game"
-  selectRulesBtn: "Select Rules"
+  selectRulesBtn: "Rules"
   teleportOutBtn: ";Teleport;Out"
   timeControl: "Time Control"
   timeElapsed: "Elapsed"
@@ -232,17 +232,43 @@ SMSIntegration:
 Rules:
   headerMessage: "&eRules for &6{0}&e:"
   unknownRuleset: "Unknown ruleset '{0}'."
-  englishDraughts:
+  EnglishDraughts:
     label: English;Draughts;forced jump
     summary:
       - "You MUST jump if a jump is available."
       - "Men may only move and capture forward."
       - "Kings may move and capture forward or backward."
       - "No flying kings; kings may only move or jump one square."
-  englishDraughtsNFJ:
+      - "Black starts."
+  EnglishDraughtsNFJ:
     label: English;Draughts;&mforced jump
     summary:
       - "You may choose not to jump if a jump is available."
       - "Men may only move and capture forward."
       - "Kings may move and capture forward or backward."
       - "No flying kings; kings may only move or jump one square."
+      - "Black starts."
+  InternationalDraughts:
+    label: International;Draughts
+    summary:
+      - "You MUST jump if a jump is available."
+      - "Men may only move forward, but may capture backward."
+      - "Kings may move and capture forward or backward."
+      - "Flying kings; kings may capture at any distance."
+      - "White starts."
+  BrazilianDraughts:
+    label: Brazilian;Draughts
+    summary:
+      - "You MUST jump if a jump is available."
+      - "Men may only move forward, but may capture backward."
+      - "Kings may move and capture forward or backward."
+      - "Flying kings; kings may capture at any distance."
+      - "White starts."
+  CanadianCheckers:
+    label: Canadian;Checkers
+    summary:
+      - "You MUST jump if a jump is available."
+      - "Men may only move forward, but may capture backward."
+      - "Kings may move and capture forward or backward."
+      - "Flying kings; kings may capture at any distance."
+      - "White starts."

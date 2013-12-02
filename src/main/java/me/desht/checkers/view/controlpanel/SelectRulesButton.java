@@ -24,10 +24,15 @@ public class SelectRulesButton extends AbstractSignButton {
 
 	@Override
 	public void execute(PlayerInteractEvent event) {
+		if (matchingRules.isEmpty()) {
+			return;
+		}
 		if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
 			ruleIdx = (ruleIdx + 1) % matchingRules.size();
 			if (getGame() != null && getGame().getState() == CheckersGame.GameState.SETTING_UP) {
 				getGame().getPosition().setRules(getSelectedRuleset());
+			} else if (getGame() == null) {
+				getPanel().getButton(CreateGameButton.class).setColour(matchingRules.get(ruleIdx).getWhoMovesFirst());
 			}
 			repaint();
 		} else if (event.getAction() == Action.LEFT_CLICK_BLOCK) {
@@ -50,7 +55,7 @@ public class SelectRulesButton extends AbstractSignButton {
 
 	@Override
 	public boolean isReactive() {
-		return getGame() == null || getGame().getState() == CheckersGame.GameState.SETTING_UP;
+		return (getGame() == null || getGame().getState() == CheckersGame.GameState.SETTING_UP) && !matchingRules.isEmpty();
 	}
 
 	@Override
