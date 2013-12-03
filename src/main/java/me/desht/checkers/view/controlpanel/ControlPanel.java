@@ -3,6 +3,8 @@ package me.desht.checkers.view.controlpanel;
 import java.util.HashMap;
 import java.util.Map;
 
+import me.desht.checkers.CheckersException;
+import me.desht.checkers.CheckersPlugin;
 import me.desht.checkers.TimeControlDefs;
 import me.desht.checkers.game.CheckersGame;
 import me.desht.checkers.model.rules.GameRules;
@@ -10,6 +12,7 @@ import me.desht.checkers.model.PlayerColour;
 import me.desht.checkers.view.BoardRotation;
 import me.desht.checkers.view.BoardStyle;
 import me.desht.checkers.view.BoardView;
+import me.desht.dhutils.LogUtils;
 import me.desht.dhutils.PersistableLocation;
 import me.desht.dhutils.block.MassBlockUpdate;
 import me.desht.dhutils.block.MaterialWithData;
@@ -55,6 +58,16 @@ public class ControlPanel {
 		// the default colour for creating a new game will let the game creator move first
 		GameRules r = GameRules.getRules(getButton(SelectRulesButton.class).getSelectedRuleset());
 		getButton(CreateGameButton.class).setColour(r.getWhoMovesFirst());
+
+		int size = getView().getBoard().getSize();
+		String defRules = CheckersPlugin.getInstance().getConfig().getString("default_rules." + size);
+		if (defRules != null) {
+			try {
+				getButton(SelectRulesButton.class).setSelectedRuleset(defRules);
+			} catch (CheckersException e) {
+				LogUtils.warning("unknown ruleset " + defRules + " in config (default_rules." + size + ")");
+			}
+		}
 	}
 
 	public boolean isButton(Location location) {
