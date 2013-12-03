@@ -15,7 +15,7 @@ public class RowCol {
 	}
 
 	public static RowCol get(int row, int col) {
-		if (row < 0 || row > MAX_BOARD_DIMENSION || col < 0 || col > MAX_BOARD_DIMENSION) {
+		if (row < 0 || row >= MAX_BOARD_DIMENSION || col < 0 || col >= MAX_BOARD_DIMENSION) {
 			return new RowCol(row, col);
 		} else {
 			return rc[row][col];

@@ -154,55 +154,55 @@ public class AICheckersPlayer extends CheckersPlayer {
 		} else {
 			// see if the AI has any pending actions from the other thread that we need to pick up
 			switch (ai.getPendingAction()) {
-			case MOVED:
-				RowCol from = ai.getPendingFrom();
-				RowCol to = ai.getPendingTo();
-				try {
-					PlayerColour toMove = game.getPosition().getToMove();
-					game.doMove(getName(), from, to);
-					if (game.getState() != GameState.FINISHED) {
-						if (toMove == game.getPosition().getToMove()) {
-							// still this player to move - must be a chained jump
-							this.promptForContinuedMove();
-						} else {
-							game.getPlayerToMove().promptForNextMove();
+				case MOVED:
+					RowCol from = ai.getPendingFrom();
+					RowCol to = ai.getPendingTo();
+					try {
+						PlayerColour toMove = game.getPosition().getToMove();
+						game.doMove(getName(), from, to);
+						if (game.getState() != GameState.FINISHED) {
+							if (toMove == game.getPosition().getToMove()) {
+								// still this player to move - must be a chained jump
+								this.promptForContinuedMove();
+							} else {
+								game.getPlayerToMove().promptForNextMove();
+							}
 						}
+					} catch (IllegalMoveException e) {
+						getGame().alert(Messages.getString("AI.AIunexpectedException", e.getMessage()));
+						ai.setFailed(true);
+					} catch (CheckersException e) {
+						getGame().alert(Messages.getString("AI.AIunexpectedException", e.getMessage()));
+						ai.setFailed(true);
 					}
-				} catch (IllegalMoveException e) {
-					getGame().alert(Messages.getString("AI.AIunexpectedException", e.getMessage()));
-					ai.setFailed(true);
-				} catch (CheckersException e) {
-					getGame().alert(Messages.getString("AI.AIunexpectedException", e.getMessage()));
-					ai.setFailed(true);
-				}
-				break;
-			case DRAW_OFFERED:
-				game.offerDraw(getName());
-				break;
-			case DRAW_ACCEPTED:
-				if (otherPlayer != null) {
-					otherPlayer.alert(Messages.getString("Offers.drawOfferAccepted", getName()));
-				}
-				game.drawn(GameResult.DRAW_AGREED);
-				break;
-			case DRAW_DECLINED:
-				if (otherPlayer != null) {
-					otherPlayer.alert(Messages.getString("Offers.drawOfferDeclined", getName()));
-				}
-				break;
-			case UNDO_ACCEPTED:
-				if (otherPlayer != null) {
-					otherPlayer.alert(Messages.getString("Offers.undoOfferAccepted", getName()));
-				}
-				game.undoMove(otherPlayer.getName());
-				break;
-			case UNDO_DECLINED:
-				if (otherPlayer != null) {
-					otherPlayer.alert(Messages.getString("Offers.undoOfferDeclined", getName()));
-				}
-				break;
-			default:
-				break;
+					break;
+				case DRAW_OFFERED:
+					game.offerDraw(getName());
+					break;
+				case DRAW_ACCEPTED:
+					if (otherPlayer != null) {
+						otherPlayer.alert(Messages.getString("Offers.drawOfferAccepted", getName()));
+					}
+					game.drawn(GameResult.DRAW_AGREED);
+					break;
+				case DRAW_DECLINED:
+					if (otherPlayer != null) {
+						otherPlayer.alert(Messages.getString("Offers.drawOfferDeclined", getName()));
+					}
+					break;
+				case UNDO_ACCEPTED:
+					if (otherPlayer != null) {
+						otherPlayer.alert(Messages.getString("Offers.undoOfferAccepted", getName()));
+					}
+					game.undoMove(otherPlayer.getName());
+					break;
+				case UNDO_DECLINED:
+					if (otherPlayer != null) {
+						otherPlayer.alert(Messages.getString("Offers.undoOfferDeclined", getName()));
+					}
+					break;
+				default:
+					break;
 			}
 			ai.clearPendingAction();
 		}

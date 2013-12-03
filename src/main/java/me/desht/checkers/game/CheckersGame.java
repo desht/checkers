@@ -505,7 +505,7 @@ public class CheckersGame implements CheckersPersistable {
 	}
 
 	private void gameRulesReminder() {
-		alert(getPosition().getRules().isForcedJump() ? Messages.getString("Game.forceJumpEnabled") : Messages.getString("Game.forceJumpDisabled"));
+		alert(Messages.getString("Game.rulesReminder"));
 	}
 
 	public void doMove(String playerName, RowCol fromSquare, RowCol toSquare) {
@@ -539,12 +539,9 @@ public class CheckersGame implements CheckersPersistable {
 		if (getPosition().getMoveHistory().length == 0) return;
 
 		CheckersPlayer cp = getPlayer(playerName);
-		if (getPosition().getToMove() == cp.getColour()) {
-			// need to undo two moves - first the other player's last move
-			getPosition().undoLastMove();
-		}
-		// now undo the undoer's last move
-		getPosition().undoLastMove();
+		// if it's our move, need to undo two moves - first the other player's last move
+		// and then the our last move
+		getPosition().undoLastMove(getPosition().getToMove() == cp.getColour() ? 2 : 1);
 
 		save();
 

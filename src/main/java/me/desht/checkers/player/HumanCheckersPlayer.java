@@ -78,7 +78,11 @@ public class HumanCheckersPlayer extends CheckersPlayer {
 		Player player = getBukkitPlayer();
 		if (player != null) {
 			Move m = getGame().getPosition().getLastMove();
-			alert(Messages.getString("Game.playerPlayedMove", getColour().getOtherColour().getDisplayColour(), m.toString(), getColour().getDisplayColour()));
+			int size = getGame().getPosition().getRules().getBoardSize();
+			int from = m.getFrom().toCheckersNotation(size);
+			int to = m.getTo().toCheckersNotation(size);
+			alert(Messages.getString("Game.playerPlayedMove",
+					getColour().getOtherColour().getDisplayColour(), from, to, getColour().getDisplayColour()));
 			maybeAutoSelect();
 		}
 	}

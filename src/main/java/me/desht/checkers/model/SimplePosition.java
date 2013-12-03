@@ -71,6 +71,9 @@ public class SimplePosition implements Position {
 				listener.squareChanged(square, getPieceAt(square));
 			}
 		}
+		listener.plyCountChanged(getPlyCount());
+		listener.halfMoveClockChanged(getHalfMoveClock());
+		listener.toMoveChanged(getToMove());
 	}
 
 	@Override
@@ -93,7 +96,7 @@ public class SimplePosition implements Position {
 				}
 			}
 		}
-		legalMoves = rules.calculateLegalMoves(this, toMove);
+		legalMoves = rules.calculateLegalMoves(this);
 		jumpInProgress = false;
 		moveHistory = new ArrayList<Move>();
 		halfMoveClock = 0;
@@ -165,7 +168,6 @@ public class SimplePosition implements Position {
 
 		if (move.isJump()) {
 			// check for a possible chain of jumps
-//			Move[] jumps = rules.getLegalMoves(this, toSquare, true);
 			if (moreJumps.length > 0 && !justPromoted) {
 				// the same player must continue jumping
 				jumpInProgress = true;
@@ -182,13 +184,13 @@ public class SimplePosition implements Position {
 					}
 				}
 				toMove = toMove.getOtherColour();
-				legalMoves = rules.calculateLegalMoves(this, toMove);
+				legalMoves = rules.calculateLegalMoves(this);
 				jumpInProgress = false;
 			}
 			halfMoveClock = 0;
 		} else {
 			toMove = toMove.getOtherColour();
-			legalMoves = rules.calculateLegalMoves(this, toMove);
+			legalMoves = rules.calculateLegalMoves(this);
 			jumpInProgress = false;
 			halfMoveClock++;
 		}
@@ -288,42 +290,36 @@ public class SimplePosition implements Position {
 
 	@Override
 	public Move getLastMove() {
-		return moveHistory.get(moveHistory.size() - 1);
+		return moveHistory.isEmpty() ? null : moveHistory.get(moveHistory.size() - 1);
 	}
 
 	@Override
-	public void undoLastMove() {
+	public void undoLastMove(int nMoves) {
 		if (moveHistory.size() == 0) {
 			return;
 		}
 		int idx = moveHistory.size() - 1;
-		do {
-			Move move = moveHistory.get(idx);
-			setPieceAt(move.getTo(), PieceType.NONE);
-			setPieceAt(move.getFrom(), move.getMovedPiece());
-			if (move.isJump()) {
-				int overRow = (move.getFromRow() + move.getToRow()) / 2;
-				int overCol = (move.getFromCol() + move.getToCol()) / 2;
-				setPieceAt(RowCol.get(overRow, overCol), move.getCapturedPiece());
-			}
-			idx--;
-		} while (idx >= 0 && moveHistory.get(idx).isChainedJump());
-
-		toMove = toMove.getOtherColour();
-		legalMoves = rules.calculateLegalMoves(this, toMove);
-		jumpInProgress = false;
-
-		// truncate the move history
-		List<Move> tmpHist = new ArrayList<Move>(idx + 1);
-		for (int i = 0; i <= idx; i++) {
-			tmpHist.add(moveHistory.get(i));
+		// back up until the start of the last complete move
+		// (could be multiple steps if the last move was a chained jump)
+		while (nMoves-- > 0 && idx >= 0) {
+			do {
+				idx--;
+			} while (idx >= 0 && moveHistory.get(idx).isChainedJump());
 		}
-		moveHistory = tmpHist;
 
-		for (PositionListener l : listeners) {
+		// now reset the position to the start and replay all moves up to the previous move
+		List<PositionListener> saved = new ArrayList<PositionListener>();
+		saved.addAll(listeners);
+		listeners.clear();
+		List<Move> tmp = new ArrayList<Move>(moveHistory);
+		newGame();
+		for (int i = 0; i <= idx; i++) {
+			makeMove(tmp.get(i));
+		}
+		// restore the position listeners
+		for (PositionListener l : saved) {
+			addPositionListener(l);
 			l.lastMoveUndone(this);
-			l.plyCountChanged(getPlyCount());
-			l.toMoveChanged(toMove);
 		}
 	}
 

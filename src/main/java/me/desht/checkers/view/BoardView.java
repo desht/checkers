@@ -404,7 +404,12 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 
 	@Override
 	public void lastMoveUndone(Position position) {
-		getBoard().setLastMovedSquare(position.getLastMove().getTo());
+		Move m = position.getLastMove();
+		if (m == null) {
+			getBoard().clearLastMovedSquare();
+		} else {
+			getBoard().setLastMovedSquare(position.getLastMove().getTo());
+		}
 		getBoard().clearSelected();
 	}
 

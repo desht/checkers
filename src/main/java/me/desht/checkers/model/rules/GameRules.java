@@ -30,13 +30,6 @@ public abstract class GameRules {
 	public abstract int getBoardSize();
 
 	/**
-	 * Get the number of rows of pieces each player has at the start of the game.
-	 *
-	 * @return the number of rows of pieces
-	 */
-	public abstract int getPieceRowCount();
-
-	/**
 	 * Get who moves first.
 	 *
 	 * @return the colour of the player to move first
@@ -60,25 +53,35 @@ public abstract class GameRules {
 	/**
 	 * Check if the given player colour can move from the given board square in the given direction
 	 *
-	 * @param who the player colour to check
+	 * @param position the board position
 	 * @param square the board square
 	 * @param direction the direction to move
-	 * @return true if the move is legal, false otherwise
+	 * @return a list of the possible moves, or null if no moves are possible
 	 */
-	public abstract List<Move> getMoves(Position position, PlayerColour who, RowCol square, MoveDirection direction);
+	public abstract List<Move> getMoves(Position position, RowCol square, MoveDirection direction);
 
 	/**
 	 * Check if the given player colour can jump from the given board square in the given direction
 	 *
-	 * @param who the player colour to check
+	 * @param position the board position
 	 * @param square the board square
 	 * @param direction the direction to move
-	 * @return true if the jump is legal, false otherwise
+	 * @return a list of the possible moves, or null if no moves are possible
 	 */
-	public abstract List<Move> getJumps(Position position, PlayerColour who, RowCol square, MoveDirection direction);
+	public abstract List<Move> getJumps(Position position, RowCol square, MoveDirection direction);
 
 	/**
-	 * Check that the given square is actually isValidSquare.
+	 * Get the number of rows of pieces each player has at the start of the game. The
+	 * default implementation allows for 2 rows of empty space in the middle of the board.
+	 *
+	 * @return the number of rows of pieces for each player
+	 */
+	public int getPieceRowCount() {
+		return getBoardSize() / 2 - 1;
+	}
+
+	/**
+	 * Check that the given square is actually on the board.
 	 *
 	 * @param square the board square
 	 * @return true if the square is valid for this ruleset, false otherwise
@@ -88,21 +91,20 @@ public abstract class GameRules {
 	}
 
 	/**
-	 * Calculate all possible legal moves for the given player colour
+	 * Calculate all possible legal moves for the given position.
 	 *
-	 * @param who the colour to calculate for
 	 * @return an array of legal moves
 	 */
-	public Move[] calculateLegalMoves(Position position, PlayerColour who) {
+	public Move[] calculateLegalMoves(Position position) {
 		List<Move> res = new ArrayList<Move>();
 
 		// get all the possible jumps that can be made
 		for (int row = 0; row < getBoardSize(); row++) {
 			for (int col = 0; col < getBoardSize(); col++) {
 				RowCol square = RowCol.get(row, col);
-				if (position.getPieceAt(square).getColour() == who) {
+				if (position.getPieceAt(square).getColour() == position.getToMove()) {
 					for (MoveDirection dir : MoveDirection.values()) {
-						List<Move> jumps = getJumps(position, who, square, dir);
+						List<Move> jumps = getJumps(position, square, dir);
 						if (jumps != null) {
 							res.addAll(jumps);
 						}
@@ -117,9 +119,9 @@ public abstract class GameRules {
 			for (int row = 0; row < getBoardSize(); row++) {
 				for (int col = 0; col < getBoardSize(); col++) {
 					RowCol square = RowCol.get(row, col);
-					if (position.getPieceAt(square).getColour() == who) {
+					if (position.getPieceAt(square).getColour() == position.getToMove()) {
 						for (MoveDirection dir : MoveDirection.values()) {
-							List<Move> moves = getMoves(position, who, square, dir);
+							List<Move> moves = getMoves(position, square, dir);
 							if (moves != null) {
 								res.addAll(moves);
 							}
@@ -145,14 +147,14 @@ public abstract class GameRules {
 		}
 		List<Move> res = new ArrayList<Move>();
 		for (MoveDirection dir : MoveDirection.values()) {
-			List<Move> jumps = getJumps(position, position.getToMove(), square, dir);
+			List<Move> jumps = getJumps(position, square, dir);
 			if (jumps != null) {
 				res.addAll(jumps);
 			}
 		}
 		if (!onlyJumps && (res.isEmpty() || !isForcedJump())) {
 			for (MoveDirection dir : MoveDirection.values()) {
-				List<Move> moves = getMoves(position, position.getToMove(), square, dir);
+				List<Move> moves = getMoves(position, square, dir);
 				if (moves != null) {
 					res.addAll(moves);
 				}
@@ -161,29 +163,28 @@ public abstract class GameRules {
 		return res.toArray(new Move[res.size()]);
 	}
 
-	private static void registerRules(Class<? extends GameRules> ruleClass) {
-		try {
-			Constructor<? extends GameRules> ctor = ruleClass.getDeclaredConstructor();
-			GameRules rules = ctor.newInstance();
-			allRulesets.put(rules.getId(), rules);
-		} catch (Exception e) {
-			throw new CheckersException("can't instantiate ruleset: " + ruleClass.getName() + ": " + e.getMessage());
-		}
+	private static void registerRules(GameRules rules) {
+		allRulesets.put(rules.getId(), rules);
 	}
 
 	public static void registerRulesets() {
-		registerRules(EnglishDraughts.class);
-		registerRules(EnglishDraughtsNFJ.class);
-		registerRules(InternationalDraughts.class);
-		registerRules(CanadianCheckers.class);
-		registerRules(BrazilianDraughts.class);
+		registerRules(new EnglishDraughts());
+		registerRules(new EnglishDraughtsNFJ());
+		registerRules(new InternationalDraughts());
+		registerRules(new CanadianCheckers());
+		registerRules(new BrazilianDraughts());
 	}
 
 	public static GameRules getRules(String ruleId) {
 		return allRulesets.get(ruleId);
 	}
 
-
+	/**
+	 * Get a sorted list of all rulesets which apply to the given board size.
+	 *
+	 * @param size the board size (number of squares on an edge)
+	 * @return a list of matching rulesets
+	 */
 	public static List<GameRules> getMatchingRules(int size) {
 		List<GameRules> res = new ArrayList<GameRules>();
 		for (String ruleId : MiscUtil.asSortedList(allRulesets.keySet())) {

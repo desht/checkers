@@ -13,7 +13,7 @@ public interface Position {
 	public void newGame();
 	public boolean isJumpInProgress();
 	public void addPositionListener(PositionListener listener);
-	public void undoLastMove();
+	public void undoLastMove(int nMoves);
 	public int getPlyCount();
 	public int getHalfMoveClock();
 	public Position tryMove(Move move);
