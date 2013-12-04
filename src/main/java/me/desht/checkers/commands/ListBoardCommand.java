@@ -35,8 +35,9 @@ public class ListBoardCommand extends AbstractCheckersCommand {
 			for (BoardView bv : BoardViewManager.getManager().listBoardViewsSorted()) {
 				String gameName = bv.getGame() != null ? bv.getGame().getName() : Messages.getString("Game.noGame");
 				Location a1 = bv.getBoard().getA1Center().getLocation();
+				String size = bv.getBoard().getSize() + "x" + bv.getBoard().getSize();
 				pager.add(MessagePager.BULLET + Messages.getString("Board.boardList", bv.getName(), MiscUtil.formatLocation(a1),
-				                                                   bv.getBoard().getBoardStyle().getName(), gameName));
+				                                                   size, bv.getBoard().getBoardStyle().getName(), gameName));
 			}
 		}
 		pager.showPage();

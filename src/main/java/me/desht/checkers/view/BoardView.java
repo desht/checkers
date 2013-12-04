@@ -307,9 +307,10 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 		Cuboid bounds = checkersBoard.getFullBoard();
 		BoardStyle style = checkersBoard.getBoardStyle();
 		String gameName = getGame() != null ? getGame().getName() : "-";
+		String size = getBoard().getSize() + "x" + getBoard().getSize();
 
 		res.add(Messages.getString("Board.boardDetail.board", getName()));
-		res.add(bullet + Messages.getString("Board.boardDetail.boardExtents", MiscUtil.formatLocation(bounds.getLowerNE()), MiscUtil.formatLocation(bounds.getUpperSW())));
+		res.add(bullet + Messages.getString("Board.boardDetail.boardExtents", MiscUtil.formatLocation(bounds.getLowerNE()), MiscUtil.formatLocation(bounds.getUpperSW()), size));
 		res.add(bullet + Messages.getString("Board.boardDetail.game", gameName));
 		res.add(bullet + Messages.getString("Board.boardDetail.boardOrientation", checkersBoard.getRotation().toString()));
 		res.add(bullet + Messages.getString("Board.boardDetail.boardStyle", style.getName()));

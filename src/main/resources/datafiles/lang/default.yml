@@ -119,7 +119,7 @@ Board:
   boardCreationPrompt: Left-click a block to create board &6{0}&-.  Right-click to cancel.
   boardDeleted: Board &6{0}&- has been deleted.
   boardExists: A board by that name already exists.
-  boardList: "&6{0}&-: loc=&6{1}&- style=&6{2}&- game=&6{3}&-"
+  boardList: "&6{0}&-: loc=&6{1}&- size=&6{2}&- style=&6{3}&- game=&6{4}&-"
   boardRedrawn: Board &6{0}&- has been redrawn.
   boardStyleChanged: "Board &6{0}&- style changed."
   boardStyleSuggestSave: "Use &f/checkers board save [<new-style-name>]&- to save changes."
@@ -138,7 +138,7 @@ Board:
   squareMessage: "Square &6[{0}]&-, board &6{1}"
   boardDetail:
     board: "Board &6{0}:"
-    boardExtents: "Board Extents: &f{0} - {1}"
+    boardExtents: "Board Extents: &f{0} - {1} ({2})"
     boardOrientation: "Board Orientation: &f{0}"
     boardStyle: "Board Style: &f{0}"
     defaultStake: "Default Stake: &f{0} {1}"

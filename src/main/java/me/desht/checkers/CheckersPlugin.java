@@ -27,7 +27,6 @@ import me.desht.checkers.commands.CreateBoardCommand;
 import me.desht.checkers.commands.CreateGameCommand;
 import me.desht.checkers.commands.DeleteBoardCommand;
 import me.desht.checkers.commands.DeleteGameCommand;
-import me.desht.checkers.commands.ForceJumpCommand;
 import me.desht.checkers.commands.GetcfgCommand;
 import me.desht.checkers.commands.InviteCommand;
 import me.desht.checkers.commands.JoinCommand;
@@ -62,15 +61,7 @@ import me.desht.checkers.model.rules.GameRules;
 import me.desht.checkers.results.Results;
 import me.desht.checkers.view.BoardView;
 import me.desht.checkers.view.BoardViewManager;
-import me.desht.dhutils.ConfigurationListener;
-import me.desht.dhutils.ConfigurationManager;
-import me.desht.dhutils.DHUtilsException;
-import me.desht.dhutils.Duration;
-import me.desht.dhutils.LogUtils;
-import me.desht.dhutils.MessagePager;
-import me.desht.dhutils.MiscUtil;
-import me.desht.dhutils.PersistableLocation;
-import me.desht.dhutils.SpecialFX;
+import me.desht.dhutils.*;
 import me.desht.dhutils.commands.CommandManager;
 import me.desht.dhutils.nms.NMSHelper;
 import me.desht.dhutils.responsehandler.ResponseHandler;
@@ -186,7 +177,6 @@ public class CheckersPlugin extends JavaPlugin implements ConfigurationListener 
 		cmds.registerCommand(new CreateGameCommand());
 		cmds.registerCommand(new DeleteBoardCommand());
 		cmds.registerCommand(new DeleteGameCommand());
-		cmds.registerCommand(new ForceJumpCommand());
 		cmds.registerCommand(new GetcfgCommand());
 		cmds.registerCommand(new InviteCommand());
 		cmds.registerCommand(new JoinCommand());
@@ -389,6 +379,8 @@ public class CheckersPlugin extends JavaPlugin implements ConfigurationListener 
 			throw new DHUtilsException("'version' config item may not be changed");
 		} else if (key.equals("database.table_prefix") && newVal.toString().isEmpty()) {
 			throw new DHUtilsException("'database.table_prefix' may not be empty");
+		} else if (key.startsWith("default_rules")) {
+			DHValidate.isTrue(GameRules.getRules(newVal.toString()) != null, "Unknown ruleset '" + newVal + "'");
 		}
 	}
 

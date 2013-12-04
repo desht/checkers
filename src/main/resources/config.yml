@@ -51,7 +51,6 @@ flying:
   outer_limit: 25
   fly_speed: 0.2
   walk_speed: 0.2
-forced_jump: true
 forfeit_timeout: 5 min
 ladder:
   initial_position: 1000

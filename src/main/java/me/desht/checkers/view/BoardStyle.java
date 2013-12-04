@@ -18,7 +18,7 @@ import me.desht.dhutils.block.MaterialWithData;
 import org.bukkit.configuration.Configuration;
 
 public class BoardStyle implements Comparable<BoardStyle>, ConfigurationListener {
-	public static final String DEFAULT_BOARD_STYLE = "greenwood";
+	public static final String DEFAULT_BOARD_STYLE = "gw-small";
 
 	private static final String WHITE_SQUARE = "white_square";
 	private static final String BLACK_SQUARE = "black_square";

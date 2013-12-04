@@ -30,9 +30,9 @@ public class CreateGameCommand extends AbstractCheckersCommand {
 		String ruleId;
 		if (hasOption("rules")) {
 			ruleId = getStringOption("rules");
-			bv.getControlPanel().getButton(SelectRulesButton.class).setSelectedRuleset(ruleId);
+			bv.getControlPanel().getButton(SelectRulesButton.class).setRuleset(ruleId);
 		} else {
-			ruleId = bv.getControlPanel().getButton(SelectRulesButton.class).getSelectedRuleset();
+			ruleId = bv.getControlPanel().getButton(SelectRulesButton.class).getRuleset();
 		}
 		CheckersGameManager.getManager().createGame((Player) sender, gameName, bv, colour, ruleId);
 

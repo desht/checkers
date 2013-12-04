@@ -104,7 +104,6 @@
                                     <artifact>me.desht:dhutils-lib</artifact>
                                     <excludes>
                                         <exclude>me/desht/dhutils/Cost*</exclude>
-                                        <exclude>me/desht/dhutils/DHValidate*</exclude>
                                         <exclude>me/desht/dhutils/ExperienceManager*</exclude>
                                         <exclude>me/desht/dhutils/I18N*</exclude>
                                         <exclude>me/desht/dhutils/ItemGlow*</exclude>

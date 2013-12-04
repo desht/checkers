@@ -27,7 +27,6 @@ public class ControlPanel {
 
 	private final BoardView view;
 	private final Cuboid panelBlocks;
-	private BoardRotation boardDir;
 	private BoardRotation signDir;
 	private final Cuboid toMoveIndicator;
 	private final PlyCountLabel plyCountLabel;
@@ -38,7 +37,7 @@ public class ControlPanel {
 
 	public ControlPanel(BoardView view) {
 		this.view = view;
-		this.boardDir = view.getBoard().getRotation();
+		BoardRotation boardDir = view.getBoard().getRotation();
 		this.signDir = boardDir.getRight();
 
 		buttonLocs = new HashMap<PersistableLocation, AbstractSignButton>();
@@ -55,19 +54,19 @@ public class ControlPanel {
 
 		createSignButtons();
 
-		// the default colour for creating a new game will let the game creator move first
-		GameRules r = GameRules.getRules(getButton(SelectRulesButton.class).getSelectedRuleset());
-		getButton(CreateGameButton.class).setColour(r.getWhoMovesFirst());
-
 		int size = getView().getBoard().getSize();
 		String defRules = CheckersPlugin.getInstance().getConfig().getString("default_rules." + size);
 		if (defRules != null) {
 			try {
-				getButton(SelectRulesButton.class).setSelectedRuleset(defRules);
+				getButton(SelectRulesButton.class).setRuleset(defRules);
 			} catch (CheckersException e) {
 				LogUtils.warning("unknown ruleset " + defRules + " in config (default_rules." + size + ")");
 			}
 		}
+
+		// the default colour for creating a new game will let the game creator move first
+		GameRules r = GameRules.getRules(getButton(SelectRulesButton.class).getRuleset());
+		getButton(CreateGameButton.class).setColour(r.getWhoMovesFirst());
 	}
 
 	public boolean isButton(Location location) {

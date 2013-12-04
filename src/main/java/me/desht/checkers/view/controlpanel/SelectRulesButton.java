@@ -9,7 +9,9 @@ import me.desht.dhutils.MiscUtil;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class SelectRulesButton extends AbstractSignButton {
 	private final List<GameRules> matchingRules;
@@ -30,7 +32,7 @@ public class SelectRulesButton extends AbstractSignButton {
 		if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
 			ruleIdx = (ruleIdx + 1) % matchingRules.size();
 			if (getGame() != null && getGame().getState() == CheckersGame.GameState.SETTING_UP) {
-				getGame().getPosition().setRules(getSelectedRuleset());
+				getGame().getPosition().setRules(getRuleset());
 			} else if (getGame() == null) {
 				getPanel().getButton(CreateGameButton.class).setColour(matchingRules.get(ruleIdx).getWhoMovesFirst());
 			}
@@ -80,11 +82,11 @@ public class SelectRulesButton extends AbstractSignButton {
 		return res;
 	}
 
-	public String getSelectedRuleset() {
+	public String getRuleset() {
 		return matchingRules.isEmpty() ? "" : matchingRules.get(ruleIdx).getId();
 	}
 
-	public void setSelectedRuleset(String ruleId) {
+	public void setRuleset(String ruleId) {
 		boolean found = false;
 		for (int i = 0; i < matchingRules.size(); i++) {
 			if (ruleId.equals(matchingRules.get(i).getId())) {
@@ -95,7 +97,7 @@ public class SelectRulesButton extends AbstractSignButton {
 		}
 		if (found) {
 			if (getGame() != null && getGame().getState() == CheckersGame.GameState.SETTING_UP) {
-				getGame().getPosition().setRules(getSelectedRuleset());
+				getGame().getPosition().setRules(getRuleset());
 			}
 			repaint();
 		} else {

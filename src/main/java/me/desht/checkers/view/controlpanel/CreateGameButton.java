@@ -22,7 +22,7 @@ public class CreateGameButton extends AbstractSignButton {
 	@Override
 	public void execute(PlayerInteractEvent event) {
 		if (event.getAction() == Action.LEFT_CLICK_BLOCK) {
-			String ruleId = getPanel().getButton(SelectRulesButton.class).getSelectedRuleset();
+			String ruleId = getPanel().getButton(SelectRulesButton.class).getRuleset();
 			CheckersGameManager.getManager().createGame(event.getPlayer(), null, getView(), colour, ruleId);
 		} else if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
 			// cycle between "White" and "Black"
@@ -33,7 +33,7 @@ public class CreateGameButton extends AbstractSignButton {
 
 	@Override
 	public boolean isEnabled() {
-		return getGame() == null && !getPanel().getButton(SelectRulesButton.class).getSelectedRuleset().isEmpty();
+		return getGame() == null && !getPanel().getButton(SelectRulesButton.class).getRuleset().isEmpty();
 	}
 
 	@Override
