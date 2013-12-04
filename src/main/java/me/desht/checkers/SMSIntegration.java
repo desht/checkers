@@ -105,13 +105,13 @@ public class SMSIntegration implements Listener {
 	}
 
 	private void createMenu(String name, String title) {
-		SMSMenu menu = null;
+		SMSMenu menu;
 		if (!smsHandler.checkMenu(name)) {
 			menu = smsHandler.createMenu(name, title, "*Checkers");
 			menu.setAutosort(true);
 		} else {
 			try {
-				// clear all menu items - start with a clean slate
+				// clear all menu items - setActive with a clean slate
 				menu = smsHandler.getMenu(name);
 				menu.setTitle(MiscUtil.parseColourSpec(title));
 				menu.removeAllItems();

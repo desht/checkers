@@ -71,7 +71,7 @@ public abstract class GameRules {
 	public abstract List<Move> getJumps(Position position, RowCol square, MoveDirection direction);
 
 	/**
-	 * Get the number of rows of pieces each player has at the start of the game. The
+	 * Get the number of rows of pieces each player has at the setActive of the game. The
 	 * default implementation allows for 2 rows of empty space in the middle of the board.
 	 *
 	 * @return the number of rows of pieces for each player

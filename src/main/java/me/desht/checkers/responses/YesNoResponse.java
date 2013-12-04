@@ -30,7 +30,7 @@ public abstract class YesNoResponse extends ExpectBase {
 	/**
 	 * The given player has just typed "yes" or "no" (or used a Yes/No button).  Work out to what offer they're
 	 * responding, and carry out the associated action.
-	 * 
+	 *
 	 * @param player
 	 * @param isAccepted
 	 * @throws CheckersException
@@ -39,7 +39,7 @@ public abstract class YesNoResponse extends ExpectBase {
 		ResponseHandler respHandler = CheckersPlugin.getInstance().getResponseHandler();
 
 		// TODO: code smell!
-		Class<? extends YesNoResponse> c = null;
+		Class<? extends YesNoResponse> c;
 		if (respHandler.isExpecting(player.getName(), DrawResponse.class)) {
 			c = DrawResponse.class;
 		} else if (respHandler.isExpecting(player.getName(), SwapResponse.class)) {
@@ -50,7 +50,7 @@ public abstract class YesNoResponse extends ExpectBase {
 			return;
 		}
 
-		YesNoResponse response = (YesNoResponse) respHandler.getAction(player.getName(), c);
+		YesNoResponse response = respHandler.getAction(player.getName(), c);
 		response.setResponse(isAccepted);
 		response.handleAction();
 	}

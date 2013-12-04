@@ -37,11 +37,8 @@ public class StakeButton extends AbstractSignButton {
 	@Override
 	public boolean isReactive() {
 		CheckersGame game = getGame();
-		if (game == null) return false;
+		return game != null && !getView().getLockStake() && game.getState() == GameState.SETTING_UP && !game.isFull();
 
-		if (getView().getLockStake()) return false;
-
-		return game.getState() == GameState.SETTING_UP && !game.isFull();
 	}
 
 	@Override

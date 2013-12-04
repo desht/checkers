@@ -101,7 +101,7 @@ public class PersistenceHandler {
 		LogUtils.fine("loading game: " + gameFile);
 		try {
 			Configuration conf = MiscUtil.loadYamlUTF8(gameFile);
-			CheckersGame game = null;
+			CheckersGame game;
 			if (conf.contains("game")) {
 				game = (CheckersGame) conf.get("game");
 				CheckersGameManager.getManager().registerGame(game);

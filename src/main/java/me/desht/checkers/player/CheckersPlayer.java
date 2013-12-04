@@ -61,8 +61,6 @@ public abstract class CheckersPlayer {
 	public abstract void statusMessage(String message);
 	public abstract void playEffect(String effect);
 
-//	public abstract void replayMoves();
-
 	public abstract void cleanup();
 
 	public abstract boolean isHuman();

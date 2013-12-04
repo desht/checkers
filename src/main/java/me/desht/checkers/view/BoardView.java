@@ -17,7 +17,6 @@ import me.desht.checkers.player.CheckersPlayer;
 import me.desht.checkers.util.CheckersUtils;
 import me.desht.checkers.util.TerrainBackup;
 import me.desht.checkers.view.controlpanel.ControlPanel;
-import me.desht.checkers.view.controlpanel.SelectRulesButton;
 import me.desht.checkers.view.controlpanel.StakeButton;
 import me.desht.checkers.view.controlpanel.TimeControlButton;
 import me.desht.dhutils.AttributeCollection;
@@ -335,35 +334,28 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 
 	public void tick() {
 		if (game != null) {
-			updateClocks(false);
+			updateClock(game.getPlayerToMove().getColour());
 			game.tick();
 		}
 	}
 
-	private void updateClocks(boolean force) {
-		updateClock(PlayerColour.WHITE, force);
-		updateClock(PlayerColour.BLACK, force);
-	}
-
-	private void updateClock(PlayerColour colour, boolean force) {
-		TwoPlayerClock clock = game.getClock();
-		clock.tick();
-		if (!force && colour != game.getPosition().getToMove()) {
+	private void updateClock(PlayerColour colour) {
+		if (game.getState() != GameState.RUNNING) {
 			return;
 		}
+		TwoPlayerClock clock = game.getClock();
+		clock.tick();
 		getControlPanel().updateClock(colour, clock.getClockString(colour));
 
-		if (game.getState() == GameState.RUNNING) {
-			CheckersPlayer cp = game.getPlayer(colour);
-			if (clock.getRemainingTime(colour) <= 0) {
-				try {
-					game.forfeit(cp.getName());
-				} catch (CheckersException e) {
-					LogUtils.severe("unexpected exception: " + e.getMessage(), e);
-				}
-			} else {
-				cp.timeControlCheck();
+		CheckersPlayer cp = game.getPlayer(colour);
+		if (clock.getRemainingTime(colour) <= 0) {
+			try {
+				game.forfeit(cp.getName());
+			} catch (CheckersException e) {
+				LogUtils.severe("unexpected exception: " + e.getMessage(), e);
 			}
+		} else {
+			cp.timeControlCheck();
 		}
 	}
 
@@ -430,8 +422,9 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 	@Override
 	public void toMoveChanged(PlayerColour toMove) {
 		getControlPanel().updateToMoveIndicator(toMove);
-		game.getClock().toggle();
-		updateClocks(true);
+		game.getClock().setActive(toMove);
+		updateClock(PlayerColour.WHITE);
+		updateClock(PlayerColour.BLACK);
 	}
 
 	@Override
@@ -483,7 +476,8 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 		ControlPanel cp = getControlPanel();
 		cp.getTcDefs().addCustomSpec(tcSpec);
 		cp.getButton(TimeControlButton.class).repaint();
-		updateClocks(true);
+		updateClock(PlayerColour.WHITE);
+		updateClock(PlayerColour.BLACK);
 	}
 
 	@Override

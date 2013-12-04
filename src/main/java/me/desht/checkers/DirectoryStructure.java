@@ -14,7 +14,10 @@ public class DirectoryStructure {
 	private static JARUtil jarUtil;
 
 	private static File boardStyleDir, schematicsDir;
-	private static File dataDir, gamePersistDir, boardPersistDir, languagesDir, resultsDir;
+	private static File gamePersistDir;
+	private static File boardPersistDir;
+	private static File languagesDir;
+	private static File resultsDir;
 	private static final String boardStyleFoldername = "board_styles"; //$NON-NLS-1$
 	private static final String schematicsFoldername = "schematics"; //$NON-NLS-1$
 	private static final String languageFoldername = "lang"; //$NON-NLS-1$
@@ -72,7 +75,7 @@ public class DirectoryStructure {
 	private static void setupDirectoryStructure() {
 		// directories
 		boardStyleDir = new File(pluginDir, boardStyleFoldername);
-		dataDir = new File(pluginDir, datasaveFoldername);
+		File dataDir = new File(pluginDir, datasaveFoldername);
 		gamePersistDir = new File(dataDir, gamesFoldername);
 		boardPersistDir = new File(dataDir, boardsFoldername);
 		schematicsDir = new File(boardPersistDir, schematicsFoldername);
@@ -133,7 +136,7 @@ public class DirectoryStructure {
 	/**
 	 * Find a YAML resource file in the given directory.  Look first in the custom/ subdirectory
 	 * and then in the directory itself.
-	 * 
+	 *
 	 * @param dir
 	 * @param filename
 	 * @param saving
@@ -157,7 +160,7 @@ public class DirectoryStructure {
 
 	/**
 	 * Check if the given file is a custom resource, i.e. it's a custom/ subdirectory.
-	 * 
+	 *
 	 * @param path
 	 * @return
 	 */
@@ -165,17 +168,16 @@ public class DirectoryStructure {
 		return path.getParentFile().getName().equalsIgnoreCase("custom");
 	}
 
-	/** 
+	/**
 	 * Find a YAML resource in the custom/ subdirectory of the given directory.
-	 * 
+	 *
 	 * @param dir
 	 * @param filename
 	 * @return
 	 * @throws CheckersException
 	 */
 	public static File getResourceFileForSave(File dir, String filename) {
-		File f = new File(dir, "custom" + File.separator + filename.toLowerCase() + ".yml");
-		return f;
+		return new File(dir, "custom" + File.separator + filename.toLowerCase() + ".yml");
 	}
 
 	public static final FilenameFilter ymlFilter = new FilenameFilter() {

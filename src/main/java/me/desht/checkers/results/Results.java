@@ -50,7 +50,7 @@ public class Results {
 
 	/**
 	 * Register a new view type
-	 * 
+	 *
 	 * @param viewName	Name of the view
 	 * @param view		Object to handle the view (must subclass ResultViewBase)
 	 */
@@ -60,7 +60,7 @@ public class Results {
 
 	/**
 	 * Get the singleton results handler object
-	 * 
+	 *
 	 * @return	The results handler
 	 */
 	public synchronized static Results getResultsHandler() {
@@ -76,7 +76,7 @@ public class Results {
 
 	/**
 	 * Check that the results handler has been initialised sucessfully.
-	 * 
+	 *
 	 * @return	true if the results handler is OK, false otherwise
 	 */
 	public synchronized static boolean resultsHandlerOK() {
@@ -90,7 +90,7 @@ public class Results {
 
 	/**
 	 * Get the database handler for the results
-	 * 
+	 *
 	 * @return	The database handler
 	 */
 	ResultsDB getResultsDB() {
@@ -127,7 +127,7 @@ public class Results {
 
 	/**
 	 * Return a list of all results
-	 * 
+	 *
 	 * @return	A list of ResultEntry objects
 	 */
 	public List<ResultEntry> getEntries() {
@@ -136,7 +136,7 @@ public class Results {
 
 	/**
 	 * Get the database connection object
-	 * 
+	 *
 	 * @return	A SQL Connection object
 	 */
 	public Connection getConnection() {

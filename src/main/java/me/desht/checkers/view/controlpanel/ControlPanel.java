@@ -28,7 +28,7 @@ public class ControlPanel {
 
 	private final BoardView view;
 	private final Cuboid panelBlocks;
-	private BoardRotation signDir;
+	private final BoardRotation signDir;
 	private final Cuboid toMoveIndicator;
 	private final PlyCountLabel plyCountLabel;
 	private final HalfmoveClockLabel halfMoveClockLabel;

@@ -61,7 +61,7 @@ public class CheckersGame implements CheckersPersistable {
 	private GameResult result;
 	private long lastOpenInvite;
 	private PlayerColour winner = PlayerColour.NONE;
-	private TwoPlayerClock clock;
+	private final TwoPlayerClock clock;
 
 	public CheckersGame(String gameName, String creatorName, PlayerColour colour, String tcSpec, String ruleId) {
 		this.gameName = gameName;
@@ -107,7 +107,7 @@ public class CheckersGame implements CheckersPersistable {
 
 		// set clock activity appropriately
 		if (getState() == GameState.RUNNING) {
-			clock.start(getPosition().getToMove());
+			clock.setActive(getPosition().getToMove());
 			getPlayerToMove().promptForNextMove();
 		}
 	}
@@ -240,7 +240,7 @@ public class CheckersGame implements CheckersPersistable {
 		if (newState == GameState.RUNNING) {
 			CheckersValidate.isTrue(this.state == GameState.SETTING_UP, "invalid state transition " + state + "->" + newState);
 			started = lastMoved = System.currentTimeMillis();
-			clock.start(PlayerColour.BLACK);
+			clock.setActive(PlayerColour.BLACK);
 		} else if (newState == GameState.FINISHED) {
 			CheckersValidate.isTrue(this.state == GameState.RUNNING, "invalid state transition " + state + "->" + newState);
 			finished = System.currentTimeMillis();
@@ -369,22 +369,21 @@ public class CheckersGame implements CheckersPersistable {
 		for (int i = 0; i < moves.length; i++) {
 			sb.append(ChatColor.WHITE).append(Integer.toString(c)).append(". ");
 
-			sb.append(ChatColor.YELLOW).append(moves[i].toString());
+			sb.append(ChatColor.YELLOW).append(moves[i].toCheckersNotation(getPosition().getBoardSize()));
 			while (moves[i].isChainedJump() && i < moves.length) {
 				i++;
-				sb.append(ChatColor.YELLOW).append(moves[i].toChainedString(getPosition().getRules().getBoardSize()));
+				sb.append(ChatColor.YELLOW).append(moves[i].toChainedString(getPosition().getBoardSize()));
 			}
-
 			sb.append(" ");
 
 			if (++i >= moves.length) {
 				break;
 			}
 
-			sb.append(ChatColor.YELLOW).append(moves[i].toString());
+			sb.append(ChatColor.YELLOW).append(moves[i].toCheckersNotation(getPosition().getBoardSize()));
 			while (moves[i].isChainedJump() && i < moves.length) {
 				i++;
-				sb.append(ChatColor.YELLOW).append(moves[i].toChainedString(getPosition().getRules().getBoardSize()));
+				sb.append(ChatColor.YELLOW).append(moves[i].toChainedString(getPosition().getBoardSize()));
 			}
 			sb.append(" ");
 			c++;

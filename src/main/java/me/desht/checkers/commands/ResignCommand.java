@@ -20,7 +20,7 @@ public class ResignCommand extends AbstractCheckersCommand {
 	public boolean execute(Plugin plugin, CommandSender player, String[] args) {
 		notFromConsole(player);
 
-		CheckersGame game = null;
+		CheckersGame game;
 		if (args.length >= 1) {
 			game = CheckersGameManager.getManager().getGame(args[0]);
 		} else {

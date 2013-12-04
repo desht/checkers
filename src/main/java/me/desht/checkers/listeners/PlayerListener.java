@@ -43,7 +43,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 public class PlayerListener extends CheckersBaseListener {
 
 	private static final long MIN_ANIMATION_WAIT = 200; // milliseconds
-	private Map<String,Long> lastAnimation = new HashMap<String, Long>();
+	private final Map<String,Long> lastAnimation = new HashMap<String, Long>();
 
 	// block ids to be considered transparent when calling player.getTargetBlock()
 	private static final HashSet<Byte> transparent = new HashSet<Byte>();

@@ -142,7 +142,7 @@ public class CheckersPlugin extends JavaPlugin implements ConfigurationListener 
 		MessagePager.setPageCmd("/checkers page [#|n|p]");
 		MessagePager.setDefaultPageSize(getConfig().getInt("pager.lines", 0));
 
-		// this will cause saved results data to start being pulled in (async)
+		// this will cause saved results data to setActive being pulled in (async)
         Results.getResultsHandler();
 
 		setupVault(pm);
@@ -212,6 +212,8 @@ public class CheckersPlugin extends JavaPlugin implements ConfigurationListener 
 		}
 
 		persistenceHandler.save();
+
+		tickTask.cancel();
 
 		instance = null;
 	}

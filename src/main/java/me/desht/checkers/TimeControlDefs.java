@@ -112,7 +112,7 @@ public class TimeControlDefs {
 	}
 
 	/**
-	 * Get the previous time control definition in the list, wrapping round at the start of the list.
+	 * Get the previous time control definition in the list, wrapping round at the setActive of the list.
 	 * @return
 	 */
 	public TCDef prevDef() {

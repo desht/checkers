@@ -7,11 +7,11 @@ import me.desht.checkers.util.CheckersUtils;
 
 public class ClockLabel extends AbstractSignLabel {
 
-	private static int[] xPos = new int[2];
+	private static final int[] xPos = new int[2];
 	static {
 		xPos[PlayerColour.WHITE.getIndex()] = 5;
 		xPos[PlayerColour.BLACK.getIndex()] = 2;
-	};
+	}
 
 	private final PlayerColour colour;
 	private String timeStr = CheckersUtils.milliSecondsToHMS(0);

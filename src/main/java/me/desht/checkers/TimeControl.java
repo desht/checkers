@@ -2,7 +2,7 @@ package me.desht.checkers;
 
 
 public class TimeControl {
-	public enum ControlType { NONE, MOVE_IN, GAME_IN };
+	public enum ControlType { NONE, MOVE_IN, GAME_IN }
 
 	private final String spec;
 	private final ControlType controlType;

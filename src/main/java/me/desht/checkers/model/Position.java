@@ -19,6 +19,6 @@ public interface Position {
 	public Position tryMove(Move move);
 	public GameRules getRules();
 	public void setRules(String ruleId);
-
 	boolean isMarkedCaptured(RowCol square);
+	int getBoardSize();
 }

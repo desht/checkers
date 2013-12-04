@@ -1,5 +1,6 @@
 package me.desht.checkers;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -11,8 +12,8 @@ import org.bukkit.configuration.serialization.ConfigurationSerializable;
 
 public class TwoPlayerClock implements ConfigurationSerializable {
 	private TimeControl timeControl;
-	private long[] elapsed = new long[2];
-	private long[] remaining = new long[2];
+	private final long[] elapsed = new long[2];
+	private final long[] remaining = new long[2];
 	private PlayerColour active;
 	private long lastTick;
 
@@ -62,7 +63,10 @@ public class TwoPlayerClock implements ConfigurationSerializable {
 		remaining[0] = remaining[1] = timeControl.getRemainingTime();
 	}
 
-	public void start(PlayerColour active) {
+	public void setActive(PlayerColour active) {
+		if (isRunning() && timeControl.getControlType() == ControlType.MOVE_IN) {
+			remaining[active.getIndex()] = timeControl.getRemainingTime();
+		}
 		this.active = active;
 		lastTick = System.currentTimeMillis();
 	}
@@ -75,29 +79,18 @@ public class TwoPlayerClock implements ConfigurationSerializable {
 		return active != PlayerColour.NONE;
 	}
 
-	public void toggle() {
-		if (!isRunning()) {
-			return;
-		}
-		if (timeControl.getControlType() == ControlType.MOVE_IN) {
-			remaining[active.getIndex()] = timeControl.getRemainingTime();
-		}
-		active = active.getOtherColour();
-	}
-
 	public void tick() {
-		if (!isRunning()) {
-			return;
-		}
+		if (isRunning()) {
+			long now = System.currentTimeMillis();
+			long delta = now - lastTick;
+			lastTick = now;
 
-		long now = System.currentTimeMillis();
-		long delta = now - lastTick;
-		lastTick = now;
+			int idx = active.getIndex();
+			elapsed[idx] += delta;
 
-		int idx = active.getIndex();
-		elapsed[idx] += delta;
-		if (timeControl.getControlType() != ControlType.NONE) {
-			remaining[idx] = Math.max(0L, remaining[idx] - delta);
+			if (timeControl.getControlType() != ControlType.NONE) {
+				remaining[idx] = Math.max(0L, remaining[idx] - delta);
+			}
 		}
 	}
 

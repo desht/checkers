@@ -8,7 +8,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 public class StartButton extends AbstractSignButton {
 
 	public StartButton(ControlPanel panel) {
-		super(panel, "startGameBtn", "start", 4, 2);
+		super(panel, "startGameBtn", "setActive", 4, 2);
 	}
 
 	@Override
