@@ -13,24 +13,28 @@ public class PositionWeightedEvaluator implements Evaluator {
 	public int evaluate(Position position, PlayerColour colour) {
 		int score = 0;
 
-		for (int row = 0; row < 8; row++) {
-			for (int col = 0; col < 8; col++) {
+		int size = position.getRules().getBoardSize();
+		PlayerColour whoStarts = position.getRules().getWhoMovesFirst();
+
+		for (int row = 0; row < size; row++) {
+			int rankVal = whoStarts == colour ? row : size - 1 - row;
+			for (int col = 0; col < size; col++) {
 				switch (position.getPieceAt(row, col)) {
 				case WHITE:
-					score += PIECE_SCORE + Math.pow(7 - row, 2);
+					score += PIECE_SCORE + Math.pow(rankVal, 2);
 					break;
 				case WHITE_KING:
 					score += KING_SCORE;
-					if (row == 0 || row == 7 || col == 0 || col == 7) {
+					if (row == 0 || row == size - 1 || col == 0 || col == size - 1) {
 						score -= EDGE_PENALTY;
 					}
 					break;
 				case BLACK:
-					score -= PIECE_SCORE + Math.pow(row, 2);
+					score -= PIECE_SCORE + Math.pow(rankVal, 2);
 					break;
 				case BLACK_KING:
 					score -= KING_SCORE;
-					if (row == 0 || row == 7 || col == 0 || col == 7) {
+					if (row == 0 || row == size - 1 || col == 0 || col == size - 1) {
 						score += EDGE_PENALTY;
 					}
 					break;

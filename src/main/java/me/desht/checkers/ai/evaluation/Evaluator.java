@@ -7,8 +7,8 @@ public interface Evaluator {
 	/**
 	 * Evaluate the given position from the point of view of the given colour.
 	 *
-	 * @param position
-	 * @return
+	 * @param position the position to evaluate
+	 * @return the value of this position
 	 */
 	public int evaluate(Position position, PlayerColour colour);
 }
