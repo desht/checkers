@@ -60,7 +60,7 @@ Game:
   playerJoined: "&6{0}&- has joined your game."
   playerNotOnline: "Player {0} is not online."
   playerPlayedMove: "{0}&- played &f{1,number,integer}-{2,number,integer}&-.  Your move, {3}&-."
-  playerPlayedChainedMove: "{0}&- played [&f{1}&-] (move continues...)"
+  playerPlayedChainedMove: "{0}&- played &f{1}&- (move continues...)"
   playerBack: "{0} is back in the game!"
   playerQuit: "{0} quit.  If they don''t rejoin within {1,number,integer} seconds, you can type &f/checkers win&- to win by default."
   result:

@@ -41,7 +41,10 @@ public class AICheckersPlayer extends CheckersPlayer {
 	@Override
 	public void promptForContinuedMove() {
 		Move lastMove = getGame().getPosition().getLastMove();
-		getGame().getPlayer(getColour().getOtherColour()).alert(Messages.getString("Game.playerPlayedChainedMove", getColour().getDisplayColour(), lastMove));
+		int size = getGame().getPosition().getBoardSize();
+		getGame().getPlayer(getColour().getOtherColour()).alert(
+				Messages.getString("Game.playerPlayedChainedMove", getColour().getDisplayColour(), lastMove.toCheckersNotation(size))
+		);
 		ai.setActive(true);
 	}
 
