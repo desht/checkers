@@ -300,7 +300,7 @@ public class SimplePosition implements Position {
 			return;
 		}
 		int idx = moveHistory.size() - 1;
-		// back up until the setActive of the last complete move
+		// back up until the start of the last complete move
 		// (could be multiple steps if the last move was a chained jump)
 		while (nMoves-- > 0 && idx >= 0) {
 			do {
@@ -308,7 +308,7 @@ public class SimplePosition implements Position {
 			} while (idx >= 0 && moveHistory.get(idx).isChainedJump());
 		}
 
-		// now reset the position to the setActive and replay all moves up to the previous move
+		// now reset the position to the start and replay all moves up to the previous move
 		List<PositionListener> saved = new ArrayList<PositionListener>();
 		saved.addAll(listeners);
 		listeners.clear();

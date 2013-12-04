@@ -10,9 +10,9 @@ import org.bukkit.plugin.Plugin;
 public class StartCommand extends AbstractCheckersCommand {
 
 	public StartCommand() {
-		super("checkers setActive", 0, 1);
-		setPermissionNode("checkers.commands.setActive");
-		setUsage("/<command> setActive [<game>]");
+		super("checkers start", 0, 1);
+		setPermissionNode("checkers.commands.start");
+		setUsage("/<command> start [<game>]");
 	}
 
 	@Override

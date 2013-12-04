@@ -40,7 +40,7 @@ public class SetcfgCommand extends AbstractCheckersCommand {
 			MiscUtil.statusMessage(sender, key + " is now set to '&e" + res + "&-'");
 		} catch (CheckersException e) {
 			MiscUtil.errorMessage(sender, e.getMessage());
-			MiscUtil.errorMessage(sender, "Use /checkers getcfg to list all isValidSquare keys");
+			MiscUtil.errorMessage(sender, "Use /checkers getcfg to list all valid keys");
 		} catch (IllegalArgumentException e) {
 			MiscUtil.errorMessage(sender, e.getMessage());
 		}

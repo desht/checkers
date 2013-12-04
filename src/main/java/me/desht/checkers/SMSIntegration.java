@@ -111,7 +111,7 @@ public class SMSIntegration implements Listener {
 			menu.setAutosort(true);
 		} else {
 			try {
-				// clear all menu items - setActive with a clean slate
+				// clear all menu items - start with a clean slate
 				menu = smsHandler.getMenu(name);
 				menu.setTitle(MiscUtil.parseColourSpec(title));
 				menu.removeAllItems();

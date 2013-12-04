@@ -248,7 +248,7 @@ public abstract class CheckersAI implements Runnable {
 //	}
 
 	/**
-	 * Tell the AI to setActive thinking.  This will call a run() method, implemented in subclasses,
+	 * Tell the AI to start thinking.  This will call a run() method, implemented in subclasses,
 	 * which will analyze the current board position and culminate by calling aiHasMoved() with the
 	 * AI's next move.
 	 */
