@@ -1,0 +1,40 @@
+# Checkers board style definition
+#
+# See http://dev.bukkit.org/server-mods/checkers/board-styles for more information
+#
+# Materials can be specified as plain integer (e.g. '0' - air), material name
+#  (e.g. 'sandstone'), or material plus data (e.g. '35:0' or 'wool:white')
+# If you use plain integers, they must be quoted, or the style will not load!
+# If you use material names, they must match the org.bukkit.Material definitions exactly
+#  - see http://jd.bukkit.org/apidocs/org/bukkit/Material.html
+# # Overall height of the board bounding box will be <height> + 2
+# Overall width/length of the board bounding box will be <square_size> * 8 + <frame_width> * 2
+
+# width/length of the board squares, in blocks
+square_size: 1
+# width in blocks of the frame surrounding the board
+frame_width: 2
+# height of the board - number of squares of clear air between board and enclosure roof
+height: 6
+# material/data for the white squares
+white_square: 'WOOD:2'
+# material/data for the black squares
+black_square: 'WOOL:GREEN'
+# material/data for the frame
+frame: 'WOOD:1'
+# material/data for the enclosure
+enclosure: 'AIR:0'
+# material/data for the enclosure struts (default: 'enclosure' setting)
+struts: 'AIR:0'
+# board lighting level (0-15)
+light_level: 15
+# material/data for the white pieces
+white_piece: 'SKULL=MHF_Herobrine'
+# material/data for the black pieces
+black_piece: 'SKULL=MHF_Enderman'
+# material/data for the control panel (default: 'frame' setting)
+panel: 'WOOD:1'
+# highlighting material for selected piece
+highlight_selected: 'WOOL:YELLOW'
+# highlighting material for the last move made
+highlight_lastmove: 'WOOL:CYAN'

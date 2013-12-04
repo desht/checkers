@@ -12,6 +12,7 @@ import me.desht.checkers.game.CheckersGame;
 import me.desht.checkers.game.CheckersGame.GameState;
 import me.desht.checkers.game.CheckersGameManager;
 import me.desht.checkers.model.Checkers;
+import me.desht.checkers.model.PlayerColour;
 import me.desht.checkers.model.RowCol;
 import me.desht.checkers.player.CheckersPlayer;
 import me.desht.checkers.responses.BoardCreationHandler;
@@ -47,8 +48,9 @@ public class PlayerListener extends CheckersBaseListener {
 	// block ids to be considered transparent when calling player.getTargetBlock()
 	private static final HashSet<Byte> transparent = new HashSet<Byte>();
 	static {
-		transparent.add((byte) 0); // air
-		transparent.add((byte) 20); // glass
+		transparent.add((byte) Material.AIR.getId());
+		transparent.add((byte) Material.GLASS.getId());
+		transparent.add((byte) Material.SKULL.getId());
 	}
 
 	public PlayerListener(CheckersPlugin plugin) {
@@ -216,24 +218,30 @@ public class PlayerListener extends CheckersBaseListener {
 	}
 
 	private void boardClicked(Player player, Location loc, BoardView bv) {
-		RowCol square = bv.getSquareAt(loc);
+		RowCol clickedSquare = bv.getSquareAt(loc);
+		RowCol selectedSquare = bv.getBoard().getSelectedSquare();
 		CheckersGame game = bv.getGame();
-		if (game != null && bv.getBoard().getSelectedSquare() != null) {
-			tryMove(player, bv, square);
-		} else {
-			if (player.isSneaking()) {
-				if (square.getRow() % 2 == square.getCol() % 2) {
-					MiscUtil.statusMessage(player, Messages.getString("Board.squareMessage", square.toCheckersNotation(bv.getBoard().getSize()), bv.getName()));
-				}
-				if (bv.getBoard().isPartOfBoard(player.getLocation())) {
-					// allow teleporting around the board, but only if the player is already on the board
-					Location newLoc = loc.clone().add(0, 1.0, 0);
-					newLoc.setPitch(player.getLocation().getPitch());
-					newLoc.setYaw(player.getLocation().getYaw());
-					teleportPlayer(player, newLoc);
-				}
+		PlayerColour colour = game == null ? PlayerColour.NONE : game.getPosition().getPieceAt(clickedSquare).getColour();
+		if (game != null && selectedSquare != null && !selectedSquare.equals(clickedSquare)) {
+			// a square is selected; try to move that piece to the clicked square
+			tryMove(player, bv, clickedSquare);
+		} else if (game != null && game.getPlayerToMove().getName().equalsIgnoreCase(player.getName()) && colour == game.getPlayerToMove().getColour()) {
+			// clicking the square that a piece of our colour is on is equivalent to selecting the piece, if it's our move
+			pieceClicked(player, loc, bv);
+		} else if (player.isSneaking()) {
+			if (clickedSquare.getRow() % 2 == clickedSquare.getCol() % 2) {
+				MiscUtil.statusMessage(player, Messages.getString("Board.squareMessage", clickedSquare.toCheckersNotation(bv.getBoard().getSize()), bv.getName()));
+			}
+			Location playerLocation = player.getLocation();
+			// allow teleporting around the board, but only if the player is already on the board
+			if (bv.getBoard().isPartOfBoard(playerLocation)) {
+				Location newLoc = loc.clone().add(0, 1.0, 0);
+				newLoc.setPitch(playerLocation.getPitch());
+				newLoc.setYaw(playerLocation.getYaw());
+				teleportPlayer(player, newLoc);
 			}
 		}
+
 	}
 
 	private void tryMove(Player player, BoardView bv, RowCol toSquare) {

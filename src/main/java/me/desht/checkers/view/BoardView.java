@@ -12,10 +12,12 @@ import me.desht.checkers.game.CheckersGame;
 import me.desht.checkers.game.CheckersGame.GameState;
 import me.desht.checkers.game.GameListener;
 import me.desht.checkers.model.*;
+import me.desht.checkers.model.rules.GameRules;
 import me.desht.checkers.player.CheckersPlayer;
 import me.desht.checkers.util.CheckersUtils;
 import me.desht.checkers.util.TerrainBackup;
 import me.desht.checkers.view.controlpanel.ControlPanel;
+import me.desht.checkers.view.controlpanel.SelectRulesButton;
 import me.desht.checkers.view.controlpanel.StakeButton;
 import me.desht.checkers.view.controlpanel.TimeControlButton;
 import me.desht.dhutils.AttributeCollection;
@@ -416,7 +418,8 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 
 	@Override
 	public void squareChanged(RowCol square, PieceType piece) {
-		checkersBoard.paintPiece(square, piece);
+		GameRules rules = getGame().getPosition().getRules();
+		checkersBoard.paintPiece(square, piece, rules.getWhoMovesFirst());
 	}
 
 	@Override

@@ -5,6 +5,7 @@ import me.desht.checkers.CheckersPlugin;
 import me.desht.checkers.CheckersValidate;
 import me.desht.checkers.Messages;
 import me.desht.checkers.model.PieceType;
+import me.desht.checkers.model.PlayerColour;
 import me.desht.checkers.model.Position;
 import me.desht.checkers.model.RowCol;
 import me.desht.dhutils.LogUtils;
@@ -14,18 +15,19 @@ import me.desht.dhutils.block.MassBlockUpdate;
 import me.desht.dhutils.block.MaterialWithData;
 import me.desht.dhutils.cuboid.Cuboid;
 import me.desht.dhutils.cuboid.Cuboid.CuboidDirection;
-
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.SkullType;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
+import org.bukkit.block.Skull;
 
 public class CheckersBoard {
 	// the center of the A1 square (lower-left on the board)
 	private final PersistableLocation a1Center;
 	// the lower-left-most part (outer corner) of the bottom left square (depends on rotation)
 	private final PersistableLocation bottomLeftCorner;
-	// the upper-right-most part (outer corner) of the top right square (depends on rotation)
-	private final PersistableLocation topRightCorner;
 	// region that defines the board itself - just the squares
 	private final Cuboid boardSquares;
 	// area above the board squares
@@ -67,7 +69,7 @@ public class CheckersBoard {
 		a1Center = new PersistableLocation(origin);
 		a1Center.setSavePitchAndYaw(false);
 		bottomLeftCorner = initBottomLeftCorner(origin);
-		topRightCorner = initTopRightCorner();
+		PersistableLocation topRightCorner = initTopRightCorner();
 		boardSquares = new Cuboid(bottomLeftCorner.getLocation(), topRightCorner.getLocation());
 		aboveSquares = boardSquares.expand(CuboidDirection.Up, boardStyle.getHeight());
 		frameBoard = boardSquares.outset(CuboidDirection.Horizontal, boardStyle.getFrameWidth());
@@ -158,12 +160,12 @@ public class CheckersBoard {
 		return bottomLeftCorner;
 	}
 
-	/**
-	 * @return the topRightCorner
-	 */
-	public PersistableLocation getTopRightCorner() {
-		return topRightCorner;
-	}
+//	/**
+//	 * @return the topRightCorner
+//	 */
+//	public PersistableLocation getTopRightCorner() {
+//		return topRightCorner;
+//	}
 
 	/**
 	 * @return the board
@@ -179,19 +181,19 @@ public class CheckersBoard {
 		return aboveSquares;
 	}
 
-	/**
-	 * @return the frameBoard
-	 */
-	public Cuboid getFrameBoard() {
-		return frameBoard;
-	}
-
-	/**
-	 * @return the aboveFullBoard
-	 */
-	public Cuboid getAboveFullBoard() {
-		return aboveFullBoard;
-	}
+//	/**
+//	 * @return the frameBoard
+//	 */
+//	public Cuboid getFrameBoard() {
+//		return frameBoard;
+//	}
+//
+//	/**
+//	 * @return the aboveFullBoard
+//	 */
+//	public Cuboid getAboveFullBoard() {
+//		return aboveFullBoard;
+//	}
 
 	/**
 	 * @return the rotation
@@ -280,15 +282,15 @@ public class CheckersBoard {
 		return sq;
 	}
 
-	/**
-	 * Get the region above the given square, expanded to the board's height.
-	 *
-	 * @param square the square position
-	 * @return the region
-	 */
-	public Cuboid getPieceRegion(RowCol square) {
-		return getSquare(square).expand(CuboidDirection.Up, boardStyle.getHeight() - 1).shift(CuboidDirection.Up, 1);
-	}
+//	/**
+//	 * Get the region above the given square, expanded to the board's height.
+//	 *
+//	 * @param square the square position
+//	 * @return the region
+//	 */
+//	public Cuboid getPieceRegion(RowCol square) {
+//		return getSquare(square).expand(CuboidDirection.Up, boardStyle.getHeight() - 1).shift(CuboidDirection.Up, 1);
+//	}
 
 	public World getWorld() {
 		return boardSquares.getWorld();
@@ -355,33 +357,65 @@ public class CheckersBoard {
 		for (int row = 0; row < getSize(); ++row) {
 			for (int col = 0; col < getSize(); ++col) {
 				RowCol square = RowCol.get(row, col);
-				paintPiece(square, position.getPieceAt(square));
+				paintPiece(square, position.getPieceAt(square), position.getRules().getWhoMovesFirst());
 			}
 		}
 	}
 
-	public void paintPiece(RowCol square, PieceType piece) {
+	public void paintPiece(RowCol square, PieceType piece, PlayerColour starts) {
 		if (square.getRow() % 2 != square.getCol() % 2) {
 			// pieces are only ever found on half the squares of a checkers board
 			return;
 		}
 		MaterialWithData mat;
 		switch (piece.getColour()) {
-		case WHITE: mat = boardStyle.getWhitePieceMaterial(); break;
-		case BLACK: mat = boardStyle.getBlackPieceMaterial(); break;
-		default: mat = MaterialWithData.get(0); break;
+			case WHITE: mat = boardStyle.getWhitePieceMaterial(); break;
+			case BLACK: mat = boardStyle.getBlackPieceMaterial(); break;
+			default: mat = MaterialWithData.get(0); break;
 		}
-		// TODO: simple algorithm just draws square pieces; should be disks!
-		Cuboid c = getSquare(square).inset(CuboidDirection.Horizontal, 1).shift(CuboidDirection.Up, 1);
-		int height = boardStyle.getSquareSize() / 5 + 1;
-		if (piece.isKing() || piece == PieceType.NONE) {
-			height *= 2;
+		Cuboid c = getSquare(square).shift(CuboidDirection.Up, 1);
+		if (mat.getBukkitMaterial() == Material.SKULL && boardStyle.getSquareSize() <= 3) {
+			// special case: skull "microblocks" with a facing direction
+			Block b = c.getCenter().getBlock();
+
+			if (piece.isKing()) {
+				b.setType(piece.getColour() == PlayerColour.WHITE ? Material.FENCE : Material.NETHER_FENCE);
+				drawSkull(mat, b.getRelative(BlockFace.UP), starts == piece.getColour());
+			} else {
+				drawSkull(mat, b, starts == piece.getColour());
+			}
+		} else {
+			// TODO: simple algorithm just draws square pieces; should be disks!
+			c = c.inset(CuboidDirection.Horizontal, 1);
+			int height = boardStyle.getSquareSize() / 5 + 1;
+			if (piece.isKing() || piece == PieceType.NONE) {
+				height *= 2;
+			}
+			c = c.expand(CuboidDirection.Up, height - 1);
+			c.fill(mat);
+			if (CheckersPlugin.getInstance().getDynmapIntegration() != null) {
+				CheckersPlugin.getInstance().getDynmapIntegration().triggerUpdate(c);
+			}
 		}
-		c = c.expand(CuboidDirection.Up, height - 1);
-		c.fill(mat);
-		if (CheckersPlugin.getInstance().getDynmapIntegration() != null) {
-			CheckersPlugin.getInstance().getDynmapIntegration().triggerUpdate(c);
+	}
+
+	private void drawSkull(MaterialWithData mat, Block b, boolean rotate) {
+		b.setType(Material.SKULL);
+		Skull skull = (Skull) b.getState();
+		org.bukkit.material.Skull skullData = (org.bukkit.material.Skull) skull.getData();
+		skullData.setFacingDirection(BlockFace.SELF);
+		skull.setData(skullData);
+		BlockFace face = rotate ? rotation.getBlockFace() : rotation.getBlockFace().getOppositeFace();
+		skull.setRotation(face);
+		if (mat.getText().length == 0) {
+			skull.setSkullType(rotate ? SkullType.PLAYER : SkullType.CREEPER);
+		} else if (mat.getText()[0].startsWith("*")) {
+			skull.setSkullType(SkullType.valueOf(mat.getText()[0].substring(1).toUpperCase()));
+		} else {
+			skull.setSkullType(SkullType.PLAYER);
+			skull.setOwner(mat.getText()[0]);
 		}
+		skull.update();
 	}
 
 	public void reloadBoardStyle() {

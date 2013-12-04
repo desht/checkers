@@ -3,6 +3,7 @@ package me.desht.checkers.view;
 import me.desht.dhutils.cuboid.Cuboid.CuboidDirection;
 
 import org.bukkit.Location;
+import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 
 public enum BoardRotation {
@@ -44,7 +45,7 @@ public enum BoardRotation {
 
 	/**
 	 * Get the rotation to the right (clockwise) of the current rotation
-	 * 
+	 *
 	 * @return the rotation to the right
 	 */
 	public BoardRotation getRight() {
@@ -57,7 +58,7 @@ public enum BoardRotation {
 
 	/**
 	 * Get the rotation to the left (anti-clockwise) of the current rotation
-	 * 
+	 *
 	 * @return the rotation to the left
 	 */
 	public BoardRotation getLeft() {
@@ -70,31 +71,23 @@ public enum BoardRotation {
 
 	public CuboidDirection getDirection() {
 		switch (this) {
-		case NORTH:
-			return CuboidDirection.East;
-		case EAST:
-			return CuboidDirection.South;
-		case SOUTH:
-			return CuboidDirection.West;
-		case WEST:
-			return CuboidDirection.North;
+			case NORTH: return CuboidDirection.East;
+			case EAST: return CuboidDirection.South;
+			case SOUTH: return CuboidDirection.West;
+			case WEST: return CuboidDirection.North;
+			default: return null;
 		}
-		return null; // should not get here..
 	}
 
-//	public float getYaw() {
-//		switch (this) {
-//		case NORTH:
-//			return 90;
-//		case EAST:
-//			return 180;
-//		case SOUTH:
-//			return 270;
-//		case WEST:
-//			return 0;
-//		}
-//		return 0;
-//	}
+	public BlockFace getBlockFace() {
+		switch (this) {
+			case NORTH: return BlockFace.NORTH;
+			case EAST: return BlockFace.EAST;
+			case SOUTH: return BlockFace.SOUTH;
+			case WEST: return BlockFace.WEST;
+			default: return null;
+		}
+	}
 
 	public static BoardRotation getRotation(Location loc) {
 		double rot = loc.getYaw() % 360;

@@ -20,6 +20,7 @@ import me.desht.dhutils.cuboid.Cuboid;
 import me.desht.dhutils.cuboid.Cuboid.CuboidDirection;
 
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.event.player.PlayerInteractEvent;
 
 public class ControlPanel {
@@ -129,6 +130,9 @@ public class ControlPanel {
 			mat = getView().getBoard().getBoardStyle().getWhitePieceMaterial();
 		} else if (toPlay == PlayerColour.BLACK) {
 			mat = getView().getBoard().getBoardStyle().getBlackPieceMaterial();
+		}
+		if (mat.getBukkitMaterial() == Material.SKULL) {
+			mat = MaterialWithData.get("WOOL:" + toPlay);
 		}
 		toMoveIndicator.fill(mat);
 	}
