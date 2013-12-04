@@ -23,6 +23,7 @@ Game:
     name: "&eGame {0} [{1}]:"
     openInvitation: "Game has an open invitation"
     players: "&6{0}&- (&8Black&-) vs. &6{1}&- (&fWhite&-)."
+    rules: "&eRules: &f{0}"
     stake: "&eStake: &f{0}"
     timeControlType: "&eTime Control: &f{0}"
     whiteToPlay: "&fWhite&- to play"

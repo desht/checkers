@@ -339,6 +339,8 @@ public class CheckersGame implements CheckersPersistable {
 
 		res.add(Messages.getString("Game.gameDetail.name", getName(), getState()));
 		res.add(bullet + Messages.getString("Game.gameDetail.players", black, white));
+		String rules = Messages.getString("Rules." + getPosition().getRules().getId() + ".label").replace(';', ' ');
+		res.add(bullet + Messages.getString("Game.gameDetail.rules", rules));
 		res.add(bullet +  Messages.getString("Game.gameDetail.halfMoves", getPosition().getPlyCount()));
 		if (CheckersPlugin.getInstance().getEconomy() != null) {
 			res.add(bullet + Messages.getString("Game.gameDetail.stake", CheckersUtils.formatStakeStr(getStake())));
@@ -356,13 +358,15 @@ public class CheckersGame implements CheckersPersistable {
 		}
 		if (getPosition().getMoveHistory().length > 0) {
 			res.add(Messages.getString("Game.gameDetail.moveHistory"));
+			res.addAll(getMovesAsString(getPosition().getMoveHistory()));
 		}
-		res.add(getMovesAsString(getPosition().getMoveHistory()));
 
 		return res;
 	}
 
-	private String getMovesAsString(Move[] moves) {
+	private List<String> getMovesAsString(Move[] moves) {
+		List<String> res = new ArrayList<String>();
+
 		StringBuilder sb = new StringBuilder();
 
 		int c = 1;
@@ -387,8 +391,15 @@ public class CheckersGame implements CheckersPersistable {
 			}
 			sb.append(" ");
 			c++;
+			if (c % 3 == 1) {
+				res.add(sb.toString());
+				sb.delete(0, sb.length());
+			}
 		}
-		return sb.toString();
+		if (sb.length() > 0) {
+			res.add(sb.toString());
+		}
+		return res;
 	}
 
 	public void addGameListener(GameListener listener) {
