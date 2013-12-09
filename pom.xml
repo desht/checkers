@@ -110,6 +110,7 @@
                                         <exclude>me/desht/dhutils/ItemMessage*</exclude>
                                         <exclude>me/desht/dhutils/ItemNames*</exclude>
                                         <exclude>me/desht/dhutils/repo/*</exclude>
+                                        <exclude>me/desht/dhutils/MapUtil*</exclude>
                                         <exclude>me/desht/dhutils/TextMarkup*</exclude>
                                     </excludes>
                                 </filter>
