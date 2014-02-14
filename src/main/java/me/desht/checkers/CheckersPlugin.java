@@ -113,16 +113,18 @@ public class CheckersPlugin extends JavaPlugin implements ConfigurationListener 
 
 		LogUtils.init(this);
 
+		configManager = new ConfigurationManager(this, this);
+
+		Debugger.getInstance().setPrefix("[Checkers] ");
+		Debugger.getInstance().setLevel(getConfig().getInt("debug_level"));
+		Debugger.getInstance().setTarget(getServer().getConsoleSender());
+
 		if (!setupNMS()) {
 			return;
 		}
 
-		configManager = new ConfigurationManager(this, this);
-
 		MiscUtil.init(this);
 		MiscUtil.setColouredConsole(getConfig().getBoolean("coloured_console"));
-
-		LogUtils.setLogLevel(getConfig().getString("log_level", "INFO"));
 
 		DirectoryStructure.setup(this);
 
@@ -207,6 +209,8 @@ public class CheckersPlugin extends JavaPlugin implements ConfigurationListener 
 	public void onDisable() {
 		if (startupFailed) return;
 
+		Results.getResultsHandler().shutdown();
+
 		if (dynmapIntegration != null) {
 			dynmapIntegration.setActive(false);
 		}
@@ -216,6 +220,8 @@ public class CheckersPlugin extends JavaPlugin implements ConfigurationListener 
 		tickTask.cancel();
 
 		instance = null;
+
+		Debugger.getInstance().debug("checkers disable complete");
 	}
 
 	@Override
@@ -288,7 +294,7 @@ public class CheckersPlugin extends JavaPlugin implements ConfigurationListener 
 	private void setupVault(PluginManager pm) {
 		Plugin vault =  pm.getPlugin("Vault");
 		if (vault != null && vault instanceof net.milkbowl.vault.Vault) {
-			LogUtils.fine("Loaded Vault v" + vault.getDescription().getVersion());
+			Debugger.getInstance().debug("Loaded Vault v" + vault.getDescription().getVersion());
 			if (!setupEconomy()) {
 				LogUtils.warning("No economy plugin detected - game stakes not available");
 			}
@@ -310,7 +316,7 @@ public class CheckersPlugin extends JavaPlugin implements ConfigurationListener 
 		Plugin p = pm.getPlugin("WorldEdit");
 		if (p != null && p instanceof WorldEditPlugin) {
 			worldEditPlugin = (WorldEditPlugin) p;
-			LogUtils.fine("WorldEdit plugin detected: board terrain saving enabled.");
+			Debugger.getInstance().debug("WorldEdit plugin detected: board terrain saving enabled.");
 		} else {
 			LogUtils.warning("WorldEdit plugin not detected: board terrain saving disabled.");
 		}
@@ -321,13 +327,13 @@ public class CheckersPlugin extends JavaPlugin implements ConfigurationListener 
 			Plugin p = pm.getPlugin("ScrollingMenuSign");
 			if (p != null && p instanceof ScrollingMenuSign) {
 				sms = new SMSIntegration(this, (ScrollingMenuSign) p);
-				LogUtils.fine("ScrollingMenuSign plugin detected: Checkers menus created.");
+				Debugger.getInstance().debug("ScrollingMenuSign plugin detected: Checkers menus created.");
 			} else {
-				LogUtils.fine("ScrollingMenuSign plugin not detected.");
+				Debugger.getInstance().debug("ScrollingMenuSign plugin not detected.");
 			}
 		} catch (NoClassDefFoundError e) {
 			// this can happen if ScrollingMenuSign was disabled
-			LogUtils.fine("ScrollingMenuSign plugin not detected (NoClassDefFoundError caught).");
+			LogUtils.warning("ScrollingMenuSign plugin not detected (NoClassDefFoundError caught).");
 		}
 	}
 
@@ -335,9 +341,9 @@ public class CheckersPlugin extends JavaPlugin implements ConfigurationListener 
 		Plugin p = pm.getPlugin("dynmap");
 		if (p != null) {
 			dynmapIntegration = new DynmapIntegration(this, (DynmapAPI) p);
-			LogUtils.fine("dynmap plugin detected.  Boards and games will be labelled.");
+			Debugger.getInstance().debug("dynmap plugin detected.  Boards and games will be labelled.");
 		} else {
-			LogUtils.fine("dynmap plugin not detected.");
+			Debugger.getInstance().debug("dynmap plugin not detected.");
 		}
 	}
 
@@ -392,8 +398,8 @@ public class CheckersPlugin extends JavaPlugin implements ConfigurationListener 
 			Messages.setMessageLocale(newVal.toString());
 			// redraw control panel signs in the right language
 			updateAllControlPanels();
-		} else if (key.equalsIgnoreCase("log_level")) {
-			LogUtils.setLogLevel(newVal.toString());
+		} else if (key.equalsIgnoreCase("debug_level")) {
+			Debugger.getInstance().setLevel((Integer) newVal);
 		} else if (key.equalsIgnoreCase("teleporting")) {
 			updateAllControlPanels();
 		} else if (key.equalsIgnoreCase("flying.allowed")) {
@@ -413,7 +419,7 @@ public class CheckersPlugin extends JavaPlugin implements ConfigurationListener 
 		} else if (key.startsWith("effects.")) {
 			fx = new SpecialFX(getConfig().getConfigurationSection("effects"));
 		} else if (key.startsWith("database.")) {
-			Results.shutdown();
+			Results.getResultsHandler().shutdown();
 			if (Results.getResultsHandler() == null) {
 				LogUtils.warning("DB connection cannot be re-established.  Check your settings.");
 			}

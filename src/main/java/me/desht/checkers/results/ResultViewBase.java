@@ -1,20 +1,15 @@
 package me.desht.checkers.results;
 
+import me.desht.checkers.CheckersException;
+import me.desht.checkers.ai.CheckersAI;
+import me.desht.dhutils.Debugger;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-
-import me.desht.checkers.CheckersException;
-import me.desht.checkers.ai.CheckersAI;
-import me.desht.dhutils.LogUtils;
 
 /**
  * Abstract base class to represent a view on the raw results data.  Subclass
@@ -54,15 +49,6 @@ public abstract class ResultViewBase {
 			addResult(re);
 		}
 		updateDatabase = true;
-	}
-
-	/**
-	 * Get a list of all player scores, highest first.
-	 *
-	 * @return	A list of score records (player, score)
-	 */
-	public void getScores() {
-		getScores(0, false);
 	}
 
 	/**
@@ -109,9 +95,8 @@ public abstract class ResultViewBase {
 	/**
 	 * Set the score for the given player.
 	 *
-	 * @param player
-	 * @param score
-	 * @param updateOnly
+	 * @param player player's name
+	 * @param score player's score
 	 */
 	public void setScore(String player, int score) {
 		scoreMap.put(player, score);
@@ -123,7 +108,7 @@ public abstract class ResultViewBase {
 	/**
 	 * Get the score for the given player.  If the player is not yet in the database,
 	 * return the initial score (and add the player with that score).
-	 * 
+	 *
 	 * @param player	The player to check for
 	 * @return			The player's score
 	 */
@@ -165,7 +150,7 @@ public abstract class ResultViewBase {
 			} else {
 				return;
 			}
-			LogUtils.fine("execute SQL: " + update);
+			Debugger.getInstance().debug("execute SQL: " + update);
 			update.executeUpdate();
 		}
 	}

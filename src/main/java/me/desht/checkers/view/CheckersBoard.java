@@ -8,7 +8,7 @@ import me.desht.checkers.model.PieceType;
 import me.desht.checkers.model.PlayerColour;
 import me.desht.checkers.model.Position;
 import me.desht.checkers.model.RowCol;
-import me.desht.dhutils.LogUtils;
+import me.desht.dhutils.Debugger;
 import me.desht.dhutils.PersistableLocation;
 import me.desht.dhutils.block.CraftMassBlockUpdate;
 import me.desht.dhutils.block.MassBlockUpdate;
@@ -385,7 +385,6 @@ public class CheckersBoard {
 				drawSkull(mat, b, starts == piece.getColour());
 			}
 		} else {
-			// TODO: simple algorithm just draws square pieces; should be disks!
 			c = c.inset(CuboidDirection.Horizontal, 1);
 			int height = boardStyle.getSquareSize() / 5 + 1;
 			if (piece.isKing() || piece == PieceType.NONE) {
@@ -515,7 +514,7 @@ public class CheckersBoard {
 		int xOff = (loc.getBlockX() - boardSquares.getLowerX()) / boardStyle.getSquareSize();
 		int zOff = (loc.getBlockZ() - boardSquares.getLowerZ()) / boardStyle.getSquareSize();
 
-		LogUtils.fine("getSquareAt: " + loc + ": xOff = " + xOff + ", zOff = " + zOff);
+		Debugger.getInstance().debug("getSquareAt: " + loc + ": xOff = " + xOff + ", zOff = " + zOff);
 		int sz = getSize() - 1;
 		switch (getRotation()) {
 		case NORTH:

@@ -30,7 +30,7 @@ public class TeleportCommand extends AbstractCheckersCommand {
 				"/<command> tp -clear [<board-name>]",
 				"/<command> tp -list"
 		});
-		setOptions(new String[] { "b", "set", "clear", "list" });
+		setOptions("b", "set", "clear", "list");
 	}
 
 	@Override
@@ -52,7 +52,7 @@ public class TeleportCommand extends AbstractCheckersCommand {
 			if (args.length == 0) {
 				// set global teleport-out location
 				BoardViewManager.getManager().setGlobalTeleportOutDest(player.getLocation());
-				MiscUtil.statusMessage(player, Messages.getString("Misc.globalTeleportSet")); 
+				MiscUtil.statusMessage(player, Messages.getString("Misc.globalTeleportSet"));
 			} else {
 				// set per-board teleport-out location
 				BoardView bv = BoardViewManager.getManager().getBoardView(args[0]);
@@ -80,9 +80,15 @@ public class TeleportCommand extends AbstractCheckersCommand {
 			// teleport out of (or back to) current game
 			BoardViewManager.getManager().teleportOut(player);
 		} else {
-			// teleport to game
-			CheckersGame game = CheckersGameManager.getManager().getGame(args[0], true);
-			BoardView bv = BoardViewManager.getManager().findBoardForGame(game);
+			// teleport to game, or maybe board
+			BoardView bv;
+			if (CheckersGameManager.getManager().checkGame(args[0])) {
+				CheckersGame game = CheckersGameManager.getManager().getGame(args[0], true);
+				bv = BoardViewManager.getManager().findBoardForGame(game);
+			} else {
+				PermissionUtils.requirePerms(player, "checkers.commands.teleport.board");
+				bv = BoardViewManager.getManager().getBoardView(args[0]);
+			}
 			((CheckersPlugin) plugin).getPlayerTracker().teleportPlayer(player, bv.getTeleportInDestination());
 		}
 

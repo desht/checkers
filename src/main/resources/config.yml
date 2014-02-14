@@ -23,6 +23,7 @@ database:
   port: 3306
   name: checkers
   table_prefix: checkers_
+debug_level: 0
 default_rules:
   8: EnglishDraughts
   10: InternationalDraughts

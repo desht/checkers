@@ -18,6 +18,7 @@ import me.desht.checkers.DirectoryStructure;
 import me.desht.checkers.Messages;
 import me.desht.checkers.game.CheckersGame;
 import me.desht.checkers.model.PlayerColour;
+import me.desht.dhutils.Debugger;
 import me.desht.dhutils.JARUtil;
 import me.desht.dhutils.LogUtils;
 import me.desht.dhutils.MiscUtil;
@@ -73,8 +74,8 @@ public class AIFactory {
 	/**
 	 * Check if the given AI name is available (i.e. not in a game).
 	 *
-	 * @param aiName
-	 * @return
+	 * @param aiName the AI name
+	 * @return true if this AI is available
 	 */
 	public boolean isAvailable(String aiName) {
 		return !runningAIs.containsKey(aiName);
@@ -112,8 +113,8 @@ public class AIFactory {
 	/**
 	 * Return the AI definition for the given AI name.
 	 *
-	 * @param aiName
-	 * @return
+	 * @param aiName the AI name
+	 * @return the AI definition
 	 */
 	public AIDefinition getAIDefinition(String aiName) {
 		if (aiName.startsWith(CheckersAI.AI_PREFIX)) {
@@ -136,7 +137,7 @@ public class AIFactory {
 	/**
 	 * Get the name of a random free and enabled AI.
 	 *
-	 * @return
+	 * @return the AI name
 	 * @throws CheckersException if there are no free AIs
 	 */
 	public String getFreeAIName() {
@@ -195,7 +196,7 @@ public class AIFactory {
 			}
 		}
 
-		LogUtils.fine("Loaded " + allAliases.size() + " AI definitions");
+		Debugger.getInstance().debug("Loaded " + allAliases.size() + " AI definitions");
 	}
 
 	public class AIDefinition {
@@ -216,7 +217,7 @@ public class AIFactory {
 				params.set(k, conf.get(k));
 			}
 
-			LogUtils.finer("loaded " + aiImplClass.getName() + " for AI " + name);
+			Debugger.getInstance().debug(2, "loaded " + aiImplClass.getName() + " for AI " + name);
 		}
 
 		public CheckersAI createInstance(CheckersGame game, PlayerColour colour) {

@@ -13,6 +13,7 @@ import me.desht.checkers.event.CheckersBoardDeletedEvent;
 import me.desht.checkers.event.CheckersBoardModifiedEvent;
 import me.desht.checkers.view.BoardView;
 import me.desht.checkers.view.BoardViewManager;
+import me.desht.dhutils.Debugger;
 import me.desht.dhutils.LogUtils;
 import me.desht.dhutils.MiscUtil;
 import me.desht.dhutils.block.BlockType;
@@ -92,8 +93,8 @@ public class FlightListener extends CheckersBaseListener {
 	/**
 	 * Set the "captive" mode.  Captive prevents flying players from flying too far from a
 	 * board.  Non-captive just disables flight if players try to fly too far.
-	 * 
-	 * @param captive
+	 *
+	 * @param captive true for captive mode, false otherwise
 	 */
 	public void setCaptive(boolean captive) {
 		this.captive = captive;
@@ -154,7 +155,7 @@ public class FlightListener extends CheckersBaseListener {
 		boolean boardFlightAllowed = getFlightRegion(to) != null;
 		boolean otherFlightAllowed = gameModeAllowsFlight(player);
 
-		//		LogUtils.fine("move: boardflight = " + boardFlightAllowed + " otherflight = " + otherFlightAllowed);
+		//		Debugger.getInstance().debug("move: boardflight = " + boardFlightAllowed + " otherflight = " + otherFlightAllowed);
 		if (captive) {
 			// captive mode - if flying, prevent movement too far from a board by bouncing the
 			// player towards the centre of the board they're trying to leave
@@ -188,7 +189,7 @@ public class FlightListener extends CheckersBaseListener {
 		final boolean boardFlightAllowed = getFlightRegion(event.getTo()) != null;
 		final boolean crossWorld = event.getTo().getWorld() != event.getFrom().getWorld();
 
-		LogUtils.fine("teleport: boardflight = " + boardFlightAllowed + ", crossworld = " + crossWorld);
+		Debugger.getInstance().debug("teleport: boardflight = " + boardFlightAllowed + ", crossworld = " + crossWorld);
 
 		// Seems a delayed task is needed here - calling setAllowFlight() directly from the event handler
 		// leaves getAllowFlight() returning true, but the player is still not allowed to fly.  (CraftBukkit bug?)
@@ -208,8 +209,8 @@ public class FlightListener extends CheckersBaseListener {
 	/**
 	 * Prevent the player from interacting with any block outside a board while enjoying temporary flight.  It's
 	 * called early (priority LOWEST) to cancel the event ASAP.
-	 * 
-	 * @param event
+	 *
+	 * @param event the interaction event
 	 */
 	@EventHandler(priority = EventPriority.LOWEST)
 	public void onFlyingInteraction(PlayerInteractEvent event) {
@@ -264,9 +265,9 @@ public class FlightListener extends CheckersBaseListener {
 
 	/**
 	 * Check if the player may fly (in a Checkers context) given their current position.
-	 * 
-	 * @param player
-	 * @return
+	 *
+	 * @param loc the player's location
+	 * @return true if flight is allowed
 	 */
 	public Cuboid getFlightRegion(Location loc) {
 		for (Cuboid c : flightRegions) {
@@ -279,7 +280,7 @@ public class FlightListener extends CheckersBaseListener {
 	/**
 	 * Mark the player as being allowed to fly or not.  If the player was previously allowed to fly by
 	 * virtue of creative mode, he can continue to fly even if board flying is being disabled.
-	 * 
+	 *
 	 * @param player
 	 * @param flying
 	 */
@@ -291,7 +292,7 @@ public class FlightListener extends CheckersBaseListener {
 		if (flying && currentlyAllowed || !flying && !currentlyAllowed)
 			return;
 
-		LogUtils.fine("set board flight allowed " + player.getName() + " = " + flying);
+		Debugger.getInstance().debug("set board flight allowed " + player.getName() + " = " + flying);
 
 		player.setAllowFlight(flying || gameModeAllowsFlight(player));
 
@@ -379,7 +380,7 @@ public class FlightListener extends CheckersBaseListener {
 			player = new WeakReference<Player>(p);
 			flySpeed = p.getFlySpeed();
 			walkSpeed = p.getWalkSpeed();
-			LogUtils.fine("player " + p.getName() + ": store previous speed: walk=" + walkSpeed + " fly=" + flySpeed);
+			Debugger.getInstance().debug("player " + p.getName() + ": store previous speed: walk=" + walkSpeed + " fly=" + flySpeed);
 		}
 
 		public void restoreSpeeds() {
@@ -388,7 +389,7 @@ public class FlightListener extends CheckersBaseListener {
 				return;
 			p.setFlySpeed(flySpeed);
 			p.setWalkSpeed(walkSpeed);
-			LogUtils.fine("player " + p.getName() + " restore previous speed: walk=" + walkSpeed + " fly=" + flySpeed);
+			Debugger.getInstance().debug("player " + p.getName() + " restore previous speed: walk=" + walkSpeed + " fly=" + flySpeed);
 		}
 	}
 }

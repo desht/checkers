@@ -1,9 +1,5 @@
 package me.desht.checkers.listeners;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-
 import me.desht.checkers.CheckersException;
 import me.desht.checkers.CheckersPlugin;
 import me.desht.checkers.IllegalMoveException;
@@ -11,7 +7,6 @@ import me.desht.checkers.Messages;
 import me.desht.checkers.game.CheckersGame;
 import me.desht.checkers.game.CheckersGame.GameState;
 import me.desht.checkers.game.CheckersGameManager;
-import me.desht.checkers.model.Checkers;
 import me.desht.checkers.model.PlayerColour;
 import me.desht.checkers.model.RowCol;
 import me.desht.checkers.player.CheckersPlayer;
@@ -21,13 +16,12 @@ import me.desht.checkers.util.CheckersUtils;
 import me.desht.checkers.view.BoardView;
 import me.desht.checkers.view.BoardViewManager;
 import me.desht.dhutils.DHUtilsException;
-import me.desht.dhutils.LogUtils;
+import me.desht.dhutils.Debugger;
 import me.desht.dhutils.MiscUtil;
 import me.desht.dhutils.block.BlockType;
 import me.desht.dhutils.cuboid.Cuboid;
 import me.desht.dhutils.cuboid.Cuboid.CuboidDirection;
 import me.desht.dhutils.responsehandler.ResponseHandler;
-
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -39,6 +33,10 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerAnimationEvent;
 import org.bukkit.event.player.PlayerAnimationType;
 import org.bukkit.event.player.PlayerInteractEvent;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 
 public class PlayerListener extends CheckersBaseListener {
 
@@ -121,7 +119,7 @@ public class PlayerListener extends CheckersBaseListener {
 				Material wandMat = CheckersUtils.getWandMaterial();
 				if (wandMat == null || player.getItemInHand().getType() == wandMat) {
 					targetBlock = player.getTargetBlock(transparent, 120);
-					LogUtils.finer("Player " + player.getName() + " waved at block " + targetBlock);
+					Debugger.getInstance().debug(2, "Player " + player.getName() + " waved at block " + targetBlock);
 					Location loc = targetBlock.getLocation();
 					bv = BoardViewManager.getManager().partOfBoard(loc);
 					if (bv != null) {

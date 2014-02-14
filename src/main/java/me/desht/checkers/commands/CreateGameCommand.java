@@ -16,7 +16,7 @@ public class CreateGameCommand extends AbstractCheckersCommand {
 		super("checkers create game");
 		setPermissionNode("checkers.commands.create.game");
 		setUsage("/<command> create game [-white] [<game-name>] [<board-name>]");
-		setOptions(new String[] { "white", "rules:s" });
+		setOptions("white", "rules:s");
 	}
 
 	@Override

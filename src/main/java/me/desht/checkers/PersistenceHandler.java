@@ -10,6 +10,7 @@ import me.desht.checkers.game.CheckersGame;
 import me.desht.checkers.game.CheckersGameManager;
 import me.desht.checkers.view.BoardView;
 import me.desht.checkers.view.BoardViewManager;
+import me.desht.dhutils.Debugger;
 import me.desht.dhutils.LogUtils;
 import me.desht.dhutils.MiscUtil;
 import me.desht.dhutils.PersistableLocation;
@@ -59,13 +60,13 @@ public class PersistenceHandler {
 			bv.getControlPanel().repaintControls();
 		}
 
-		LogUtils.fine("loaded " + nLoaded + " saved boards.");
+		Debugger.getInstance().debug("loaded " + nLoaded + " saved boards.");
 
 		loadOtherPersistedData();
 	}
 
 	public boolean loadBoard(File f) {
-		LogUtils.fine("loading board: " + f);
+		Debugger.getInstance().debug("loading board: " + f);
 		try {
 			Configuration conf = MiscUtil.loadYamlUTF8(f);
 			BoardView bv;
@@ -98,7 +99,7 @@ public class PersistenceHandler {
 	}
 
 	private CheckersGame loadGame(File gameFile) {
-		LogUtils.fine("loading game: " + gameFile);
+		Debugger.getInstance().debug("loading game: " + gameFile);
 		try {
 			Configuration conf = MiscUtil.loadYamlUTF8(gameFile);
 			CheckersGame game;

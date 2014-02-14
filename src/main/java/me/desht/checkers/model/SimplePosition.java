@@ -1,24 +1,23 @@
 package me.desht.checkers.model;
 
+import com.google.common.base.Joiner;
+import me.desht.checkers.CheckersException;
+import me.desht.checkers.IllegalMoveException;
+import me.desht.checkers.model.rules.GameRules;
+import me.desht.dhutils.Debugger;
+import org.apache.commons.lang.Validate;
+
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import me.desht.checkers.CheckersException;
-import me.desht.checkers.IllegalMoveException;
-import me.desht.checkers.model.rules.GameRules;
-import me.desht.dhutils.LogUtils;
-
-import com.google.common.base.Joiner;
-import org.apache.commons.lang.Validate;
-
 /**
  * Represents a checkers board position.
  *
  * TODO: Position and game (move history etc.) are currently all stored in this object.
- * It mnight be better design to move game details into a separate object which contains
+ * It might be better design to move game details into a separate object which contains
  * a Position object.
  */
 public class SimplePosition implements Position {
@@ -196,7 +195,7 @@ public class SimplePosition implements Position {
 			halfMoveClock++;
 		}
 
-		LogUtils.finer("move made by " + toMove.getOtherColour() + ", legal moves now: " + Joiner.on(",").join(legalMoves));
+		Debugger.getInstance().debug(2, "move made by " + toMove.getOtherColour() + ", legal moves now: " + Joiner.on(",").join(legalMoves));
 		moveHistory.add(move);
 
 		for (PositionListener l : listeners) {

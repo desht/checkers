@@ -35,7 +35,9 @@ public class AICheckersPlayer extends CheckersPlayer {
 	@Override
 	public void promptForNextMove() {
 		Move m = getGame().getPosition().getLastMove();
-		ai.userHasMoved(m.getFrom(), m.getTo());
+		if (m != null) {
+			ai.userHasMoved(m.getFrom(), m.getTo());
+		}
 	}
 
 	@Override

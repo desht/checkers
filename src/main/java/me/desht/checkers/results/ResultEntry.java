@@ -1,15 +1,11 @@
 package me.desht.checkers.results;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-
 import me.desht.checkers.game.CheckersGame;
 import me.desht.checkers.game.CheckersGame.GameResult;
 import me.desht.checkers.model.PlayerColour;
-import me.desht.dhutils.LogUtils;
+import me.desht.dhutils.Debugger;
+
+import java.sql.*;
 
 public class ResultEntry implements DatabaseSavable {
 
@@ -109,7 +105,7 @@ public class ResultEntry implements DatabaseSavable {
 		stmt.setTimestamp(5, new Timestamp(endTime));
 		stmt.setString(6, result.toString());
 		stmt.setString(7, pdnResult);
-		LogUtils.fine("execute SQL: " + stmt);
+		Debugger.getInstance().debug("execute SQL: " + stmt);
 		stmt.executeUpdate();
 	}
 }

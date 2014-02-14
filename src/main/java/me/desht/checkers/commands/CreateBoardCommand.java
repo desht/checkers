@@ -17,7 +17,7 @@ public class CreateBoardCommand extends AbstractCheckersCommand {
 	public CreateBoardCommand() {
 		super("checkers create board", 1);
 		setUsage("/<command> create board <board-name> [-style <board-style>] [-size <size>]");
-		setOptions(new String[] { "style:s", "size:i" });
+		setOptions("style:s", "size:i");
 		setPermissionNode("checkers.commands.create.board");
 	}
 

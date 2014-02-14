@@ -12,6 +12,7 @@ import me.desht.checkers.game.CheckersGame;
 import me.desht.checkers.model.PlayerColour;
 import me.desht.checkers.view.BoardView;
 import me.desht.checkers.view.BoardViewManager;
+import me.desht.dhutils.Debugger;
 import me.desht.dhutils.LogUtils;
 import me.desht.dhutils.cuboid.Cuboid;
 
@@ -65,7 +66,7 @@ public class DynmapIntegration implements Listener {
 	}
 
 	public void triggerUpdate(Cuboid c) {
-		LogUtils.finer("dynmap: triggering render of " + c);
+		Debugger.getInstance().debug(2, "dynmap: triggering render of " + c);
 		dynmap.triggerRenderOfVolume(c.getLowerNE(), c.getUpperSW());
 	}
 
@@ -90,7 +91,7 @@ public class DynmapIntegration implements Listener {
 		if (active == newActive) {
 			return;
 		}
-		LogUtils.fine("dynmap integration activation: " + active + " -> " + newActive);
+		Debugger.getInstance().debug("dynmap integration activation: " + active + " -> " + newActive);
 		active = newActive;
 		if (active)	{
 			// activate

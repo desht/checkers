@@ -4,11 +4,10 @@ import me.desht.checkers.CheckersPlugin;
 import me.desht.checkers.Messages;
 import me.desht.checkers.TwoPlayerClock;
 import me.desht.checkers.game.CheckersGame;
-import me.desht.checkers.model.Move;
 import me.desht.checkers.model.PlayerColour;
 import me.desht.checkers.model.RowCol;
+import me.desht.dhutils.Debugger;
 import me.desht.dhutils.LogUtils;
-
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
@@ -196,7 +195,7 @@ public abstract class CheckersAI implements Runnable {
 
 		this.active = active;
 
-		LogUtils.fine(gameDetails + "active => " + active);
+		Debugger.getInstance().debug(gameDetails + "active => " + active);
 
 		if (active) {
 			startThinking();
@@ -220,7 +219,7 @@ public abstract class CheckersAI implements Runnable {
 
 		try {
 			movePiece(fromSquare, toSquare, true);
-			LogUtils.fine(gameDetails + "userHasMoved: " + fromSquare + "->" + toSquare);
+			Debugger.getInstance().debug(gameDetails + "userHasMoved: " + fromSquare + "->" + toSquare);
 		} catch (Exception e) {
 			// oops
 			aiHasFailed(e);
@@ -228,24 +227,6 @@ public abstract class CheckersAI implements Runnable {
 
 		setActive(true);
 	}
-
-//	/**
-//	 * Replay a list of moves into the AI object.  Called when a game is restored
-//	 * from persisted data.
-//	 *
-//	 * @param moves a list of moves
-//	 */
-//	public void replayMoves(Move[] moves) {
-//		active = getColour() == PlayerColour.BLACK;
-//		for (Move move : moves) {
-//			movePiece(move.getFrom(), move.getTo(), !active);
-//			active = !active;
-//		}
-//		LogUtils.fine(gameDetails + "CheckersAI: replayed " + moves.length + " moves: AI to move = " + active);
-//		if (active) {
-//			startThinking();
-//		}
-//	}
 
 	/**
 	 * Tell the AI to start thinking.  This will call a run() method, implemented in subclasses,
@@ -262,7 +243,7 @@ public abstract class CheckersAI implements Runnable {
 	 */
 	private void stopThinking() {
 		if (Bukkit.getScheduler().isCurrentlyRunning(aiTask.getTaskId())) {
-			LogUtils.fine(gameDetails + "forcing shutdown for AI task #" + aiTask);
+			Debugger.getInstance().debug(gameDetails + "forcing shutdown for AI task #" + aiTask);
 			aiTask.cancel();
 		}
 		aiTask = null;
@@ -287,7 +268,7 @@ public abstract class CheckersAI implements Runnable {
 
 		setActive(false);
 		movePiece(fromSquare, toSquare, false);
-		LogUtils.fine(gameDetails + "aiHasMoved: " + fromSquare + "->" + toSquare);
+		Debugger.getInstance().debug(gameDetails + "aiHasMoved: " + fromSquare + "->" + toSquare);
 
 		// Moving directly isn't thread-safe: we'd end up altering the Minecraft world from a separate thread,
 		// which is Very Bad.  So we just note the move made now, and let the CheckersGame object check for it on
@@ -314,7 +295,7 @@ public abstract class CheckersAI implements Runnable {
 	/**
 	 * Something has gone horribly wrong.  Need to abandon this game.
 	 *
-	 * @param e
+	 * @param e exception to throw
 	 */
 	protected void aiHasFailed(Exception e) {
 		LogUtils.severe(gameDetails + "Unexpected Exception in AI");

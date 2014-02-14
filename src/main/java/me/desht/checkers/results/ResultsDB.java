@@ -11,6 +11,7 @@ import java.sql.Statement;
 import me.desht.checkers.CheckersException;
 import me.desht.checkers.CheckersPlugin;
 import me.desht.checkers.DirectoryStructure;
+import me.desht.dhutils.Debugger;
 import me.desht.dhutils.LogUtils;
 
 import org.bukkit.configuration.Configuration;
@@ -39,7 +40,7 @@ public class ResultsDB {
 			throw new CheckersException("unsupported database type: " + dbType);
 		}
 		setupTablesCommon();
-		LogUtils.fine("Connected to DB: " + connection.getMetaData().getDatabaseProductName());
+		Debugger.getInstance().debug("Connected to DB: " + connection.getMetaData().getDatabaseProductName());
 	}
 
 	void shutdown() {
@@ -47,7 +48,7 @@ public class ResultsDB {
 			if (!connection.getAutoCommit()) {
 				connection.rollback();
 			}
-			LogUtils.fine("Closing DB connection to " + connection.getMetaData().getDatabaseProductName());
+			Debugger.getInstance().debug("Closing DB connection to " + connection.getMetaData().getDatabaseProductName());
 			connection.close();
 		} catch (SQLException e) {
 			LogUtils.warning("can't cleanly shut down DB connection: " + e.getMessage());

@@ -1,38 +1,33 @@
 package me.desht.checkers.results;
 
+import me.desht.checkers.CheckersException;
+import me.desht.checkers.CheckersPlugin;
+import me.desht.checkers.game.CheckersGame;
+import me.desht.checkers.game.CheckersGame.GameResult;
+import me.desht.checkers.game.CheckersGame.GameState;
+import me.desht.dhutils.Debugger;
+import me.desht.dhutils.LogUtils;
+import org.bukkit.Bukkit;
+
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
-
-import me.desht.checkers.CheckersException;
-import me.desht.checkers.CheckersPlugin;
-import me.desht.checkers.ai.CheckersAI.PendingAction;
-import me.desht.checkers.game.CheckersGame;
-import me.desht.checkers.game.CheckersGame.GameResult;
-import me.desht.checkers.game.CheckersGame.GameState;
-import me.desht.dhutils.LogUtils;
-
-import org.bukkit.Bukkit;
 
 public class Results {
 	private static Results results = null;	// this is a singleton class
 
 	private final ResultsDB db;
-	private final List<ResultEntry> entries = new ArrayList<ResultEntry>();
-	private final Map<String, ResultViewBase> views = new HashMap<String, ResultViewBase>();
+	private final List<ResultEntry> entries = Collections.synchronizedList(new ArrayList<ResultEntry>());
+	private final Map<String, ResultViewBase> views = new ConcurrentHashMap<String, ResultViewBase>();
 
 	private boolean databaseLoaded = false;
 
 	private final BlockingQueue<DatabaseSavable> pendingUpdates = new LinkedBlockingQueue<DatabaseSavable>();
-	private Thread updater;
 
 	/**
 	 * Create the singleton results handler - only called from getResultsHandler once
@@ -44,7 +39,7 @@ public class Results {
 		registerView("ladder", new Ladder(this));
 		registerView("league", new League(this));
 		loadEntriesFromDatabase();
-		updater = new Thread(new DatabaseUpdaterTask(this));
+		Thread updater = new Thread(new DatabaseUpdaterTask(this));
 		updater.start();
 	}
 
@@ -83,6 +78,7 @@ public class Results {
 		return results != null;
 	}
 
+	@SuppressWarnings("CloneDoesntCallSuperClone")
 	@Override
 	public Object clone() throws CloneNotSupportedException {
 		throw new CloneNotSupportedException();
@@ -101,14 +97,14 @@ public class Results {
 	 * Shut down the results handler, ensuring the DB is cleanly disconnected etc.
 	 * Call this when the plugin is disabled.
 	 */
-	public static synchronized void shutdown() {
+	public synchronized void shutdown() {
 		if (results != null) {
+			results.queueDatabaseUpdate(new EndMarker());
 			if (results.db != null) {
 				results.db.shutdown();
 			}
 			results = null;
 		}
-		getResultsHandler().pendingUpdates.add(null);
 	}
 
 	/**
@@ -131,7 +127,7 @@ public class Results {
 	 * @return	A list of ResultEntry objects
 	 */
 	public List<ResultEntry> getEntries() {
-		return entries;
+		return new ArrayList<ResultEntry>(entries);
 	}
 
 	/**
@@ -154,7 +150,6 @@ public class Results {
 	 * Log the result for a game
 	 *
 	 * @param game	The game that has just finished
-	 * @param rt	The outcome of the game
 	 */
 	public void logResult(CheckersGame game) {
 		if (!databaseLoaded) {
@@ -196,7 +191,7 @@ public class Results {
 						entries.add(e);
 					}
 					rebuildViews();
-					LogUtils.fine("Results data loaded from database");
+					Debugger.getInstance().debug("Results data loaded from database");
 					databaseLoaded = true;
 				} catch (SQLException e) {
 					LogUtils.warning("SQL query failed: " + e.getMessage());
@@ -264,5 +259,12 @@ public class Results {
 
 	public String getTableName(String base) {
 		return CheckersPlugin.getInstance().getConfig().getString("database.table_prefix", "checkers_") + base;
+	}
+
+	public static class EndMarker implements DatabaseSavable {
+		@Override
+		public void saveToDatabase(Connection conn) throws SQLException {
+			// no-op
+		}
 	}
 }
