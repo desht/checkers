@@ -8,11 +8,13 @@ Detailed documentation can be found in BukkitDev: http://dev.bukkit.org/server-m
 
 ## Building
 
-If you want to build Checkers yourself, you will need Maven.
+If you want to build Checkers yourself, you will need Git and Maven, but the build process is very simple:
 
-1) Install dhutils: run ```git clone https://github.com/desht/dhutils``` followed by ```mvn install```
+1) ```git clone https://github.com/desht/checkers```
 
-2) Run ```mvn clean install```
+2) ```cd checkers```
+
+3) ```mvn clean install```
 
 This should give you a copy of Checkers.jar under the target/ directory.
 
