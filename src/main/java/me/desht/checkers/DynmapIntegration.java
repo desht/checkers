@@ -1,13 +1,6 @@
 package me.desht.checkers;
 
-import java.io.InputStream;
-
-import me.desht.checkers.ai.CheckersAI;
-import me.desht.checkers.event.CheckersBoardCreatedEvent;
-import me.desht.checkers.event.CheckersBoardDeletedEvent;
-import me.desht.checkers.event.CheckersGameCreatedEvent;
-import me.desht.checkers.event.CheckersGameDeletedEvent;
-import me.desht.checkers.event.CheckersGameStateChangedEvent;
+import me.desht.checkers.event.*;
 import me.desht.checkers.game.CheckersGame;
 import me.desht.checkers.model.PlayerColour;
 import me.desht.checkers.view.BoardView;
@@ -15,7 +8,6 @@ import me.desht.checkers.view.BoardViewManager;
 import me.desht.dhutils.Debugger;
 import me.desht.dhutils.LogUtils;
 import me.desht.dhutils.cuboid.Cuboid;
-
 import org.bukkit.Location;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
@@ -25,6 +17,8 @@ import org.dynmap.markers.Marker;
 import org.dynmap.markers.MarkerAPI;
 import org.dynmap.markers.MarkerIcon;
 import org.dynmap.markers.MarkerSet;
+
+import java.io.InputStream;
 
 public class DynmapIntegration implements Listener {
 	private static final String MARKER_SET = "checkers.boards";
@@ -219,7 +213,7 @@ public class DynmapIntegration implements Listener {
 	}
 
 	private String getPlayerString(CheckersGame game, PlayerColour colour) {
-		return game.getPlayer(colour) == null ? "?" : game.getPlayer(colour).getId().replace(CheckersAI.AI_PREFIX, "[AI]");
+		return game.hasPlayer(colour) ? game.getPlayer(colour).getDisplayName() : "?";
 	}
 
 	private String colour(String text, String col) {
