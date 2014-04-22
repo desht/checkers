@@ -334,7 +334,10 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 
 	public void tick() {
 		if (game != null) {
-			updateClock(game.getPlayerToMove().getColour());
+			CheckersPlayer player = game.getPlayerToMove();
+			if (player != null) {
+				updateClock(player.getColour());
+			}
 			game.tick();
 		}
 	}
