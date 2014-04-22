@@ -34,7 +34,7 @@ public abstract class AbstractCheckersCommand extends AbstractCommand {
 		super(label, minArgs, maxArgs);
 	}
 
-	protected List<String> getGameCompletions(Plugin plugin, CommandSender sender, String prefix) {
+	protected List<String> getGameCompletions(CommandSender sender, String prefix) {
 		List<String> res = new ArrayList<String>();
 
 		for (CheckersGame game : CheckersGameManager.getManager().listGames()) {
@@ -45,7 +45,7 @@ public abstract class AbstractCheckersCommand extends AbstractCommand {
 		return getResult(res, sender, true);
 	}
 
-	protected List<String> getPlayerInGameCompletions(Plugin plugin, Player player, String prefix) {
+	protected List<String> getPlayerInGameCompletions(Player player, String prefix) {
 		List<String> res = new ArrayList<String>();
 
 		for (CheckersGame game : CheckersGameManager.getManager().listGames()) {
@@ -71,7 +71,7 @@ public abstract class AbstractCheckersCommand extends AbstractCommand {
 		return filterPrefix(sender, res, prefix);
 	}
 
-	protected List<String> getBoardCompletions(Plugin plugin, CommandSender sender, String prefix) {
+	protected List<String> getBoardCompletions(CommandSender sender, String prefix) {
 		List<String> res = new ArrayList<String>();
 
 		for (BoardView bv : BoardViewManager.getManager().listBoardViews()) {
@@ -82,7 +82,7 @@ public abstract class AbstractCheckersCommand extends AbstractCommand {
 		return getResult(res, sender, true);
 	}
 
-	protected List<String> getBoardStyleCompletions(Plugin plugin, CommandSender sender, String prefix) {
+	protected List<String> getBoardStyleCompletions(CommandSender sender, String prefix) {
 		List<String> styleNames = new ArrayList<String>();
 		for (BoardStyle style : getAllBoardStyles()) {
 			styleNames.add(style.getName());

@@ -1,10 +1,8 @@
 package me.desht.checkers.model.rules;
 
-import me.desht.checkers.CheckersException;
 import me.desht.checkers.model.*;
 import me.desht.dhutils.MiscUtil;
 
-import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;

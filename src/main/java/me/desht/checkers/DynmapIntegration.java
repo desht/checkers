@@ -85,7 +85,7 @@ public class DynmapIntegration implements Listener {
 	/**
 	 * Activate or deactivate dynmap integration.
 	 *
-	 * @param newActive
+	 * @param newActive the new active status
 	 */
 	public void setActive(boolean newActive) {
 		if (active == newActive) {

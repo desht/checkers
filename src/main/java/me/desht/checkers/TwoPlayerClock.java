@@ -1,14 +1,12 @@
 package me.desht.checkers;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-
 import me.desht.checkers.TimeControl.ControlType;
 import me.desht.checkers.model.PlayerColour;
 import me.desht.checkers.util.CheckersUtils;
-
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class TwoPlayerClock implements ConfigurationSerializable {
 	private TimeControl timeControl;

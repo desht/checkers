@@ -48,7 +48,7 @@ public class CreateBoardCommand extends AbstractCheckersCommand {
 	@Override
 	public List<String> onTabComplete(Plugin plugin, CommandSender sender, String[] args) {
 		if (args.length >= 2 && args[args.length - 2].equals("-style")) {
-			return getBoardStyleCompletions(plugin, sender, args[args.length - 1]);
+			return getBoardStyleCompletions(sender, args[args.length - 1]);
 		} else {
 			showUsage(sender);
 			return noCompletions(sender);

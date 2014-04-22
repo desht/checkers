@@ -2,15 +2,11 @@ package me.desht.checkers.responses;
 
 import me.desht.checkers.CheckersException;
 import me.desht.checkers.CheckersPlugin;
-import me.desht.checkers.ai.CheckersAI;
 import me.desht.checkers.game.CheckersGame;
 import me.desht.checkers.model.PlayerColour;
 import me.desht.dhutils.responsehandler.ExpectBase;
 import me.desht.dhutils.responsehandler.ResponseHandler;
-
 import org.bukkit.entity.Player;
-
-import java.util.UUID;
 
 public abstract class YesNoResponse extends ExpectBase {
 

@@ -66,7 +66,7 @@ public class ListGameCommand extends AbstractCheckersCommand {
 	@Override
 	public List<String> onTabComplete(Plugin plugin, CommandSender sender, String[] args) {
 		if (args.length == 1) {
-			return getGameCompletions(plugin, sender, args[0]);
+			return getGameCompletions(sender, args[0]);
 		} else {
 			showUsage(sender);
 			return noCompletions(sender);

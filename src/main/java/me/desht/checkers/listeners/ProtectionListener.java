@@ -163,7 +163,7 @@ public class ProtectionListener extends CheckersBaseListener {
 	/**
 	 * Cancelling liquid flow events makes it possible to use water & lava for walls & pieces.
 	 *
-	 * @param event
+	 * @param event the event
 	 */
 	@EventHandler(ignoreCancelled = true)
 	public void onBlockFromTo(BlockFromToEvent event) {
@@ -178,7 +178,7 @@ public class ProtectionListener extends CheckersBaseListener {
 	 * Snow doesn't usually form on boards due to the high light level.  But if the light level
 	 * is dimmed, we might see boards getting covered.
 	 *
-	 * @param event
+	 * @param event the event
 	 */
 	@EventHandler(ignoreCancelled = true)
 	public void onBlockForm(BlockFormEvent event) {

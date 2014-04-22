@@ -1,11 +1,9 @@
 package me.desht.checkers.responses;
 
 import me.desht.checkers.Messages;
-import me.desht.checkers.ai.CheckersAI;
 import me.desht.checkers.game.CheckersGame;
 import me.desht.checkers.model.PlayerColour;
 import me.desht.dhutils.MiscUtil;
-
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 

@@ -46,6 +46,7 @@ public class BoardViewManager {
 		return instance;
 	}
 
+	@SuppressWarnings("CloneDoesntCallSuperClone")
 	@Override
 	public Object clone() throws CloneNotSupportedException {
 		throw new CloneNotSupportedException();
@@ -189,8 +190,8 @@ public class BoardViewManager {
 	/**
 	 * Teleport the player in a sensible manner, depending on where they are now.
 	 *
-	 * @param player
-	 * @throws CheckersException
+	 * @param player the player to teleport
+	 * @throws CheckersException if the player can't be teleported for any reason
 	 */
 	public void teleportOut(Player player) throws CheckersException {
 		PermissionUtils.requirePerms(player, "checkers.commands.teleport");
