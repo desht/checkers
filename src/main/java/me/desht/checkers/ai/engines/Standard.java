@@ -1,9 +1,5 @@
 package me.desht.checkers.ai.engines;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
-
 import me.desht.checkers.CheckersException;
 import me.desht.checkers.TwoPlayerClock;
 import me.desht.checkers.ai.CheckersAI;
@@ -11,9 +7,11 @@ import me.desht.checkers.ai.evaluation.Evaluator;
 import me.desht.checkers.ai.evaluation.PositionWeightedEvaluator;
 import me.desht.checkers.game.CheckersGame;
 import me.desht.checkers.model.*;
-
-import me.desht.dhutils.Str;
 import org.bukkit.configuration.ConfigurationSection;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
 
 public class Standard extends CheckersAI {
 
