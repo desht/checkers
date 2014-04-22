@@ -138,7 +138,7 @@ Board:
   notOnBoard: You are not standing on a board right now.
   squareMessage: "Square &6[{0}]&-, board &6{1}"
   boardDetail:
-    board: "Board &6{0}:"
+    board: "Checkers Board &6{0}:"
     boardExtents: "Board Extents: &f{0} - {1} ({2})"
     boardOrientation: "Board Orientation: &f{0}"
     boardStyle: "Board Style: &f{0}"
