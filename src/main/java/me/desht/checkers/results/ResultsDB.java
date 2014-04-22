@@ -17,30 +17,17 @@ import me.desht.dhutils.LogUtils;
 import org.bukkit.configuration.Configuration;
 
 public class ResultsDB {
-	private enum SupportedDrivers {
+	private SupportedDrivers activeDriver;
+
+	enum SupportedDrivers {
 		MYSQL,
 		SQLITE
 	}
 
-	private final Connection connection;
+	private Connection connection;
 
 	ResultsDB() throws ClassNotFoundException, SQLException {
-		String dbType = CheckersPlugin.getInstance().getConfig().getString("database.driver", "sqlite");
-		SupportedDrivers driver = SupportedDrivers.valueOf(dbType.toUpperCase());
-		switch (driver) {
-		case MYSQL:
-			connection = connectMySQL();
-			setupTablesMySQL();
-			break;
-		case SQLITE:
-			connection = connectSQLite();
-			setupTablesSQLite();
-			break;
-		default:
-			throw new CheckersException("unsupported database type: " + dbType);
-		}
-		setupTablesCommon();
-		Debugger.getInstance().debug("Connected to DB: " + connection.getMetaData().getDatabaseProductName());
+		makeDBConnection();
 	}
 
 	void shutdown() {
@@ -57,6 +44,31 @@ public class ResultsDB {
 
 	public Connection getConnection() {
 		return connection;
+	}
+
+	public SupportedDrivers getActiveDriver() {
+		return activeDriver;
+	}
+
+	void makeDBConnection() throws SQLException, ClassNotFoundException {
+		connection = null;
+		String dbType = CheckersPlugin.getInstance().getConfig().getString("database.driver", "sqlite");
+		SupportedDrivers driver = SupportedDrivers.valueOf(dbType.toUpperCase());
+		switch (driver) {
+			case MYSQL:
+				connection = connectMySQL();
+				setupTablesMySQL();
+				break;
+			case SQLITE:
+				connection = connectSQLite();
+				setupTablesSQLite();
+				break;
+			default:
+				throw new CheckersException("unsupported database type: " + dbType);
+		}
+		this.activeDriver = driver;
+		setupTablesCommon();
+		Debugger.getInstance().debug("Connected to DB: " + connection.getMetaData().getDatabaseProductName());
 	}
 
 	private Connection connectSQLite() throws ClassNotFoundException, SQLException {

@@ -22,7 +22,7 @@ public class DatabaseUpdaterTask implements Runnable {
 				if (savable instanceof Results.EndMarker) {
 					break;
 				}
-				savable.saveToDatabase(handler.getConnection());
+				savable.saveToDatabase(handler.getDBConnection());
 			} catch (InterruptedException e) {
 				LogUtils.warning("interrupted while saving database results");
 				e.printStackTrace();

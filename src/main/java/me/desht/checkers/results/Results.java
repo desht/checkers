@@ -69,15 +69,6 @@ public class Results {
 		return results;
 	}
 
-	/**
-	 * Check that the results handler has been initialised sucessfully.
-	 *
-	 * @return	true if the results handler is OK, false otherwise
-	 */
-	public synchronized static boolean resultsHandlerOK() {
-		return results != null;
-	}
-
 	@SuppressWarnings("CloneDoesntCallSuperClone")
 	@Override
 	public Object clone() throws CloneNotSupportedException {
@@ -85,12 +76,23 @@ public class Results {
 	}
 
 	/**
-	 * Get the database handler for the results
+	 * Get the database connection object
 	 *
-	 * @return	The database handler
+	 * @return	A SQL Connection object
 	 */
-	ResultsDB getResultsDB() {
-		return db;
+	Connection getDBConnection() {
+		try {
+			if (db.getConnection() != null && db.getActiveDriver() != ResultsDB.SupportedDrivers.SQLITE && !db.getConnection().isValid(5)) {
+				// stale handler
+				LogUtils.info("DB connection no longer valid - attempting reconnection");
+				db.makeDBConnection();
+				LogUtils.info("Reconnection successful");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			LogUtils.severe("No database connection available - results will not be saved.");
+		}
+		return db.getConnection();
 	}
 
 	/**
@@ -128,15 +130,6 @@ public class Results {
 	 */
 	public List<ResultEntry> getEntries() {
 		return new ArrayList<ResultEntry>(entries);
-	}
-
-	/**
-	 * Get the database connection object
-	 *
-	 * @return	A SQL Connection object
-	 */
-	public Connection getConnection() {
-		return db.getConnection();
 	}
 
 	/**
@@ -184,7 +177,7 @@ public class Results {
 			public void run() {
 				try {
 					entries.clear();
-					Statement stmt = getConnection().createStatement();
+					Statement stmt = getDBConnection().createStatement();
 					ResultSet rs = stmt.executeQuery("SELECT * FROM " + getTableName("results"));
 					while (rs.next()) {
 						ResultEntry e = new ResultEntry(rs);
@@ -209,8 +202,12 @@ public class Results {
 		String[] pdnResults = { "1-0", "0-1", "1/2-1/2" };
 
 		try {
-			getConnection().setAutoCommit(false);
-			Statement clear = getConnection().createStatement();
+			Connection conn = getDBConnection();
+			if (conn == null) {
+				return;
+			}
+			conn.setAutoCommit(false);
+			Statement clear = conn.createStatement();
 			clear.executeUpdate("DELETE FROM " + getTableName("results") + " WHERE playerWhite LIKE 'testplayer%' OR playerBlack LIKE 'testplayer%'");
 			Random rnd = new Random();
 			for (int i = 0; i < N_PLAYERS; i++) {
@@ -232,10 +229,10 @@ public class Results {
 					}
 					ResultEntry re = new ResultEntry(plw, plb, gn, start, end, pdnRes, rt);
 					entries.add(re);
-					re.saveToDatabase(getConnection());
+					re.saveToDatabase(conn);
 				}
 			}
-			getConnection().setAutoCommit(true);
+			conn.setAutoCommit(true);
 			rebuildViews();
 			LogUtils.info("test data added & committed");
 		} catch (SQLException e) {
