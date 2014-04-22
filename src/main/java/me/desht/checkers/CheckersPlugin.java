@@ -159,6 +159,7 @@ public class CheckersPlugin extends JavaPlugin implements ConfigurationListener 
 		fx = new SpecialFX(getConfig().getConfigurationSection("effects"));
 
 		persistenceHandler.reload();
+
 		if (sms != null) {
 			sms.setAutosave(true);
 		}

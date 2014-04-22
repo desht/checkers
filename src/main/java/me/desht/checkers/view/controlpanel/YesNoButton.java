@@ -5,6 +5,7 @@ import me.desht.checkers.Messages;
 import me.desht.checkers.game.CheckersGame;
 import me.desht.checkers.model.PlayerColour;
 import me.desht.checkers.player.CheckersPlayer;
+import me.desht.checkers.player.HumanCheckersPlayer;
 import me.desht.checkers.responses.DrawResponse;
 import me.desht.checkers.responses.SwapResponse;
 import me.desht.checkers.responses.UndoResponse;
@@ -49,21 +50,22 @@ public abstract class YesNoButton extends AbstractSignButton {
 		CheckersGame game = getGame();
 		if (game == null) return "";
 
-		CheckersPlayer player = game.getPlayer(colour);
-		if (player == null || !player.isHuman())
+		CheckersPlayer cp = game.getPlayer(colour);
+		if (cp == null || !cp.isHuman())
 			return "";
 
-		Player p = Bukkit.getPlayer(player.getId());
+		Player player = ((HumanCheckersPlayer) cp).getBukkitPlayer();
 
 		ResponseHandler rh = CheckersPlugin.getInstance().getResponseHandler();
-		if (p == null) {
+
+		if (player == null) {
 			// gone offline, perhaps?
 			return "";
-		} else if (rh.isExpecting(p, DrawResponse.class)) {
+		} else if (rh.isExpecting(player, DrawResponse.class)) {
 			return Messages.getString("ControlPanel.acceptDrawBtn");
-		} else if (rh.isExpecting(p, SwapResponse.class)) {
+		} else if (rh.isExpecting(player, SwapResponse.class)) {
 			return Messages.getString("ControlPanel.acceptSwapBtn");
-		} else if (rh.isExpecting(p, UndoResponse.class)) {
+		} else if (rh.isExpecting(player, UndoResponse.class)) {
 			return Messages.getString("ControlPanel.acceptUndoBtn");
 		} else {
 			return "";

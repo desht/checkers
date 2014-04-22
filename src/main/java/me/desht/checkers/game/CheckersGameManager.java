@@ -3,14 +3,18 @@ package me.desht.checkers.game;
 import java.util.*;
 
 import me.desht.checkers.CheckersException;
+import me.desht.checkers.CheckersPlugin;
 import me.desht.checkers.Messages;
 import me.desht.checkers.event.CheckersGameCreatedEvent;
 import me.desht.checkers.event.CheckersGameDeletedEvent;
 import me.desht.checkers.model.PlayerColour;
+import me.desht.checkers.player.HumanCheckersPlayer;
 import me.desht.checkers.view.BoardView;
 import me.desht.checkers.view.BoardViewManager;
+import me.desht.dhutils.LogUtils;
 import me.desht.dhutils.MiscUtil;
 
+import me.desht.dhutils.UUIDFetcher;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -21,6 +25,8 @@ public class CheckersGameManager {
 	private final Map<String,CheckersGame> checkersGames = new HashMap<String,CheckersGame>();
 	// map player ID to player's active game
 	private final Map<UUID,CheckersGame> activeGame = new HashMap<UUID, CheckersGame>();
+
+	private final Set<CheckersGame> needToMigrate = new HashSet<CheckersGame>();
 
 	private CheckersGameManager() {
 
@@ -33,6 +39,7 @@ public class CheckersGameManager {
 		return instance;
 	}
 
+	@SuppressWarnings("CloneDoesntCallSuperClone")
 	@Override
 	public Object clone() throws CloneNotSupportedException {
 		throw new CloneNotSupportedException();
@@ -83,10 +90,6 @@ public class CheckersGameManager {
 	}
 
 	public CheckersGame getGame(String name) {
-		return getGame(name, true);
-	}
-
-	public CheckersGame getGame(String name, boolean fuzzy) {
 		if (!checkersGames.containsKey(name)) {
 			throw new CheckersException(Messages.getString("Game.noSuchGame", name));
 		}
@@ -174,5 +177,80 @@ public class CheckersGameManager {
 		MiscUtil.statusMessage(player, Messages.getString("Game.gameCreated", game.getName(), bv.getName()));
 
 		return game;
+	}
+
+	public void needUUIDMigration(CheckersGame game) {
+		needToMigrate.add(game);
+	}
+
+	/**
+	 * Carry out the migration of old-style player names to UUIDs.  This is done asynchronously.
+	 */
+	public void checkForUUIDMigration() {
+		final List<String> names = new ArrayList<String>();
+		final List<GameAndColour> gameAndColours = new ArrayList<GameAndColour>();
+		for (CheckersGame game : needToMigrate) {
+			if (game.hasPlayer(PlayerColour.WHITE) && game.getPlayer(PlayerColour.WHITE).isHuman()) {
+				HumanCheckersPlayer hcp = (HumanCheckersPlayer) game.getPlayer(PlayerColour.WHITE);
+				if (hcp.getOldStyleName() != null) {
+					names.add(hcp.getOldStyleName());
+					gameAndColours.add(new GameAndColour(game, hcp.getColour()));
+				}
+			}
+			if (game.hasPlayer(PlayerColour.BLACK) && game.getPlayer(PlayerColour.BLACK).isHuman()) {
+				HumanCheckersPlayer hcp = (HumanCheckersPlayer) game.getPlayer(PlayerColour.BLACK);
+				if (hcp.getOldStyleName() != null) {
+					names.add(hcp.getOldStyleName());
+					gameAndColours.add(new GameAndColour(game, hcp.getColour()));
+				}
+			}
+		}
+		needToMigrate.clear();
+		if (names.size() > 0) {
+			LogUtils.info("migrating " + names.size() + " player names to UUID in saved game files");
+			Bukkit.getScheduler().runTaskAsynchronously(CheckersPlugin.getInstance(), new Runnable() {
+				@Override
+				public void run() {
+					UUIDFetcher uf = new UUIDFetcher(names, true);
+					try {
+						Bukkit.getScheduler().runTask(CheckersPlugin.getInstance(), new SyncTask(uf.call(), gameAndColours));
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+			});
+		}
+	}
+
+	private class SyncTask implements Runnable {
+		private final Map<String, UUID> map;
+		private final List<GameAndColour> gameAndColours;
+
+		public SyncTask(Map<String, UUID> map, List<GameAndColour> gameAndColours) {
+			this.map = map;
+			this.gameAndColours = gameAndColours;
+		}
+
+		@Override
+		public void run() {
+			for (GameAndColour gc : gameAndColours) {
+				HumanCheckersPlayer hcp = (HumanCheckersPlayer) gc.game.getPlayer(gc.colour);
+				gc.game.migratePlayer(gc.colour, hcp.getOldStyleName(), map.get(hcp.getOldStyleName()));
+			}
+			for (CheckersGame game : listGames()) {
+				game.save();
+			}
+			LogUtils.info("player name -> UUID migration complete");
+		}
+	}
+
+	private class GameAndColour {
+		private final CheckersGame game;
+		private final PlayerColour colour;
+
+		private GameAndColour(CheckersGame game, PlayerColour colour) {
+			this.game = game;
+			this.colour = colour;
+		}
 	}
 }

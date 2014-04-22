@@ -6,6 +6,7 @@ import me.desht.checkers.Messages;
 import me.desht.checkers.TimeControl.ControlType;
 import me.desht.checkers.TwoPlayerClock;
 import me.desht.checkers.game.CheckersGame;
+import me.desht.checkers.game.CheckersGameManager;
 import me.desht.checkers.model.Move;
 import me.desht.checkers.model.PlayerColour;
 import me.desht.checkers.model.Position;
@@ -36,12 +37,13 @@ public class HumanCheckersPlayer extends CheckersPlayer {
 			uuid = UUID.fromString(id);
 			oldStyleName = null;
 		} else {
+			CheckersGameManager.getManager().needUUIDMigration(game);
 			uuid = null;
 			oldStyleName = id;
 		}
 	}
 
-	private Player getBukkitPlayer() {
+	public Player getBukkitPlayer() {
 		return uuid == null ? null : Bukkit.getPlayer(uuid);
 	}
 

@@ -83,7 +83,7 @@ public class TeleportCommand extends AbstractCheckersCommand {
 			// teleport to game, or maybe board
 			BoardView bv;
 			if (CheckersGameManager.getManager().checkGame(args[0])) {
-				CheckersGame game = CheckersGameManager.getManager().getGame(args[0], true);
+				CheckersGame game = CheckersGameManager.getManager().getGame(args[0]);
 				bv = BoardViewManager.getManager().findBoardForGame(game);
 			} else {
 				PermissionUtils.requirePerms(player, "checkers.commands.teleport.board");

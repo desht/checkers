@@ -33,6 +33,7 @@ public class PersistenceHandler {
 		}
 
 		loadPersistedData();
+		CheckersGameManager.getManager().checkForUUIDMigration();
 	}
 
 	public void save() {
@@ -142,7 +143,9 @@ public class PersistenceHandler {
 			if (current != null) {
 				for (String playerId : current.getKeys(false)) {
 					try {
-						CheckersGameManager.getManager().setCurrentGame(UUID.fromString(playerId), current.getString(playerId));
+						if (MiscUtil.looksLikeUUID(playerId)) {
+							CheckersGameManager.getManager().setCurrentGame(UUID.fromString(playerId), current.getString(playerId));
+						}
 					} catch (CheckersException e) {
 						LogUtils.warning("can't set current game for player " + playerId + ": " + e.getMessage());
 					}

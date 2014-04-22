@@ -3,7 +3,10 @@ package me.desht.checkers.results;
 import me.desht.checkers.game.CheckersGame;
 import me.desht.checkers.game.CheckersGame.GameResult;
 import me.desht.checkers.model.PlayerColour;
+import me.desht.checkers.player.CheckersPlayer;
+import me.desht.checkers.player.HumanCheckersPlayer;
 import me.desht.dhutils.Debugger;
+import org.bukkit.entity.Player;
 
 import java.sql.*;
 
@@ -16,13 +19,26 @@ public class ResultEntry implements DatabaseSavable {
 	private final String pdnResult;
 
 	ResultEntry(CheckersGame game) {
-		playerWhite = game.getPlayer(PlayerColour.WHITE).getId();
-		playerBlack = game.getPlayer(PlayerColour.BLACK).getId();
+		playerWhite = getResultsName(game.getPlayer(PlayerColour.WHITE));
+		playerBlack = getResultsName(game.getPlayer(PlayerColour.BLACK));
 		gameName = game.getName();
 		startTime = game.getStarted();
 		endTime = game.getFinished();
 		result = game.getResult();
 		pdnResult = game.getPDNResult();
+	}
+
+	private String getResultsName(CheckersPlayer cp) {
+		// this isn't very pretty, but it's needed to preserve backwards compat
+		// with the existing database layout
+		if (cp.isHuman()) {
+			// should be safe to assume player is still online here
+			Player p = ((HumanCheckersPlayer) cp).getBukkitPlayer();
+			return p.getName();
+		} else {
+			// AI players use the internal ID, not the displayname
+			return cp.getId();
+		}
 	}
 
 	ResultEntry(String plw, String plb, String gn, long start, long end, String pdnRes, GameResult rt) {

@@ -34,6 +34,7 @@ import org.bukkit.configuration.MemoryConfiguration;
 import org.bukkit.entity.Player;
 
 public class CheckersGame implements CheckersPersistable {
+
 	public enum GameResult {
 		WIN, DRAW_AGREED, DRAW_FORCED, ABANDONED, NOT_FINISHED, RESIGNED, FORFEIT,
 	}
@@ -872,5 +873,10 @@ public class CheckersGame implements CheckersPersistable {
 		}
 
 		stake = 0.0;
+	}
+
+	public void migratePlayer(PlayerColour colour, String oldStyleName, UUID uuid) {
+		players[colour.getIndex()] = new HumanCheckersPlayer(uuid.toString(), oldStyleName, this, colour);
+		LogUtils.info("migrated player " + oldStyleName + " to " + uuid + " in game " + getName());
 	}
 }
