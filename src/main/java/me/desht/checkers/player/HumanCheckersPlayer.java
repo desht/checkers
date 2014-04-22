@@ -58,7 +58,7 @@ public class HumanCheckersPlayer extends CheckersPlayer {
 		}
 		double stake = getGame().getStake();
 		Economy economy = CheckersPlugin.getInstance().getEconomy();
-		if (economy != null && !economy.has(getId(), stake)) {
+		if (economy != null && (getBukkitPlayer() == null || !economy.has(getBukkitPlayer().getName(), stake))) {
 			throw new CheckersException(Messages.getString(error, CheckersUtils.formatStakeStr(stake)));
 		}
 	}

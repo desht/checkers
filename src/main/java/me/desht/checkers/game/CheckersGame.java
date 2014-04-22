@@ -444,7 +444,7 @@ public class CheckersGame implements CheckersPersistable {
 			}
 			invitedId = invitee.getUniqueId();
 			openInvite = false;
-			alert(inviter, Messages.getString("Game.inviteSent", invitedId));
+			alert(inviter, Messages.getString("Game.inviteSent", invitee.getDisplayName()));
 		} else {
 			addPlayer(CheckersAI.AI_PREFIX + inviteeName, CheckersAI.AI_PREFIX + inviteeName);
 		}
