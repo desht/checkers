@@ -16,7 +16,7 @@ public class StartButton extends AbstractSignButton {
 		CheckersGame game = getGame();
 
 		if (game != null) {
-			game.start(event.getPlayer().getName());
+			game.start(event.getPlayer().getUniqueId().toString());
 		}
 	}
 

@@ -9,9 +9,7 @@ import me.desht.dhutils.MiscUtil;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class SelectRulesButton extends AbstractSignButton {
 	private final List<GameRules> matchingRules;

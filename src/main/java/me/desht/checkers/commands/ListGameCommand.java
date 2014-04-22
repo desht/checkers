@@ -11,6 +11,7 @@ import me.desht.dhutils.MiscUtil;
 
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
 public class ListGameCommand extends AbstractCheckersCommand {
@@ -40,7 +41,7 @@ public class ListGameCommand extends AbstractCheckersCommand {
 		} else {
 			for (CheckersGame game : manager.listGamesSorted()) {
 				String name = game.getName();
-				if (game == manager.getCurrentGame(sender.getName())) {
+				if (sender instanceof Player && game == manager.getCurrentGame((Player) sender)) {
 					name = ChatColor.BOLD + ChatColor.ITALIC.toString() + name + ChatColor.RESET;
 				}
 				String curMoveW = game.getPosition().getToMove() == PlayerColour.WHITE ? TO_MOVE : "";
@@ -51,8 +52,8 @@ public class ListGameCommand extends AbstractCheckersCommand {
 				                            name,
 				                            curMoveB, black, PlayerColour.BLACK.getDisplayColour() + ChatColor.RESET,
 				                            curMoveW, white, PlayerColour.WHITE.getDisplayColour() + ChatColor.RESET);
-				if (!game.getInvited().isEmpty()) {
-					line += Messages.getString("Game.invited", game.getInvited());
+				if (game.getInvitedId() != null) {
+					line += Messages.getString("Game.invited", game.getInvitedId().toString());
 				}
 				pager.add(line);
 			}

@@ -6,6 +6,7 @@ import me.desht.checkers.game.CheckersGame;
 import me.desht.checkers.game.CheckersGameManager;
 
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
 public class ResignCommand extends AbstractCheckersCommand {
@@ -17,18 +18,19 @@ public class ResignCommand extends AbstractCheckersCommand {
 	}
 
 	@Override
-	public boolean execute(Plugin plugin, CommandSender player, String[] args) {
-		notFromConsole(player);
+	public boolean execute(Plugin plugin, CommandSender sender, String[] args) {
+		notFromConsole(sender);
 
+		Player player = (Player) sender;
 		CheckersGame game;
 		if (args.length >= 1) {
 			game = CheckersGameManager.getManager().getGame(args[0]);
 		} else {
-			game = CheckersGameManager.getManager().getCurrentGame(player.getName(), true);
+			game = CheckersGameManager.getManager().getCurrentGame(player, true);
 		}
 
 		if (game != null) {
-			game.resign(player.getName());
+			game.resign(player.getUniqueId().toString());
 		}
 
 		return true;
@@ -36,8 +38,8 @@ public class ResignCommand extends AbstractCheckersCommand {
 
 	@Override
 	public List<String> onTabComplete(Plugin plugin, CommandSender sender, String[] args) {
-		if (args.length == 1) {
-			return getPlayerInGameCompletions(plugin, sender, args[0]);
+		if (args.length == 1 && sender instanceof Player) {
+			return getPlayerInGameCompletions(plugin, (Player) sender, args[0]);
 		} else {
 			showUsage(sender);
 			return noCompletions(sender);

@@ -1,12 +1,6 @@
 package me.desht.checkers.game;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 
 import me.desht.checkers.CheckersException;
 import me.desht.checkers.Messages;
@@ -25,8 +19,8 @@ public class CheckersGameManager {
 
 	// map game name to game
 	private final Map<String,CheckersGame> checkersGames = new HashMap<String,CheckersGame>();
-	// map player name to player's active game
-	private final Map<String,CheckersGame> activeGame = new HashMap<String, CheckersGame>();
+	// map player ID to player's active game
+	private final Map<UUID,CheckersGame> activeGame = new HashMap<UUID, CheckersGame>();
 
 	private CheckersGameManager() {
 
@@ -58,13 +52,13 @@ public class CheckersGameManager {
 	public void unregisterGame(String gameName) {
 		CheckersGame game = getGame(gameName);
 
-		List<String> toRemove = new ArrayList<String>();
-		for (String playerName : activeGame.keySet()) {
+		List<UUID> toRemove = new ArrayList<UUID>();
+		for (UUID playerName : activeGame.keySet()) {
 			if (activeGame.get(playerName) == game) {
 				toRemove.add(playerName);
 			}
 		}
-		for (String p : toRemove) {
+		for (UUID p : toRemove) {
 			activeGame.remove(p);
 		}
 		checkersGames.remove(gameName);
@@ -99,30 +93,29 @@ public class CheckersGameManager {
 		return checkersGames.get(name);
 	}
 
-	public void setCurrentGame(String playerName, String gameName) {
-		CheckersGame game = getGame(gameName);
-		setCurrentGame(playerName, game);
+	public void setCurrentGame(Player player, CheckersGame game) {
+		activeGame.put(player.getUniqueId(), game);
 	}
 
-	public void setCurrentGame(String playerName, CheckersGame game) {
-		activeGame.put(playerName, game);
+	public CheckersGame getCurrentGame(Player player) {
+		return getCurrentGame(player, false);
 	}
 
-	public CheckersGame getCurrentGame(String playerName) {
-		return getCurrentGame(playerName, false);
+	public void setCurrentGame(UUID uuid, String gameName) {
+		activeGame.put(uuid, getGame(gameName));
 	}
 
-	public CheckersGame getCurrentGame(String playerName, boolean verify) {
-		CheckersGame game = activeGame.get(playerName);
+	public CheckersGame getCurrentGame(Player player, boolean verify) {
+		CheckersGame game = activeGame.get(player.getUniqueId());
 		if (verify && game == null) {
 			throw new CheckersException(Messages.getString("Game.noActiveGame")); //$NON-NLS-1$
 		}
 		return game;
 	}
 
-	public Map<String, String> getCurrentGames() {
-		Map<String, String> res = new HashMap<String, String>();
-		for (String s : activeGame.keySet()) {
+	public Map<UUID, String> getCurrentGames() {
+		Map<UUID, String> res = new HashMap<UUID, String>();
+		for (UUID s : activeGame.keySet()) {
 			CheckersGame game = activeGame.get(s);
 			if (game != null) {
 				res.put(s, game.getName());
@@ -134,14 +127,14 @@ public class CheckersGameManager {
 	/**
 	 * Create a unique game name based on the player's name.
 	 *
-	 * @param playerName
-	 * @return
+	 * @param player the player
+	 * @return the unique game name
 	 */
-	private String makeGameName(String playerName) {
+	private String makeGameName(Player player) {
 		String res;
 		int n = 1;
 		do {
-			res = playerName + "-" + n++; //$NON-NLS-1$
+			res = player.getName() + "-" + n++;
 		} while (checkGame(res));
 
 		return res;
@@ -168,17 +161,15 @@ public class CheckersGameManager {
 	}
 
 	public CheckersGame createGame(Player player, String gameName, BoardView bv, PlayerColour colour, String ruleId) {
-		String playerName = player.getName();
-
 		if (gameName == null || gameName.equals("-")) {
-			gameName = makeGameName(playerName);
+			gameName = makeGameName(player);
 		}
 
-		CheckersGame game = new CheckersGame(gameName, playerName, colour, bv.getControlPanel().getTcDefs().currentDef().getSpec(), ruleId);
+		CheckersGame game = new CheckersGame(gameName, player, colour, bv.getControlPanel().getTcDefs().currentDef().getSpec(), ruleId);
 		bv.setGame(game);
 		registerGame(game);
-		setCurrentGame(playerName, game);
-		game.setStake(playerName, bv.getDefaultStake());
+		setCurrentGame(player, game);
+		game.setStake(player.getUniqueId().toString(), player.getName(), bv.getDefaultStake());
 
 		MiscUtil.statusMessage(player, Messages.getString("Game.gameCreated", game.getName(), bv.getName()));
 

@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.UUID;
 
 import me.desht.checkers.game.CheckersGame;
 import me.desht.checkers.game.CheckersGameManager;
@@ -118,8 +119,8 @@ public class PersistenceHandler {
 
 	private void saveOtherPersistedData() {
 		YamlConfiguration conf = new YamlConfiguration();
-		for (Entry<String,String> e : CheckersGameManager.getManager().getCurrentGames().entrySet()) {
-			conf.set("current_games." + e.getKey(), e.getValue());
+		for (Entry<UUID,String> e : CheckersGameManager.getManager().getCurrentGames().entrySet()) {
+			conf.set("current_games." + e.getKey().toString(), e.getValue());
 		}
 
 		Location loc = BoardViewManager.getManager().getGlobalTeleportOutDest();
@@ -139,11 +140,11 @@ public class PersistenceHandler {
 			YamlConfiguration conf = MiscUtil.loadYamlUTF8(DirectoryStructure.getPersistFile());
 			ConfigurationSection current = conf.getConfigurationSection("current_games");
 			if (current != null) {
-				for (String player : current.getKeys(false)) {
+				for (String playerId : current.getKeys(false)) {
 					try {
-						CheckersGameManager.getManager().setCurrentGame(player, current.getString(player));
+						CheckersGameManager.getManager().setCurrentGame(UUID.fromString(playerId), current.getString(playerId));
 					} catch (CheckersException e) {
-						LogUtils.warning("can't set current game for player " + player + ": " + e.getMessage());
+						LogUtils.warning("can't set current game for player " + playerId + ": " + e.getMessage());
 					}
 				}
 			}

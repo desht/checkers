@@ -5,6 +5,7 @@ import me.desht.checkers.game.CheckersGame;
 import me.desht.checkers.game.CheckersGameManager;
 
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
 public class TimeControlCommand extends AbstractCheckersCommand {
@@ -21,7 +22,7 @@ public class TimeControlCommand extends AbstractCheckersCommand {
 		notFromConsole(sender);
 		String tcSpec = args[0];
 
-		CheckersGame game = CheckersGameManager.getManager().getCurrentGame(sender.getName(), true);
+		CheckersGame game = CheckersGameManager.getManager().getCurrentGame((Player) sender, true);
 		game.setTimeControl(tcSpec);
 		game.alert(Messages.getString("Game.timeControlSet", tcSpec, game.getTimeControl().toString()));
 

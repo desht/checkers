@@ -2,6 +2,7 @@ package me.desht.checkers.listeners;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import me.desht.checkers.CheckersPlugin;
 import me.desht.checkers.Messages;
@@ -9,6 +10,7 @@ import me.desht.checkers.game.CheckersGame;
 import me.desht.checkers.game.CheckersGameManager;
 import me.desht.checkers.game.CheckersGame.GameState;
 import me.desht.checkers.player.CheckersPlayer;
+import me.desht.checkers.util.CheckersUtils;
 import me.desht.dhutils.Duration;
 import me.desht.dhutils.LogUtils;
 import me.desht.dhutils.MessagePager;
@@ -23,8 +25,8 @@ import org.bukkit.event.player.PlayerQuitEvent;
 
 public class PlayerTracker extends CheckersBaseListener {
 
-	private final Map<String, PersistableLocation> lastPos = new HashMap<String, PersistableLocation>();
-	private final Map<String, Long> loggedOutAt = new HashMap<String, Long>();
+	private final Map<UUID, PersistableLocation> lastPos = new HashMap<UUID, PersistableLocation>();
+	private final Map<UUID, Long> loggedOutAt = new HashMap<UUID, Long>();
 
 	public PlayerTracker(CheckersPlugin plugin) {
 		super(plugin);
@@ -33,14 +35,13 @@ public class PlayerTracker extends CheckersBaseListener {
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent event) {
 		StringBuilder games = new StringBuilder();
-		String who = event.getPlayer().getName();
 		for (CheckersGame game : CheckersGameManager.getManager().listGames()) {
-			CheckersPlayer cp = game.getPlayer(who);
+			CheckersPlayer cp = game.getPlayer(event.getPlayer().getUniqueId().toString());
 			if (cp != null) {
-				playerRejoined(who);
+				playerRejoined(event.getPlayer());
 				CheckersPlayer other = game.getPlayer(cp.getColour().getOtherColour());
 				if (other != null) {
-					other.alert(Messages.getString("Game.playerBack", who));
+					other.alert(Messages.getString("Game.playerBack", event.getPlayer().getDisplayName()));
 				}
 				games.append(" ").append(game.getName());
 			}
@@ -52,7 +53,6 @@ public class PlayerTracker extends CheckersBaseListener {
 
 	@EventHandler
 	public void onPlayerQuit(PlayerQuitEvent event) {
-		String who = event.getPlayer().getName();
 		String timeout = plugin.getConfig().getString("forfeit_timeout");
 		Duration duration;
 		try {
@@ -62,12 +62,12 @@ public class PlayerTracker extends CheckersBaseListener {
 			duration = new Duration(0);
 		}
 		for (CheckersGame game : CheckersGameManager.getManager().listGames()) {
-			if (game.hasPlayer(who)) {
-				playerLeft(who);
+			if (game.hasPlayer(event.getPlayer())) {
+				playerLeft(event.getPlayer());
 				if (duration.getTotalDuration() > 0 && game.getState() == GameState.RUNNING) {
-					game.alert(Messages.getString("Game.playerQuit", who, duration.getTotalDuration() / 1000));
+					game.alert(Messages.getString("Game.playerQuit", event.getPlayer().getDisplayName(), duration.getTotalDuration() / 1000));
 				}
-				game.playerLeft(who);
+				game.playerLeft(event.getPlayer());
 			}
 		}
 		MessagePager.deletePager(event.getPlayer());
@@ -81,26 +81,28 @@ public class PlayerTracker extends CheckersBaseListener {
 	}
 
 	public Location getLastPos(Player player) {
-		if (!lastPos.containsKey(player.getName())) {
+		if (!lastPos.containsKey(player.getUniqueId())) {
 			return null;
 		} else {
-			return lastPos.get(player.getName()).getLocation();
+			return lastPos.get(player.getUniqueId()).getLocation();
 		}
 	}
 
 	private void setLastPos(Player player, Location loc) {
-		lastPos.put(player.getName(), new PersistableLocation(loc));
+		lastPos.put(player.getUniqueId(), new PersistableLocation(loc));
 	}
 
-	public void playerLeft(String who) {
-		loggedOutAt.put(who, System.currentTimeMillis());
+	public void playerLeft(Player player) {
+		loggedOutAt.put(player.getUniqueId(), System.currentTimeMillis());
 	}
 
-	public void playerRejoined(String who) {
-		loggedOutAt.remove(who);
+	public void playerRejoined(Player player) {
+		loggedOutAt.remove(player.getUniqueId());
 	}
 
 	public long getPlayerLeftAt(String who) {
-		return loggedOutAt.containsKey(who) ? loggedOutAt.get(who) : 0;
+		if (!CheckersUtils.isUUID(who)) return 0;
+		UUID uuid = UUID.fromString(who);
+		return loggedOutAt.containsKey(uuid) ? loggedOutAt.get(uuid) : 0;
 	}
 }

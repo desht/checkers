@@ -6,6 +6,7 @@ import me.desht.checkers.game.CheckersGame;
 import me.desht.checkers.game.CheckersGameManager;
 
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
 public class InviteCommand extends AbstractCheckersCommand {
@@ -20,9 +21,9 @@ public class InviteCommand extends AbstractCheckersCommand {
 	public boolean execute(Plugin plugin, CommandSender sender, String[] args) {
 		notFromConsole(sender);
 
-		CheckersGame game = CheckersGameManager.getManager().getCurrentGame(sender.getName(), true);
+		CheckersGame game = CheckersGameManager.getManager().getCurrentGame((Player) sender, true);
 		String invitee = args.length > 0 ? args[0] : null;
-		game.invitePlayer(sender.getName(), invitee);
+		game.invitePlayer((Player) sender, invitee);
 
 		return true;
 	}

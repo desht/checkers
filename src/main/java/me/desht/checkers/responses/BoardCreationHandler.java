@@ -12,6 +12,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
+import java.util.UUID;
+
 public class BoardCreationHandler extends ExpectBase {
 
 	private final String boardName;
@@ -30,16 +32,16 @@ public class BoardCreationHandler extends ExpectBase {
 	}
 
 	@Override
-	public void doResponse(String playerName) {
-		Player player = Bukkit.getPlayer(playerName);
+	public void doResponse(UUID playerId) {
+		Player player = Bukkit.getPlayer(playerId);
 		if (player == null) {
-			LogUtils.warning("Board creation: player " + playerName + " gone offline?");
+			LogUtils.warning("Board creation: player ID " + playerId + " gone offline?");
 			return;
 		}
 
 		BoardView view = BoardViewManager.getManager().createBoard(boardName, loc, BoardRotation.getRotation(player), boardStyle, size);
 
-		MiscUtil.statusMessage(player, Messages.getString("Board.boardCreated", //$NON-NLS-1$
+		MiscUtil.statusMessage(player, Messages.getString("Board.boardCreated",
 		                                                  view.getName(), MiscUtil.formatLocation(view.getBoard().getA1Center().getLocation())));
 	}
 }

@@ -350,7 +350,7 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 		CheckersPlayer cp = game.getPlayer(colour);
 		if (clock.getRemainingTime(colour) <= 0) {
 			try {
-				game.forfeit(cp.getName());
+				game.forfeit(cp.getId());
 			} catch (CheckersException e) {
 				LogUtils.severe("unexpected exception: " + e.getMessage(), e);
 			}

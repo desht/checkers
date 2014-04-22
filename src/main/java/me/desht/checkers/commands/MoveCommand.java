@@ -11,6 +11,7 @@ import me.desht.checkers.model.RowCol;
 import me.desht.dhutils.MiscUtil;
 
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
 public class MoveCommand extends AbstractCheckersCommand {
@@ -25,7 +26,7 @@ public class MoveCommand extends AbstractCheckersCommand {
 	public boolean execute(Plugin plugin, CommandSender sender, String[] args) {
 		notFromConsole(sender);
 
-		CheckersGame game = CheckersGameManager.getManager().getCurrentGame(sender.getName(), true);
+		CheckersGame game = CheckersGameManager.getManager().getCurrentGame((Player) sender, true);
 
 		int from, to;
 		try {

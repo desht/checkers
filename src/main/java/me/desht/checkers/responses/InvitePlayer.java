@@ -5,6 +5,9 @@ import me.desht.checkers.game.CheckersGameManager;
 import me.desht.dhutils.responsehandler.ExpectBase;
 
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
+
+import java.util.UUID;
 
 public class InvitePlayer extends ExpectBase {
 	private String inviteeName;
@@ -18,14 +21,17 @@ public class InvitePlayer extends ExpectBase {
 	}
 
 	@Override
-	public void doResponse(final String playerName) {
+	public void doResponse(final UUID playerId) {
 		// Run this as a sync delayed task because we're not in the main thread at this point
 		// (coming from the AsyncPlayerChatEvent handler)
-		deferTask(Bukkit.getPlayerExact(playerName), new Runnable() {
+		deferTask(playerId, new Runnable() {
 			@Override
 			public void run() {
-				CheckersGame game = CheckersGameManager.getManager().getCurrentGame(playerName, true);
-				game.invitePlayer(playerName, inviteeName);
+				Player player = Bukkit.getPlayer(playerId);
+				if (player != null) {
+					CheckersGame game = CheckersGameManager.getManager().getCurrentGame(player, true);
+					game.invitePlayer(player, inviteeName);
+				}
 			}
 		});
 	}

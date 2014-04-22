@@ -10,6 +10,7 @@ import me.desht.checkers.view.BoardStyle;
 import me.desht.dhutils.MiscUtil;
 
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
 public class CreateBoardCommand extends AbstractCheckersCommand {
@@ -25,6 +26,8 @@ public class CreateBoardCommand extends AbstractCheckersCommand {
 	public boolean execute(Plugin plugin, CommandSender sender, String[] args) {
 		notFromConsole(sender);
 
+		Player player = (Player) sender;
+
 		if (args.length == 0 || args[0].startsWith("-")) {
 			showUsage(sender);
 			return true;
@@ -37,7 +40,7 @@ public class CreateBoardCommand extends AbstractCheckersCommand {
 		CheckersValidate.isTrue(size == 8 || size == 10 || size == 12, Messages.getString("Board.invalidSize", size));
 
 		MiscUtil.statusMessage(sender, Messages.getString("Board.boardCreationPrompt", name));
-		CheckersPlugin.getInstance().getResponseHandler().expect(sender.getName(), new BoardCreationHandler(name, boardStyleName, size));
+		CheckersPlugin.getInstance().getResponseHandler().expect(player, new BoardCreationHandler(name, boardStyleName, size));
 
 		return true;
 	}

@@ -12,6 +12,7 @@ import me.desht.checkers.player.CheckersPlayer;
 import me.desht.dhutils.Duration;
 
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
 public class WinCommand extends AbstractCheckersCommand {
@@ -25,10 +26,11 @@ public class WinCommand extends AbstractCheckersCommand {
 	@Override
 	public boolean execute(Plugin plugin, CommandSender sender, String[] args) {
 		notFromConsole(sender);
+		Player player = (Player) sender;
 
-		CheckersGame game = CheckersGameManager.getManager().getCurrentGame(sender.getName(), true);
+		CheckersGame game = CheckersGameManager.getManager().getCurrentGame(player, true);
 
-		CheckersPlayer cp = game.getPlayer(sender.getName());
+		CheckersPlayer cp = game.getPlayer(player.getUniqueId().toString());
 		CheckersValidate.notNull(cp, Messages.getString("Game.notInGame"));
 		CheckersPlayer other = game.getPlayer(cp.getColour().getOtherColour());
 		if (other == null || !other.isHuman() || other.isAvailable()) {
@@ -42,7 +44,7 @@ public class WinCommand extends AbstractCheckersCommand {
 		} catch (IllegalArgumentException e) {
 			throw new CheckersException("invalid timeout: " + timeout);
 		}
-		long leftAt = ((CheckersPlugin)plugin).getPlayerTracker().getPlayerLeftAt(other.getName());
+		long leftAt = ((CheckersPlugin)plugin).getPlayerTracker().getPlayerLeftAt(other.getId());
 		if (leftAt == 0) {
 			String msg = Messages.getString("Misc.otherPlayerMustBeOffline");
 			if (!other.isAvailable()) {
@@ -54,7 +56,7 @@ public class WinCommand extends AbstractCheckersCommand {
 		long now = System.currentTimeMillis();
 		long elapsed = now - leftAt;
 		if (elapsed >= duration.getTotalDuration()) {
-			game.forfeit(other.getName());
+			game.forfeit(other.getId());
 		} else {
 			throw new CheckersException(Messages.getString("Misc.needToWait", (duration.getTotalDuration() - elapsed) / 1000));
 		}

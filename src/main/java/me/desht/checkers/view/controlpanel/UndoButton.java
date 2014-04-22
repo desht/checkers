@@ -15,7 +15,7 @@ public class UndoButton extends AbstractSignButton {
 	public void execute(PlayerInteractEvent event) {
 		CheckersGame game = getGame();
 		if (game != null) {
-			game.offerUndoMove(event.getPlayer().getName());
+			game.offerUndoMove(event.getPlayer().getUniqueId().toString());
 			getPanel().repaintControls();
 		}
 	}

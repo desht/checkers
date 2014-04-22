@@ -37,11 +37,12 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.UUID;
 
 public class PlayerListener extends CheckersBaseListener {
 
 	private static final long MIN_ANIMATION_WAIT = 200; // milliseconds
-	private final Map<String,Long> lastAnimation = new HashMap<String, Long>();
+	private final Map<UUID,Long> lastAnimation = new HashMap<UUID, Long>();
 
 	// block ids to be considered transparent when calling player.getTargetBlock()
 	private static final HashSet<Byte> transparent = new HashSet<Byte>();
@@ -58,24 +59,24 @@ public class PlayerListener extends CheckersBaseListener {
 	@EventHandler
 	public void onPlayerInteract(PlayerInteractEvent event) {
 		ResponseHandler resp = plugin.getResponseHandler();
-		String playerName = event.getPlayer().getName();
 		Block b = event.getClickedBlock();
 
+		Player player = event.getPlayer();
 		try {
-			if (resp.isExpecting(playerName, InvitePlayer.class)) {
+			if (resp.isExpecting(player, InvitePlayer.class)) {
 				// a left or right-click (even air, where the event is cancelled) cancels any pending player invite response
-				resp.cancelAction(playerName, InvitePlayer.class);
-				MiscUtil.alertMessage(event.getPlayer(), Messages.getString("Game.playerInviteCancelled"));
-			} else if (resp.isExpecting(playerName, BoardCreationHandler.class)) {
-				BoardCreationHandler boardCreation = resp.getAction(playerName, BoardCreationHandler.class);
+				resp.cancelAction(player, InvitePlayer.class);
+				MiscUtil.alertMessage(player, Messages.getString("Game.playerInviteCancelled"));
+			} else if (resp.isExpecting(player, BoardCreationHandler.class)) {
+				BoardCreationHandler boardCreation = resp.getAction(player, BoardCreationHandler.class);
 				switch (event.getAction()) {
 				case LEFT_CLICK_BLOCK:
 					boardCreation.setLocation(event.getClickedBlock().getLocation());
-					boardCreation.handleAction();
+					boardCreation.handleAction(player);
 					break;
 				case RIGHT_CLICK_BLOCK: case RIGHT_CLICK_AIR:
-					MiscUtil.alertMessage(event.getPlayer(),  Messages.getString("Board.boardCreationCancelled"));
-					boardCreation.cancelAction();
+					MiscUtil.alertMessage(player,  Messages.getString("Board.boardCreationCancelled"));
+					boardCreation.cancelAction(player);
 					break;
 				default:
 					break;
@@ -89,14 +90,14 @@ public class PlayerListener extends CheckersBaseListener {
 				}
 			}
 		} catch (CheckersException e) {
-			MiscUtil.errorMessage(event.getPlayer(), e.getMessage());
-			if (resp.isExpecting(playerName, BoardCreationHandler.class)) {
-				BoardCreationHandler boardCreation = resp.getAction(playerName, BoardCreationHandler.class);
-				MiscUtil.alertMessage(event.getPlayer(),  Messages.getString("Board.boardCreationCancelled"));
-				boardCreation.cancelAction();
+			MiscUtil.errorMessage(player, e.getMessage());
+			if (resp.isExpecting(player, BoardCreationHandler.class)) {
+				BoardCreationHandler boardCreation = resp.getAction(player, BoardCreationHandler.class);
+				MiscUtil.alertMessage(player,  Messages.getString("Board.boardCreationCancelled"));
+				boardCreation.cancelAction(player);
 			}
 		} catch (DHUtilsException e) {
-			MiscUtil.errorMessage(event.getPlayer(), e.getMessage());
+			MiscUtil.errorMessage(player, e.getMessage());
 		}
 	}
 
@@ -109,7 +110,7 @@ public class PlayerListener extends CheckersBaseListener {
 		if (System.currentTimeMillis() - lastAnimationEvent(player) < MIN_ANIMATION_WAIT) {
 			return;
 		}
-		lastAnimation.put(player.getName(), System.currentTimeMillis());
+		lastAnimation.put(player.getUniqueId(), System.currentTimeMillis());
 
 		Block targetBlock;
 		BoardView bv = null;
@@ -119,7 +120,7 @@ public class PlayerListener extends CheckersBaseListener {
 				Material wandMat = CheckersUtils.getWandMaterial();
 				if (wandMat == null || player.getItemInHand().getType() == wandMat) {
 					targetBlock = player.getTargetBlock(transparent, 120);
-					Debugger.getInstance().debug(2, "Player " + player.getName() + " waved at block " + targetBlock);
+					Debugger.getInstance().debug(2, "Player " + player.getDisplayName() + " waved at block " + targetBlock);
 					Location loc = targetBlock.getLocation();
 					bv = BoardViewManager.getManager().partOfBoard(loc);
 					if (bv != null) {
@@ -154,16 +155,16 @@ public class PlayerListener extends CheckersBaseListener {
 	public void onPlayerChat(AsyncPlayerChatEvent event) {
 		Player player = event.getPlayer();
 		ResponseHandler resp = plugin.getResponseHandler();
-		InvitePlayer ip = resp.getAction(player.getName(), InvitePlayer.class);
+		InvitePlayer ip = resp.getAction(player, InvitePlayer.class);
 
 		if (ip != null) {
 			try {
 				ip.setInviteeName(event.getMessage());
 				event.setCancelled(true);
-				ip.handleAction();
+				ip.handleAction(player);
 			} catch (CheckersException e) {
 				MiscUtil.errorMessage(player, e.getMessage());
-				ip.cancelAction();
+				ip.cancelAction(player);
 			}
 		}
 	}
@@ -186,8 +187,8 @@ public class PlayerListener extends CheckersBaseListener {
 			return;
 		}
 		CheckersPlayer cp = game.getPlayerToMove();
-		if (!cp.getName().equals(player.getName())) {
-			if (game.hasPlayer(player.getName())) {
+		if (!cp.getId().equals(player.getUniqueId().toString())) {
+			if (game.hasPlayer(player)) {
 				MiscUtil.errorMessage(player, Messages.getString("Game.notYourTurn"));
 			} else {
 				MiscUtil.errorMessage(player, Messages.getString("Game.notInGame"));
@@ -195,7 +196,7 @@ public class PlayerListener extends CheckersBaseListener {
 			return;
 		}
 
-		CheckersGameManager.getManager().setCurrentGame(player.getName(), game);
+		CheckersGameManager.getManager().setCurrentGame(player, game);
 		RowCol clickedSquare = bv.getSquareAt(loc);
 		if (bv.getBoard().getSelectedSquare() != null) {
 			if (clickedSquare.equals(bv.getBoard().getSelectedSquare())) {
@@ -223,7 +224,7 @@ public class PlayerListener extends CheckersBaseListener {
 		if (game != null && selectedSquare != null && !selectedSquare.equals(clickedSquare)) {
 			// a square is selected; try to move that piece to the clicked square
 			tryMove(player, bv, clickedSquare);
-		} else if (game != null && game.getPlayerToMove().getName().equalsIgnoreCase(player.getName()) && colour == game.getPlayerToMove().getColour()) {
+		} else if (game != null && game.getPlayerToMove().getId().equals(player.getUniqueId().toString()) && colour == game.getPlayerToMove().getColour()) {
 			// clicking the square that a piece of our colour is on is equivalent to selecting the piece, if it's our move
 			pieceClicked(player, loc, bv);
 		} else if (player.isSneaking()) {
@@ -250,7 +251,7 @@ public class PlayerListener extends CheckersBaseListener {
 		RowCol fromSquare = bv.getBoard().getSelectedSquare();
 		CheckersGame game = bv.getGame();
 		CheckersPlayer cp = game.getPlayerToMove();
-		game.doMove(player.getName(), fromSquare, toSquare);
+		game.doMove(player.getUniqueId().toString(), fromSquare, toSquare);
 		int size = bv.getBoard().getSize();
 		MiscUtil.statusMessage(player, Messages.getString("Game.youPlayed", fromSquare.toCheckersNotation(size), toSquare.toCheckersNotation(size)));
 		if (game.getState() != GameState.FINISHED) {
@@ -290,9 +291,9 @@ public class PlayerListener extends CheckersBaseListener {
 	}
 
 	private long lastAnimationEvent(Player player) {
-		if (!lastAnimation.containsKey(player.getName())) {
-			lastAnimation.put(player.getName(), 0L);
+		if (!lastAnimation.containsKey(player.getUniqueId())) {
+			lastAnimation.put(player.getUniqueId(), 0L);
 		}
-		return lastAnimation.get(player.getName());
+		return lastAnimation.get(player.getUniqueId());
 	}
 }

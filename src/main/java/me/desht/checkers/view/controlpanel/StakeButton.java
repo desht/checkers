@@ -26,7 +26,7 @@ public class StakeButton extends AbstractSignButton {
 			stakeIncr = -stakeIncr;
 		}
 
-		getGame().adjustStake(event.getPlayer().getName(), stakeIncr);
+		getGame().adjustStake(event.getPlayer().getUniqueId().toString(), event.getPlayer().getName(), stakeIncr);
 	}
 
 	@Override

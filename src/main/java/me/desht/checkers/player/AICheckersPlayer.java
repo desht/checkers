@@ -21,10 +21,10 @@ public class AICheckersPlayer extends CheckersPlayer {
 
 	private final CheckersAI ai;
 
-	public AICheckersPlayer(String name, CheckersGame game, PlayerColour colour) {
-		super(name, game, colour);
+	public AICheckersPlayer(String id, String displayName, CheckersGame game, PlayerColour colour) {
+		super(id, displayName, game, colour);
 
-		ai = CheckersPlugin.getInstance().getAIFactory().getNewAI(name, game, colour);
+		ai = CheckersPlugin.getInstance().getAIFactory().getNewAI(id, game, colour);
 	}
 
 	@Override
@@ -108,9 +108,9 @@ public class AICheckersPlayer extends CheckersPlayer {
 
 	@Override
 	public double getPayoutMultiplier() {
-		AIDefinition aiDef = CheckersPlugin.getInstance().getAIFactory().getAIDefinition(getName());
+		AIDefinition aiDef = CheckersPlugin.getInstance().getAIFactory().getAIDefinition(getId());
 		if (aiDef == null) {
-			LogUtils.warning("can't find AI definition for " + getName());
+			LogUtils.warning("can't find AI definition for " + getId());
 			return 2.0;
 		} else {
 			return 1.0 + aiDef.getPayoutMultiplier();
@@ -147,7 +147,7 @@ public class AICheckersPlayer extends CheckersPlayer {
 			// this will happen if the AI caught an exception and its state can't be guaranteed anymore
 			try {
 				if (CheckersPlugin.getInstance().getConfig().getBoolean("ai.lose_on_fail", false)) {
-					game.forfeit(getName());
+					game.forfeit(getId());
 				} else {
 					game.drawn(GameResult.ABANDONED);
 				}
@@ -164,7 +164,7 @@ public class AICheckersPlayer extends CheckersPlayer {
 					RowCol to = ai.getPendingTo();
 					try {
 						PlayerColour toMove = game.getPosition().getToMove();
-						game.doMove(getName(), from, to);
+						game.doMove(getId(), from, to);
 						if (game.getState() != GameState.FINISHED) {
 							if (toMove == game.getPosition().getToMove()) {
 								// still this player to move - must be a chained jump
@@ -182,28 +182,28 @@ public class AICheckersPlayer extends CheckersPlayer {
 					}
 					break;
 				case DRAW_OFFERED:
-					game.offerDraw(getName());
+					game.offerDraw(getId());
 					break;
 				case DRAW_ACCEPTED:
 					if (otherPlayer != null) {
-						otherPlayer.alert(Messages.getString("Offers.drawOfferAccepted", getName()));
+						otherPlayer.alert(Messages.getString("Offers.drawOfferAccepted", getId()));
 					}
 					game.drawn(GameResult.DRAW_AGREED);
 					break;
 				case DRAW_DECLINED:
 					if (otherPlayer != null) {
-						otherPlayer.alert(Messages.getString("Offers.drawOfferDeclined", getName()));
+						otherPlayer.alert(Messages.getString("Offers.drawOfferDeclined", getId()));
 					}
 					break;
 				case UNDO_ACCEPTED:
 					if (otherPlayer != null) {
-						otherPlayer.alert(Messages.getString("Offers.undoOfferAccepted", getName()));
+						otherPlayer.alert(Messages.getString("Offers.undoOfferAccepted", getId()));
 					}
-					game.undoMove(otherPlayer.getName());
+					game.undoMove(otherPlayer.getId());
 					break;
 				case UNDO_DECLINED:
 					if (otherPlayer != null) {
-						otherPlayer.alert(Messages.getString("Offers.undoOfferDeclined", getName()));
+						otherPlayer.alert(Messages.getString("Offers.undoOfferDeclined", getId()));
 					}
 					break;
 				default:

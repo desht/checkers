@@ -162,7 +162,7 @@ public class ProtectionListener extends CheckersBaseListener {
 
 	/**
 	 * Cancelling liquid flow events makes it possible to use water & lava for walls & pieces.
-	 * 
+	 *
 	 * @param event
 	 */
 	@EventHandler(ignoreCancelled = true)
@@ -177,7 +177,7 @@ public class ProtectionListener extends CheckersBaseListener {
 	/**
 	 * Snow doesn't usually form on boards due to the high light level.  But if the light level
 	 * is dimmed, we might see boards getting covered.
-	 * 
+	 *
 	 * @param event
 	 */
 	@EventHandler(ignoreCancelled = true)
@@ -299,7 +299,7 @@ public class ProtectionListener extends CheckersBaseListener {
 
 	/**
 	 * Safely displace a player out of the way so they are not entombed by a piece
-	 * 
+	 *
 	 * @param event	The suffocation event that triggered this
 	 */
 	private void displacePlayerSafely(EntityDamageEvent event) {
@@ -310,7 +310,7 @@ public class ProtectionListener extends CheckersBaseListener {
 		int n = 0;
 		do {
 			loc.add(0, 0, -1); // east
-		} while (loc.getBlock().getTypeId() != 0 && loc.getBlock().getRelative(BlockFace.UP).getTypeId() != 0
+		} while (loc.getBlock().getType() != Material.AIR && loc.getBlock().getRelative(BlockFace.UP).getType() != Material.AIR
 				&& n < MAX_DIST);
 		if (n >= MAX_DIST) {
 			MiscUtil.errorMessage(p, Messages.getString("Misc.goingToSpawn"));

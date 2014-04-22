@@ -15,7 +15,7 @@ public class InviteAnyoneButton extends AbstractSignButton {
 	public void execute(PlayerInteractEvent event) {
 		CheckersGame game = getGame();
 		if (game != null) {
-			game.inviteOpen(event.getPlayer().getName());
+			game.inviteOpen(event.getPlayer());
 		}
 	}
 

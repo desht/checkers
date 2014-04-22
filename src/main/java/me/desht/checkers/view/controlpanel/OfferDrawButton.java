@@ -15,7 +15,7 @@ public class OfferDrawButton extends AbstractSignButton {
 	public void execute(PlayerInteractEvent event) {
 		CheckersGame game = getGame();
 		if (game != null) {
-			game.offerDraw(event.getPlayer().getName());
+			game.offerDraw(event.getPlayer().getUniqueId().toString());
 			getPanel().repaintControls();
 		}
 	}

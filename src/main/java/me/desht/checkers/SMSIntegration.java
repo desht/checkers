@@ -9,10 +9,7 @@ import me.desht.checkers.view.BoardView;
 import me.desht.checkers.view.BoardViewManager;
 import me.desht.dhutils.LogUtils;
 import me.desht.dhutils.MiscUtil;
-import me.desht.scrollingmenusign.SMSException;
-import me.desht.scrollingmenusign.SMSHandler;
-import me.desht.scrollingmenusign.SMSMenu;
-import me.desht.scrollingmenusign.ScrollingMenuSign;
+import me.desht.scrollingmenusign.*;
 import me.desht.scrollingmenusign.enums.SMSMenuAction;
 
 import org.bukkit.Bukkit;
@@ -107,7 +104,7 @@ public class SMSIntegration implements Listener {
 	private void createMenu(String name, String title) {
 		SMSMenu menu;
 		if (!smsHandler.checkMenu(name)) {
-			menu = smsHandler.createMenu(name, title, "*Checkers");
+			menu = smsHandler.createMenu(name, title, CheckersPlugin.getInstance());
 			menu.setAutosort(true);
 		} else {
 			try {
@@ -126,7 +123,7 @@ public class SMSIntegration implements Listener {
 		if (smsHandler.checkMenu(menuName)) {
 			try {
 				SMSMenu menu = smsHandler.getMenu(menuName);
-				menu.addItem(label, command, "");
+				menu.addItem(new SMSMenuItem(menu, label, command, ""));
 				menu.notifyObservers(SMSMenuAction.REPAINT);
 			} catch (SMSException e) {
 				// shouldn't get here

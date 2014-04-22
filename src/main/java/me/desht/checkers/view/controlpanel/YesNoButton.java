@@ -53,17 +53,17 @@ public abstract class YesNoButton extends AbstractSignButton {
 		if (player == null || !player.isHuman())
 			return "";
 
-		Player p = Bukkit.getPlayer(player.getName());
+		Player p = Bukkit.getPlayer(player.getId());
 
 		ResponseHandler rh = CheckersPlugin.getInstance().getResponseHandler();
 		if (p == null) {
 			// gone offline, perhaps?
 			return "";
-		} else if (rh.isExpecting(p.getName(), DrawResponse.class)) {
-			return Messages.getString("ControlPanel.acceptDrawBtn"); 
-		} else if (rh.isExpecting(p.getName(), SwapResponse.class)) {
+		} else if (rh.isExpecting(p, DrawResponse.class)) {
+			return Messages.getString("ControlPanel.acceptDrawBtn");
+		} else if (rh.isExpecting(p, SwapResponse.class)) {
 			return Messages.getString("ControlPanel.acceptSwapBtn");
-		} else if (rh.isExpecting(p.getName(), UndoResponse.class)) {
+		} else if (rh.isExpecting(p, UndoResponse.class)) {
 			return Messages.getString("ControlPanel.acceptUndoBtn");
 		} else {
 			return "";

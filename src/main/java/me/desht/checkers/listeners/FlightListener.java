@@ -1,11 +1,5 @@
 package me.desht.checkers.listeners;
 
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import me.desht.checkers.CheckersPlugin;
 import me.desht.checkers.Messages;
 import me.desht.checkers.event.CheckersBoardCreatedEvent;
@@ -14,13 +8,11 @@ import me.desht.checkers.event.CheckersBoardModifiedEvent;
 import me.desht.checkers.view.BoardView;
 import me.desht.checkers.view.BoardViewManager;
 import me.desht.dhutils.Debugger;
-import me.desht.dhutils.LogUtils;
 import me.desht.dhutils.MiscUtil;
 import me.desht.dhutils.block.BlockType;
 import me.desht.dhutils.block.MaterialWithData;
 import me.desht.dhutils.cuboid.Cuboid;
 import me.desht.dhutils.cuboid.Cuboid.CuboidDirection;
-
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -28,13 +20,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.block.Action;
-import org.bukkit.event.player.PlayerGameModeChangeEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.util.Vector;
+
+import java.lang.ref.WeakReference;
+import java.util.*;
 
 public class FlightListener extends CheckersBaseListener {
 
@@ -43,14 +33,14 @@ public class FlightListener extends CheckersBaseListener {
 
 	// notes if the player is currently allowed to fly due to being on/near a board
 	// maps the player name to the previous flight speed for the player
-	private final Map<String,PreviousSpeed> allowedToFly = new HashMap<String,PreviousSpeed>();
+	private final Map<UUID,PreviousSpeed> allowedToFly = new HashMap<UUID,PreviousSpeed>();
 	// cache of the regions in which board flight is allowed
 	private final List<Cuboid> flightRegions = new ArrayList<Cuboid>();
 	// notes when a player was last messaged about flight, to reduce spam
-	private final Map<String,Long> lastMessagedIn = new HashMap<String,Long>();
-	private final Map<String,Long> lastMessagedOut = new HashMap<String,Long>();
+	private final Map<UUID,Long> lastMessagedIn = new HashMap<UUID,Long>();
+	private final Map<UUID,Long> lastMessagedOut = new HashMap<UUID,Long>();
 	// notes when player was last bounced back while flying
-	private final Map<String,Long> lastBounce = new HashMap<String, Long>();
+	private final Map<UUID,Long> lastBounce = new HashMap<UUID, Long>();
 
 	private boolean enabled;
 	private boolean captive;
@@ -74,12 +64,12 @@ public class FlightListener extends CheckersBaseListener {
 				setFlightAllowed(player, getFlightRegion(player.getLocation()) != null);
 			}
 		} else {
-			for (String playerName : allowedToFly.keySet()) {
-				Player player = Bukkit.getPlayerExact(playerName);
+			for (UUID playerId : allowedToFly.keySet()) {
+				Player player = Bukkit.getPlayer(playerId);
 				if (player != null) {
 					player.setAllowFlight(gameModeAllowsFlight(player));
 					// restore previous flight/walk speed
-					allowedToFly.get(playerName).restoreSpeeds();
+					allowedToFly.get(playerId).restoreSpeeds();
 					MiscUtil.alertMessage(player, Messages.getString("Flight.flightDisabledByAdmin"));
 				}
 			}
@@ -111,10 +101,10 @@ public class FlightListener extends CheckersBaseListener {
 
 	@EventHandler(ignoreCancelled = true)
 	public void onPlayerLeft(PlayerQuitEvent event) {
-		String playerName = event.getPlayer().getName();
-		if (allowedToFly.containsKey(playerName)) {
-			allowedToFly.get(playerName).restoreSpeeds();
-			allowedToFly.remove(playerName);
+		UUID playerId = event.getPlayer().getUniqueId();
+		if (allowedToFly.containsKey(playerId)) {
+			allowedToFly.get(playerId).restoreSpeeds();
+			allowedToFly.remove(playerId);
 		}
 	}
 
@@ -122,7 +112,7 @@ public class FlightListener extends CheckersBaseListener {
 	public void onGameModeChange(PlayerGameModeChangeEvent event) {
 		final Player player = event.getPlayer();
 		final boolean isFlying = player.isFlying();
-		if (event.getNewGameMode() != GameMode.CREATIVE && allowedToFly.containsKey(player.getName())) {
+		if (event.getNewGameMode() != GameMode.CREATIVE && allowedToFly.containsKey(player.getUniqueId())) {
 			// If switching away from creative mode and on/near a board, allow flight to continue.
 			// Seems a delayed task is needed here - calling setAllowFlight() directly from the event handler
 			// leaves getAllowFlight() returning true, but the player is still not allowed to fly.  (CraftBukkit bug?)
@@ -151,7 +141,7 @@ public class FlightListener extends CheckersBaseListener {
 		}
 
 		Player player = event.getPlayer();
-		boolean flyingNow = allowedToFly.containsKey(player.getName()) && player.isFlying();
+		boolean flyingNow = allowedToFly.containsKey(player.getUniqueId()) && player.isFlying();
 		boolean boardFlightAllowed = getFlightRegion(to) != null;
 		boolean otherFlightAllowed = gameModeAllowsFlight(player);
 
@@ -160,7 +150,7 @@ public class FlightListener extends CheckersBaseListener {
 			// captive mode - if flying, prevent movement too far from a board by bouncing the
 			// player towards the centre of the board they're trying to leave
 			if (flyingNow && !boardFlightAllowed && !otherFlightAllowed) {
-				Long last = lastBounce.get(player.getName());
+				Long last = lastBounce.get(player.getUniqueId());
 				if (last == null) last = 0L;
 				if (System.currentTimeMillis() - last > BOUNCE_COOLDOWN) {
 					event.setCancelled(true);
@@ -168,7 +158,7 @@ public class FlightListener extends CheckersBaseListener {
 					Location origin = c == null ? from : c.getCenter().subtract(0, c.getSizeY(), 0);
 					Vector vec = origin.toVector().subtract(to.toVector()).normalize();
 					player.setVelocity(vec);
-					lastBounce.put(player.getName(), System.currentTimeMillis());
+					lastBounce.put(player.getUniqueId(), System.currentTimeMillis());
 				}
 			} else {
 				setFlightAllowed(player, boardFlightAllowed);
@@ -215,7 +205,7 @@ public class FlightListener extends CheckersBaseListener {
 	@EventHandler(priority = EventPriority.LOWEST)
 	public void onFlyingInteraction(PlayerInteractEvent event) {
 		Player player = event.getPlayer();
-		if (allowedToFly.containsKey(player.getName()) && !gameModeAllowsFlight(player) && player.isFlying()) {
+		if (allowedToFly.containsKey(player.getUniqueId()) && !gameModeAllowsFlight(player) && player.isFlying()) {
 			if (event.getAction() == Action.LEFT_CLICK_BLOCK || event.getAction() == Action.RIGHT_CLICK_BLOCK) {
 				if (BoardViewManager.getManager().partOfBoard(event.getClickedBlock().getLocation(), 0) == null) {
 					MiscUtil.errorMessage(player, Messages.getString("Flight.interactionStopped"));
@@ -281,25 +271,24 @@ public class FlightListener extends CheckersBaseListener {
 	 * Mark the player as being allowed to fly or not.  If the player was previously allowed to fly by
 	 * virtue of creative mode, he can continue to fly even if board flying is being disabled.
 	 *
-	 * @param player
-	 * @param flying
+	 * @param player the player
+	 * @param flying true if allowed to fly, false otherwise
 	 */
 	private void setFlightAllowed(final Player player, boolean flying) {
-		String playerName = player.getName();
-
-		boolean currentlyAllowed = allowedToFly.containsKey(playerName);
+		UUID playerId = player.getUniqueId();
+		boolean currentlyAllowed = allowedToFly.containsKey(playerId);
 
 		if (flying && currentlyAllowed || !flying && !currentlyAllowed)
 			return;
 
-		Debugger.getInstance().debug("set board flight allowed " + player.getName() + " = " + flying);
+		Debugger.getInstance().debug("set board flight allowed " + player.getDisplayName() + " = " + flying);
 
 		player.setAllowFlight(flying || gameModeAllowsFlight(player));
 
 		long now = System.currentTimeMillis();
 
 		if (flying) {
-			allowedToFly.put(playerName, new PreviousSpeed(player));
+			allowedToFly.put(playerId, new PreviousSpeed(player));
 			player.setFlySpeed((float) plugin.getConfig().getDouble("flying.fly_speed"));
 			player.setWalkSpeed((float) plugin.getConfig().getDouble("flying.walk_speed"));
 			if (plugin.getConfig().getBoolean("flying.auto")) {
@@ -315,18 +304,18 @@ public class FlightListener extends CheckersBaseListener {
 					}
 				});
 			}
-			long last = lastMessagedIn.containsKey(playerName) ? lastMessagedIn.get(playerName) : 0;
+			long last = lastMessagedIn.containsKey(playerId) ? lastMessagedIn.get(playerId) : 0;
 			if (now - last > MESSAGE_COOLDOWN  && player.getGameMode() != GameMode.CREATIVE) {
 				MiscUtil.alertMessage(player, Messages.getString("Flight.flightEnabled"));
-				lastMessagedIn.put(playerName, System.currentTimeMillis());
+				lastMessagedIn.put(playerId, System.currentTimeMillis());
 			}
 		} else {
-			allowedToFly.get(playerName).restoreSpeeds();
-			allowedToFly.remove(playerName);
-			long last = lastMessagedOut.containsKey(playerName) ? lastMessagedOut.get(playerName) : 0;
+			allowedToFly.get(playerId).restoreSpeeds();
+			allowedToFly.remove(playerId);
+			long last = lastMessagedOut.containsKey(playerId) ? lastMessagedOut.get(playerId) : 0;
 			if (now - last > MESSAGE_COOLDOWN && player.getGameMode() != GameMode.CREATIVE) {
 				MiscUtil.alertMessage(player, Messages.getString("Flight.flightDisabled"));
-				lastMessagedOut.put(playerName, System.currentTimeMillis());
+				lastMessagedOut.put(playerId, System.currentTimeMillis());
 			}
 		}
 
@@ -349,8 +338,8 @@ public class FlightListener extends CheckersBaseListener {
 	 * the fly/walk speeds are changed in config.
 	 */
 	public void updateSpeeds() {
-		for (String playerName : allowedToFly.keySet()) {
-			Player player = Bukkit.getPlayerExact(playerName);
+		for (UUID playerId : allowedToFly.keySet()) {
+			Player player = Bukkit.getPlayer(playerId);
 			if (player != null) {
 				player.setFlySpeed((float) plugin.getConfig().getDouble("flying.fly_speed"));
 				player.setWalkSpeed((float) plugin.getConfig().getDouble("flying.walk_speed"));
@@ -363,10 +352,10 @@ public class FlightListener extends CheckersBaseListener {
 	 * plugin is disabled.
 	 */
 	public void restoreSpeeds() {
-		for (String playerName : allowedToFly.keySet()) {
-			Player player = Bukkit.getPlayerExact(playerName);
+		for (UUID playerId : allowedToFly.keySet()) {
+			Player player = Bukkit.getPlayer(playerId);
 			if (player != null) {
-				allowedToFly.get(playerName).restoreSpeeds();
+				allowedToFly.get(playerId).restoreSpeeds();
 			}
 		}
 	}
@@ -380,7 +369,7 @@ public class FlightListener extends CheckersBaseListener {
 			player = new WeakReference<Player>(p);
 			flySpeed = p.getFlySpeed();
 			walkSpeed = p.getWalkSpeed();
-			Debugger.getInstance().debug("player " + p.getName() + ": store previous speed: walk=" + walkSpeed + " fly=" + flySpeed);
+			Debugger.getInstance().debug("player " + p.getDisplayName() + ": store previous speed: walk=" + walkSpeed + " fly=" + flySpeed);
 		}
 
 		public void restoreSpeeds() {
@@ -389,7 +378,7 @@ public class FlightListener extends CheckersBaseListener {
 				return;
 			p.setFlySpeed(flySpeed);
 			p.setWalkSpeed(walkSpeed);
-			Debugger.getInstance().debug("player " + p.getName() + " restore previous speed: walk=" + walkSpeed + " fly=" + flySpeed);
+			Debugger.getInstance().debug("player " + p.getDisplayName() + " restore previous speed: walk=" + walkSpeed + " fly=" + flySpeed);
 		}
 	}
 }

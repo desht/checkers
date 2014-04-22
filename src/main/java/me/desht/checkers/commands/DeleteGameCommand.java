@@ -9,6 +9,7 @@ import me.desht.dhutils.MiscUtil;
 import me.desht.dhutils.PermissionUtils;
 
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
 public class DeleteGameCommand extends AbstractCheckersCommand {
@@ -25,7 +26,7 @@ public class DeleteGameCommand extends AbstractCheckersCommand {
 		gameName = game.getName();
 
 		// bypass permission check if player is deleting their own game and it's still in setup phase
-		if (!game.playerAllowedToDelete(sender.getName())) {
+		if (!(sender instanceof Player) || !game.playerAllowedToDelete((Player) sender)) {
 			PermissionUtils.requirePerms(sender, "checkers.commands.delete.game");
 		}
 

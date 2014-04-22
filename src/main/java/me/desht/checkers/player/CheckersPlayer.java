@@ -7,13 +7,15 @@ import me.desht.checkers.view.BoardView;
 import org.bukkit.Location;
 
 public abstract class CheckersPlayer {
-	private final String name;
+	private final String id;
+	private final String displayName;
 	private final CheckersGame game;
 
 	private PlayerColour colour;
 
-	protected CheckersPlayer(String name, CheckersGame game, PlayerColour colour) {
-		this.name = name;
+	protected CheckersPlayer(String id, String displayName, CheckersGame game, PlayerColour colour) {
+		this.id = id;
+		this.displayName = displayName;
 		this.game = game;
 		this.colour = colour;
 	}
@@ -33,14 +35,21 @@ public abstract class CheckersPlayer {
 	}
 
 	/**
-	 * @return the name
+	 * Get the internal ID for this player.
+	 *
+	 * @return the player ID
 	 */
-	public String getName() {
-		return name;
+	public String getId() {
+		return id;
 	}
 
+	/**
+	 * Get the friendly display name for this player
+	 *
+	 * @return the player's display name
+	 */
 	public String getDisplayName() {
-		return name;
+		return displayName;
 	}
 
 	/**

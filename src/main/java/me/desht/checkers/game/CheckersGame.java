@@ -42,8 +42,6 @@ public class CheckersGame implements CheckersPersistable {
 		SETTING_UP, RUNNING, FINISHED,
 	}
 
-	public static final String OPEN_INVITATION = "*";
-
 	private final List<GameListener> listeners = new ArrayList<GameListener>();
 
 	private final String gameName;
@@ -52,7 +50,8 @@ public class CheckersGame implements CheckersPersistable {
 	private final long created;
 
 	private GameState state;
-	private String invited;
+	private UUID invitedId;
+	private boolean openInvite;
 	private double stake;
 	private long started, finished, lastMoved;
 	private GameResult result;
@@ -60,16 +59,17 @@ public class CheckersGame implements CheckersPersistable {
 	private PlayerColour winner = PlayerColour.NONE;
 	private final TwoPlayerClock clock;
 
-	public CheckersGame(String gameName, String creatorName, PlayerColour colour, String tcSpec, String ruleId) {
+	public CheckersGame(String gameName, Player creator, PlayerColour colour, String tcSpec, String ruleId) {
 		this.gameName = gameName;
 		this.position = new SimplePosition(ruleId);
 		this.state = GameState.SETTING_UP;
-		this.invited = "";
+		this.invitedId = null;
+		this.openInvite = false;
 		this.stake = 0.0;
 		this.created = System.currentTimeMillis();
 		this.result = GameResult.NOT_FINISHED;
-		if (creatorName != null) {
-			players[colour.getIndex()] = createPlayer(colour, creatorName);
+		if (creator != null) {
+			players[colour.getIndex()] = createPlayer(colour, creator.getUniqueId().toString(), creator.getDisplayName());
 		}
 		this.clock = new TwoPlayerClock(tcSpec);
 	}
@@ -82,7 +82,9 @@ public class CheckersGame implements CheckersPersistable {
 		}
 		this.position = new SimplePosition(rules);
 		this.state = GameState.valueOf(conf.getString("state"));
-		this.invited = conf.getString("invited");
+		String invited = conf.getString("invited");
+		this.invitedId = invited.isEmpty() ? null : UUID.fromString(conf.getString("invited"));
+		this.openInvite = conf.getBoolean("openInvite", false);
 		this.created = conf.getLong("created");
 		this.started = conf.getLong("started");
 		this.finished = conf.getLong("finished", state == GameState.FINISHED ? System.currentTimeMillis() : 0);
@@ -91,8 +93,10 @@ public class CheckersGame implements CheckersPersistable {
 		this.stake = conf.getDouble("stake");
 		this.clock = (TwoPlayerClock) conf.get("clock");
 
-		players[PlayerColour.WHITE.getIndex()] = createPlayer(PlayerColour.WHITE, conf.getString("playerWhite"));
-		players[PlayerColour.BLACK.getIndex()] = createPlayer(PlayerColour.BLACK, conf.getString("playerBlack"));
+		String dispW = conf.getString("playerWhiteDisp", "?white?");
+		String dispB = conf.getString("playerBlackDisp", "?black?");
+		players[PlayerColour.WHITE.getIndex()] = createPlayer(PlayerColour.WHITE, conf.getString("playerWhite"), dispW);
+		players[PlayerColour.BLACK.getIndex()] = createPlayer(PlayerColour.BLACK, conf.getString("playerBlack"), dispB);
 
 		int saveVersion = conf.getInt("version", 1);
 		// replay the saved move history
@@ -109,17 +113,17 @@ public class CheckersGame implements CheckersPersistable {
 		}
 	}
 
-	private CheckersPlayer createPlayer(PlayerColour colour, String playerName) {
-		if (playerName == null) {
+	private CheckersPlayer createPlayer(PlayerColour colour, String playerId, String displayName) {
+		if (playerId == null) {
 			String aiName = CheckersPlugin.getInstance().getAIFactory().getFreeAIName();
-			return new AICheckersPlayer(aiName, this, colour);
-		} else if (CheckersAI.isAIPlayer(playerName)) {
-			return new AICheckersPlayer(playerName, this, colour);
-		} else if (playerName.isEmpty()) {
+			return new AICheckersPlayer(aiName, displayName, this, colour);
+		} else if (CheckersAI.isAIPlayer(playerId)) {
+			return new AICheckersPlayer(playerId, displayName, this, colour);
+		} else if (playerId.isEmpty()) {
 			// no player for this slot yet
 			return null;
 		} else {
-			return new HumanCheckersPlayer(playerName, this, colour);
+			return new HumanCheckersPlayer(playerId, displayName, this, colour);
 		}
 	}
 
@@ -137,10 +141,12 @@ public class CheckersGame implements CheckersPersistable {
 			encoded.add(move.encode());
 		}
 		map.put("name", getName());
-		map.put("playerWhite", getPlayerName(PlayerColour.WHITE));
-		map.put("playerBlack", getPlayerName(PlayerColour.BLACK));
+		map.put("playerWhite", getPlayerId(PlayerColour.WHITE));
+		map.put("playerBlack", getPlayerId(PlayerColour.BLACK));
+		map.put("playerWhiteDisp", getPlayerDisplayName(PlayerColour.WHITE));
+		map.put("playerBlackDisp", getPlayerDisplayName(PlayerColour.BLACK));
 		map.put("state", state.toString());
-		map.put("invited", getInvited());
+		map.put("invited", getInvitedId() == null ? "" : getInvitedId().toString());
 		map.put("moves", encoded);
 		map.put("created", created);
 		map.put("started", started);
@@ -187,22 +193,26 @@ public class CheckersGame implements CheckersPersistable {
 		return position;
 	}
 
+	public boolean isOpenInvite() {
+		return openInvite;
+	}
+
 	public boolean hasPlayer(PlayerColour colour) {
 		return players[colour.getIndex()] != null;
 	}
 
-	public boolean hasPlayer(String playerName) {
-		return getPlayer(playerName) != null;
+	public boolean hasPlayer(Player player) {
+		return getPlayer(player.getUniqueId().toString()) != null;
 	}
 
 	public CheckersPlayer getPlayer(PlayerColour colour) {
 		return players[colour.getIndex()];
 	}
 
-	public CheckersPlayer getPlayer(String playerName) {
-		if (playerName.equalsIgnoreCase(getPlayerName(PlayerColour.WHITE))) {
+	public CheckersPlayer getPlayer(String playerId) {
+		if (playerId.equals(getPlayerId(PlayerColour.WHITE))) {
 			return getPlayer(PlayerColour.WHITE);
-		} else if (playerName.equalsIgnoreCase(getPlayerName(PlayerColour.BLACK))) {
+		} else if (playerId.equals(getPlayerId(PlayerColour.BLACK))) {
 			return getPlayer(PlayerColour.BLACK);
 		} else {
 			return null;
@@ -213,8 +223,12 @@ public class CheckersGame implements CheckersPersistable {
 		return players[getPosition().getToMove().getIndex()];
 	}
 
-	public String getPlayerName(PlayerColour colour) {
-		return players[colour.getIndex()] != null ? players[colour.getIndex()].getName() : "";
+	public String getPlayerId(PlayerColour colour) {
+		return players[colour.getIndex()] != null ? players[colour.getIndex()].getId() : "";
+	}
+
+	private String getPlayerDisplayName(PlayerColour colour) {
+		return players[colour.getIndex()] != null ? players[colour.getIndex()].getDisplayName() : "";
 	}
 
 	public boolean isFull() {
@@ -283,8 +297,8 @@ public class CheckersGame implements CheckersPersistable {
 		}
 	}
 
-	public String getInvited() {
-		return invited;
+	public UUID getInvitedId() {
+		return invitedId;
 	}
 
 	public void alert(Player player, String message) {
@@ -295,13 +309,13 @@ public class CheckersGame implements CheckersPersistable {
 		if (hasPlayer(PlayerColour.WHITE)) {
 			getPlayer(PlayerColour.WHITE).alert(message);
 		}
-		if (hasPlayer(PlayerColour.BLACK) && !getPlayerName(PlayerColour.WHITE).equals(getPlayerName(PlayerColour.BLACK))) {
+		if (hasPlayer(PlayerColour.BLACK) && !getPlayerId(PlayerColour.WHITE).equals(getPlayerId(PlayerColour.BLACK))) {
 			getPlayer(PlayerColour.BLACK).alert(message);
 		}
 	}
 
-	public void alert(String playerName, String message) {
-		Player player = Bukkit.getPlayerExact(playerName);
+	public void alert(UUID playerId, String message) {
+		Player player = Bukkit.getPlayer(playerId);
 		if (player != null) {
 			alert(player, message);
 		}
@@ -348,10 +362,10 @@ public class CheckersGame implements CheckersPersistable {
 		if (getState() == GameState.RUNNING) {
 			res.add(bullet + Messages.getString("Game.gameDetail.clock", clock.getClockString(PlayerColour.BLACK), clock.getClockString(PlayerColour.WHITE)));
 		}
-		if (getInvited().equals(OPEN_INVITATION)) {
+		if (openInvite) {
 			res.add(bullet + Messages.getString("Game.gameDetail.openInvitation"));
-		} else if (!getInvited().isEmpty()) {
-			res.add(bullet + Messages.getString("Game.gameDetail.invitation", getInvited()));
+		} else if (getInvitedId() != null) {
+			res.add(bullet + Messages.getString("Game.gameDetail.invitation", getInvitedId().toString()));
 		}
 		if (getPosition().getMoveHistory().length > 0) {
 			res.add(Messages.getString("Game.gameDetail.moveHistory"));
@@ -403,59 +417,62 @@ public class CheckersGame implements CheckersPersistable {
 		listeners.add(listener);
 	}
 
-	public boolean playerAllowedToDelete(String playerName) {
-		return getState() == GameState.SETTING_UP && hasPlayer(playerName);
+	public boolean playerAllowedToDelete(Player player) {
+		return getState() == GameState.SETTING_UP && hasPlayer(player);
 	}
 
-	public void invitePlayer(String inviterName, String inviteeName) {
-		inviteSanityCheck(inviterName);
+	public void invitePlayer(Player inviter, String inviteeName) {
+		inviteSanityCheck(inviter.getUniqueId().toString());
 
 		if (inviteeName == null) {
-			inviteOpen(inviterName);
+			inviteOpen(inviter);
 			return;
 		}
 
-		Player player = Bukkit.getServer().getPlayer(inviteeName);
-		if (player != null) {
-			inviteeName = player.getName();
-			alert(player, Messages.getString("Game.youAreInvited", inviterName));
+		// Getting player by name is actually OK here - we don't want players to have to type
+		// player UUID's just to invite them!
+		@SuppressWarnings("deprecation") Player invitee = Bukkit.getServer().getPlayer(inviteeName);
+		if (invitee != null) {
+			alert(invitee, Messages.getString("Game.youAreInvited", inviter.getDisplayName()));
 			if (getStake() > 0.0) {
-				alert(player, Messages.getString("Game.gameHasStake", CheckersUtils.formatStakeStr(getStake())));
+				alert(invitee, Messages.getString("Game.gameHasStake", CheckersUtils.formatStakeStr(getStake())));
 			}
-			alert(player, Messages.getString("Game.joinPrompt"));
-			if (!invited.isEmpty() && !invited.equals(inviteeName)) {
-				alert(invited, Messages.getString("Game.inviteWithdrawn"));
+			alert(invitee, Messages.getString("Game.joinPrompt"));
+			if (invitedId != null && !invitedId.equals(invitee.getUniqueId())) {
+				alert(invitedId, Messages.getString("Game.inviteWithdrawn"));
 			}
-			invited = inviteeName;
-			alert(inviterName, Messages.getString("Game.inviteSent", invited));
+			invitedId = invitee.getUniqueId();
+			openInvite = false;
+			alert(inviter, Messages.getString("Game.inviteSent", invitedId));
 		} else {
-			addPlayer(CheckersAI.AI_PREFIX + inviteeName);
+			addPlayer(CheckersAI.AI_PREFIX + inviteeName, CheckersAI.AI_PREFIX + inviteeName);
 		}
 		save();
 	}
 
-	public void inviteOpen(String inviterName) {
+	public void inviteOpen(Player inviter) {
 		long now = System.currentTimeMillis();
 		Duration cooldown = new Duration(CheckersPlugin.getInstance().getConfig().getString("open_invite_cooldown", "3 mins"));
 		long remaining = (cooldown.getTotalDuration() - (now - lastOpenInvite)) / 1000;
 		CheckersValidate.isTrue(remaining <= 0, Messages.getString("Game.inviteCooldown", remaining));
 
-		MiscUtil.broadcastMessage((Messages.getString("Game.openInviteCreated", inviterName)));
+		MiscUtil.broadcastMessage((Messages.getString("Game.openInviteCreated", inviter.getDisplayName())));
 		if (getStake() > 0.0) {
 			MiscUtil.broadcastMessage(Messages.getString("Game.gameHasStake", CheckersUtils.formatStakeStr(getStake())));
 		}
 		MiscUtil.broadcastMessage(Messages.getString("Game.joinPromptGlobal", getName()));
-		invited = OPEN_INVITATION;
+		openInvite = true;
 		lastOpenInvite = now;
 		save();
 	}
 
 	public void clearInvitation() {
-		invited = "";
+		invitedId = null;
+		openInvite = false;
 		save();
 	}
 
-	public void addPlayer(String playerName) {
+	public PlayerColour addPlayer(String playerId, String displayName) {
 		ensureGameInState(GameState.SETTING_UP);
 
 		if (isFull()) {
@@ -463,29 +480,31 @@ public class CheckersGame implements CheckersPersistable {
 			throw new CheckersException(Messages.getString("Game.gameIsFull"));
 		}
 
-		CheckersPlayer p = fillEmptyPlayerSlot(playerName);
+		CheckersPlayer p = fillEmptyPlayerSlot(playerId, displayName);
 		clearInvitation();
 		for (GameListener l : listeners) {
 			l.playerAdded(this, p);
 		}
 		if (isFull()) {
 			if (CheckersPlugin.getInstance().getConfig().getBoolean("autostart", true)) {
-				start(playerName);
+				start(playerId);
 			} else {
 				alert(Messages.getString("Game.startPrompt"));
 			}
 		}
+		return p.getColour();
 	}
 
-	public void start(String playerName) {
-		ensurePlayerInGame(playerName);
+	public void start(String playerId) {
+		ensurePlayerInGame(playerId);
 		ensureGameInState(GameState.SETTING_UP);
 
 		if (!isFull()) {
-			fillEmptyPlayerSlot(null);
+			// add a random AI player
+			fillEmptyPlayerSlot(null, null);
 		}
 
-		if (stake > 0.0 && !getPlayerName(PlayerColour.WHITE).equalsIgnoreCase(getPlayerName(PlayerColour.BLACK))) {
+		if (stake > 0.0 && !getPlayerId(PlayerColour.WHITE).equalsIgnoreCase(getPlayerId(PlayerColour.BLACK))) {
 			// just in case stake.max got adjusted after game creation...
 			double max = CheckersPlugin.getInstance().getConfig().getDouble("stake.max");
 			if (max >= 0 && stake > max) {
@@ -515,9 +534,9 @@ public class CheckersGame implements CheckersPersistable {
 		alert(Messages.getString("Game.rulesReminder"));
 	}
 
-	public void doMove(String playerName, RowCol fromSquare, RowCol toSquare) {
+	public void doMove(String playerId, RowCol fromSquare, RowCol toSquare) {
 		ensureGameInState(GameState.RUNNING);
-		ensurePlayerToMove(playerName);
+		ensurePlayerToMove(playerId);
 
 		Move move = new Move(fromSquare, toSquare);
 		PlayerColour prevToMove = getPosition().getToMove();
@@ -529,23 +548,21 @@ public class CheckersGame implements CheckersPersistable {
 		int hmcLimit = CheckersPlugin.getInstance().getConfig().getInt("max_moves_without_capture", 0);
 		if (getPosition().getLegalMoves().length == 0) {
 			// no legal moves, therefore the player currently to-play has just lost
-			setState(GameState.FINISHED);
 			gameOver(getPosition().getToMove().getOtherColour(), GameResult.WIN);
 		} else if (hmcLimit > 0 && getPosition().getHalfMoveClock() >= hmcLimit) {
-			setState(GameState.FINISHED);
 			gameOver(PlayerColour.NONE, GameResult.DRAW_FORCED);
 		}
 
 		save();
 	}
 
-	public void undoMove(String playerName) {
-		ensurePlayerInGame(playerName);
+	public void undoMove(String playerId) {
+		ensurePlayerInGame(playerId);
 		ensureGameInState(GameState.RUNNING);
 
 		if (getPosition().getMoveHistory().length == 0) return;
 
-		CheckersPlayer cp = getPlayer(playerName);
+		CheckersPlayer cp = getPlayer(playerId);
 		// if it's our move, need to undo two moves - first the other player's last move
 		// and then the our last move
 		getPosition().undoLastMove(getPosition().getToMove() == cp.getColour() ? 2 : 1);
@@ -555,26 +572,23 @@ public class CheckersGame implements CheckersPersistable {
 		alert(Messages.getString("Game.moveUndone", getPosition().getToMove().getDisplayColour()));
 	}
 
-	public void resign(String playerName) {
-		ensurePlayerInGame(playerName);
+	public void resign(String playerId) {
+		ensurePlayerInGame(playerId);
 		ensureGameInState(GameState.RUNNING);
 
-		CheckersPlayer loser = getPlayer(playerName);
-		setState(GameState.FINISHED);
+		CheckersPlayer loser = getPlayer(playerId);
 		gameOver(loser.getColour().getOtherColour(), GameResult.RESIGNED);
 	}
 
-	public void forfeit(String playerName) {
-		ensurePlayerInGame(playerName);
+	public void forfeit(String playerId) {
+		ensurePlayerInGame(playerId);
 		ensureGameInState(GameState.RUNNING);
 
-		CheckersPlayer loser = getPlayer(playerName);
-		setState(GameState.FINISHED);
+		CheckersPlayer loser = getPlayer(playerId);
 		gameOver(loser.getColour().getOtherColour(), GameResult.FORFEIT);
 	}
 
 	public void drawn(GameResult result) {
-		setState(GameState.FINISHED);
 		gameOver(PlayerColour.NONE, result);
 	}
 
@@ -602,20 +616,20 @@ public class CheckersGame implements CheckersPersistable {
 		}
 	}
 
-	public void setStake(String playerName, double newStake) {
+	public void setStake(String playerId, String playerEconomyName, double newStake) {
 		Economy economy = CheckersPlugin.getInstance().getEconomy();
 		if (economy == null || !economy.isEnabled()) {
 			return;
 		}
 
 		ensureGameInState(GameState.SETTING_UP);
-		ensurePlayerInGame(playerName);
+		ensurePlayerInGame(playerId);
 
 		if (newStake < 0.0) {
 			throw new CheckersException(Messages.getString("Game.noNegativeStakes"));
 		}
 
-		if (!economy.has(playerName, newStake)) {
+		if (!economy.has(playerEconomyName, newStake)) {
 			throw new CheckersException(Messages.getString("Game.cantAffordStake"));
 		}
 
@@ -639,7 +653,7 @@ public class CheckersGame implements CheckersPersistable {
 		}
 	}
 
-	public void adjustStake(String playerName, double adjustment) {
+	public void adjustStake(String playerId, String playerName, double adjustment) {
 		Economy economy = CheckersPlugin.getInstance().getEconomy();
 		if (economy == null || !economy.isEnabled()) {
 			return;
@@ -652,14 +666,14 @@ public class CheckersGame implements CheckersPersistable {
 			// allow stake to be adjusted down without throwing an exception
 			// could happen if global max stake was changed to something lower than
 			// a game's current stake setting
-			newStake = Math.min(max, economy.getBalance(playerName));
+			newStake = Math.min(max, economy.getBalance(playerId));
 		}
 		if (!economy.has(playerName, newStake) && adjustment < 0.0) {
 			// similarly for the player's own balance
-			newStake = Math.min(max, economy.getBalance(playerName));
+			newStake = Math.min(max, economy.getBalance(playerId));
 		}
 
-		setStake(playerName, newStake);
+		setStake(playerId, playerName, newStake);
 	}
 
 	public void offerDraw(String playerName) {
@@ -668,7 +682,7 @@ public class CheckersGame implements CheckersPersistable {
 
 		CheckersPlayer offeringPlayer = getPlayer(playerName);
 		CheckersPlayer offeredPlayer = getPlayer(offeringPlayer.getColour().getOtherColour());
-		offeringPlayer.statusMessage(Messages.getString("Offers.youOfferDraw", offeredPlayer.getName()));
+		offeringPlayer.statusMessage(Messages.getString("Offers.youOfferDraw", offeredPlayer.getId()));
 		offeredPlayer.drawOffered();
 	}
 
@@ -678,26 +692,26 @@ public class CheckersGame implements CheckersPersistable {
 
 		CheckersPlayer offeringPlayer = getPlayer(playerName);
 		CheckersPlayer offeredPlayer = getPlayer(offeringPlayer.getColour().getOtherColour());
-		if (offeredPlayer.getName().equals(offeringPlayer.getName())) {
+		if (offeredPlayer.getId().equals(offeringPlayer.getId())) {
 			// swap makes no sense in this case
 			return;
 		}
-		offeringPlayer.statusMessage(Messages.getString("Offers.youOfferSwap", offeredPlayer.getName()));
+		offeringPlayer.statusMessage(Messages.getString("Offers.youOfferSwap", offeredPlayer.getId()));
 		offeredPlayer.swapOffered();
 	}
 
-	public void offerUndoMove(String playerName) {
-		ensurePlayerInGame(playerName);
+	public void offerUndoMove(String playerId) {
+		ensurePlayerInGame(playerId);
 		ensureGameInState(GameState.RUNNING);
 
-		CheckersPlayer offeringPlayer = getPlayer(playerName);
+		CheckersPlayer offeringPlayer = getPlayer(playerId);
 		CheckersPlayer offeredPlayer = getPlayer(offeringPlayer.getColour().getOtherColour());
 
-		if (offeredPlayer.getName().equals(offeringPlayer.getName())) {
+		if (offeredPlayer.getId().equals(offeringPlayer.getId())) {
 			// same player playing black & white - just undo
-			undoMove(playerName);
+			undoMove(playerId);
 		} else {
-			offeringPlayer.statusMessage(Messages.getString("Offers.youOfferUndo", offeredPlayer.getName()));
+			offeringPlayer.statusMessage(Messages.getString("Offers.youOfferUndo", offeredPlayer.getId()));
 			offeredPlayer.undoOffered();
 		}
 	}
@@ -719,8 +733,8 @@ public class CheckersGame implements CheckersPersistable {
 		}
 	}
 
-	public void playerLeft(String playerName) {
-		CheckersPlayer cp = getPlayer(playerName);
+	public void playerLeft(Player player) {
+		CheckersPlayer cp = getPlayer(player.getUniqueId().toString());
 		if (cp != null) {
 			cp.cleanup();
 		}
@@ -767,13 +781,15 @@ public class CheckersGame implements CheckersPersistable {
 			return;
 		}
 
+		setState(GameState.FINISHED);
+
 		this.result = result;
 		this.winner = winner;
 		CheckersPlayer p1 = winner == PlayerColour.NONE ? getPlayer(PlayerColour.BLACK) : getPlayer(winner);
 		CheckersPlayer p2 = getPlayer(p1.getColour().getOtherColour());
 		String msg = Messages.getString("Game.result." + result.toString(), p1.getDisplayName(), p2.getDisplayName());
 
-		if (winner != PlayerColour.NONE && !p1.getName().equals(p2.getName())) {
+		if (winner != PlayerColour.NONE && !p1.getId().equals(p2.getId())) {
 			p1.playEffect("game_won");
 			p2.playEffect("game_lost");
 		}
@@ -797,26 +813,26 @@ public class CheckersGame implements CheckersPersistable {
 	}
 
 	private void ensurePlayerToMove(String playerName) {
-		CheckersValidate.isTrue(playerName.equals(getPlayerToMove().getName()), Messages.getString("Game.notYourTurn"));
+		CheckersValidate.isTrue(playerName.equals(getPlayerToMove().getId()), Messages.getString("Game.notYourTurn"));
 	}
 
 	private void ensureGameInState(GameState state) {
 		CheckersValidate.isTrue(getState() == state, Messages.getString("Game.shouldBeState", state));
 	}
 
-	private void ensurePlayerInGame(String playerName) {
-		CheckersValidate.isTrue(getPlayerName(PlayerColour.WHITE).equals(playerName) || getPlayerName(PlayerColour.BLACK).equals(playerName),
+	private void ensurePlayerInGame(String playerId) {
+		CheckersValidate.isTrue(getPlayerId(PlayerColour.WHITE).equals(playerId) || getPlayerId(PlayerColour.BLACK).equals(playerId),
 		                        Messages.getString("Game.notInGame"));
 	}
 
-	private CheckersPlayer fillEmptyPlayerSlot(String playerName) {
+	private CheckersPlayer fillEmptyPlayerSlot(String playerId, String displayName) {
 		PlayerColour colour;
 		if (hasPlayer(PlayerColour.WHITE)) {
 			colour = PlayerColour.BLACK;
 		} else {
 			colour = PlayerColour.WHITE;
 		}
-		CheckersPlayer checkersPlayer = createPlayer(colour, playerName);
+		CheckersPlayer checkersPlayer = createPlayer(colour, playerId, displayName);
 		checkersPlayer.validateInvited("Game.notInvited");
 		checkersPlayer.validateAffordability("Game.cantAffordToJoin");
 		players[colour.getIndex()] = checkersPlayer;
@@ -830,7 +846,7 @@ public class CheckersGame implements CheckersPersistable {
 	}
 
 	private void handlePayout() {
-		if (stake <= 0.0 || getPlayerName(PlayerColour.WHITE).equals(getPlayerName(PlayerColour.BLACK))) {
+		if (stake <= 0.0 || getPlayerId(PlayerColour.WHITE).equals(getPlayerId(PlayerColour.BLACK))) {
 			return;
 		}
 		if (getState() == GameState.SETTING_UP) {

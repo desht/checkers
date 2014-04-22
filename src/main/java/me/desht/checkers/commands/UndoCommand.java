@@ -4,6 +4,7 @@ import me.desht.checkers.game.CheckersGame;
 import me.desht.checkers.game.CheckersGameManager;
 
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
 public class UndoCommand extends AbstractCheckersCommand {
@@ -18,7 +19,7 @@ public class UndoCommand extends AbstractCheckersCommand {
 	public boolean execute(Plugin plugin, CommandSender sender, String[] args) {
 		notFromConsole(sender);
 
-		CheckersGame game = CheckersGameManager.getManager().getCurrentGame(sender.getName(), true);
+		CheckersGame game = CheckersGameManager.getManager().getCurrentGame((Player) sender, true);
 
 		game.offerUndoMove(sender.getName());
 

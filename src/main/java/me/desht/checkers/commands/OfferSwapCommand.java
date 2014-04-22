@@ -4,6 +4,7 @@ import me.desht.checkers.game.CheckersGame;
 import me.desht.checkers.game.CheckersGameManager;
 
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
 public class OfferSwapCommand extends AbstractCheckersCommand {
@@ -15,11 +16,12 @@ public class OfferSwapCommand extends AbstractCheckersCommand {
 	}
 
 	@Override
-	public boolean execute(Plugin plugin, CommandSender player, String[] args) {
-		notFromConsole(player);
+	public boolean execute(Plugin plugin, CommandSender sender, String[] args) {
+		notFromConsole(sender);
 
-		CheckersGame game = CheckersGameManager.getManager().getCurrentGame(player.getName(), true);
-		game.offerSwap(player.getName());
+		Player player = (Player) sender;
+		CheckersGame game = CheckersGameManager.getManager().getCurrentGame(player, true);
+		game.offerSwap(player.getUniqueId().toString());
 
 		return true;
 	}

@@ -6,7 +6,10 @@ import me.desht.checkers.Messages;
 import me.desht.checkers.TimeControl.ControlType;
 import me.desht.checkers.TwoPlayerClock;
 import me.desht.checkers.game.CheckersGame;
-import me.desht.checkers.model.*;
+import me.desht.checkers.model.Move;
+import me.desht.checkers.model.PlayerColour;
+import me.desht.checkers.model.Position;
+import me.desht.checkers.model.RowCol;
 import me.desht.checkers.responses.DrawResponse;
 import me.desht.checkers.responses.SwapResponse;
 import me.desht.checkers.responses.UndoResponse;
@@ -16,36 +19,34 @@ import me.desht.checkers.view.BoardView;
 import me.desht.dhutils.MiscUtil;
 import me.desht.dhutils.cuboid.Cuboid.CuboidDirection;
 import net.milkbowl.vault.economy.Economy;
-
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
-public class HumanCheckersPlayer extends CheckersPlayer {
+import java.util.UUID;
 
-	private Player player;
+public class HumanCheckersPlayer extends CheckersPlayer {
+	private final UUID uuid;
+	private final String oldStyleName;
 	private int tcWarned = 0;
 
-	public HumanCheckersPlayer(String name, CheckersGame game, PlayerColour colour) {
-		super(name, game, colour);
+	public HumanCheckersPlayer(String id, String displayName, CheckersGame game, PlayerColour colour) {
+		super(id, displayName, game, colour);
+		if (MiscUtil.looksLikeUUID(id)) {
+			uuid = UUID.fromString(id);
+			oldStyleName = null;
+		} else {
+			uuid = null;
+			oldStyleName = id;
+		}
 	}
 
 	private Player getBukkitPlayer() {
-		if (player == null) {
-			player = Bukkit.getPlayerExact(getName());
-		} else {
-			if (!player.isOnline()) {
-				player = null;
-			}
-		}
-
-		return player;
+		return uuid == null ? null : Bukkit.getPlayer(uuid);
 	}
 
-	@Override
-	public String getDisplayName() {
-		return ChatColor.GOLD + getName() + ChatColor.RESET;
+	public String getOldStyleName() {
+		return oldStyleName;
 	}
 
 	@Override
@@ -55,15 +56,14 @@ public class HumanCheckersPlayer extends CheckersPlayer {
 		}
 		double stake = getGame().getStake();
 		Economy economy = CheckersPlugin.getInstance().getEconomy();
-		if (economy != null && !economy.has(getName(), stake)) {
+		if (economy != null && !economy.has(getId(), stake)) {
 			throw new CheckersException(Messages.getString(error, CheckersUtils.formatStakeStr(stake)));
 		}
 	}
 
 	@Override
 	public void validateInvited(String error) {
-		String invited = getGame().getInvited();
-		if (!invited.equals(CheckersGame.OPEN_INVITATION) && !invited.equalsIgnoreCase(getName())) {
+		if (!getGame().isOpenInvite() && !uuid.equals(getGame().getInvitedId())) {
 			throw new CheckersException(Messages.getString(error));
 		}
 	}
@@ -130,14 +130,9 @@ public class HumanCheckersPlayer extends CheckersPlayer {
 		}
 	}
 
-//	@Override
-//	public void replayMoves() {
-//		// nothing to do here
-//	}
-
 	@Override
 	public void cleanup() {
-		player = null;
+		// nothing to do here
 	}
 
 	@Override
@@ -148,14 +143,14 @@ public class HumanCheckersPlayer extends CheckersPlayer {
 	@Override
 	public void withdrawFunds(double amount) {
 		Economy economy = CheckersPlugin.getInstance().getEconomy();
-		economy.withdrawPlayer(getName(), amount);
+		economy.withdrawPlayer(getId(), amount);
 		alert(Messages.getString("Game.stakePaid", CheckersUtils.formatStakeStr(amount)));
 	}
 
 	@Override
 	public void depositFunds(double amount) {
 		Economy economy = CheckersPlugin.getInstance().getEconomy();
-		economy.depositPlayer(getName(), amount);
+		economy.depositPlayer(getId(), amount);
 	}
 
 	@Override
@@ -174,24 +169,24 @@ public class HumanCheckersPlayer extends CheckersPlayer {
 
 	@Override
 	public void drawOffered() {
-		String offerer = getGame().getPlayer(getColour().getOtherColour()).getName();
-		CheckersPlugin.getInstance().getResponseHandler().expect(getName(), new DrawResponse(getGame(), offerer));
+		String offerer = getGame().getPlayer(getColour().getOtherColour()).getId();
+		CheckersPlugin.getInstance().getResponseHandler().expect(getBukkitPlayer(), new DrawResponse(getGame(), getColour()));
 		alert(Messages.getString("Offers.drawOfferedOther", offerer));
 		alert(Messages.getString("Offers.typeYesOrNo"));
 	}
 
 	@Override
 	public void swapOffered() {
-		String offerer = getGame().getPlayer(getColour().getOtherColour()).getName();
-		CheckersPlugin.getInstance().getResponseHandler().expect(getName(), new SwapResponse(getGame(), offerer));
+		String offerer = getGame().getPlayer(getColour().getOtherColour()).getId();
+		CheckersPlugin.getInstance().getResponseHandler().expect(getBukkitPlayer(), new SwapResponse(getGame(), getColour()));
 		alert(Messages.getString("Offers.swapOfferedOther", offerer));
 		alert(Messages.getString("Offers.typeYesOrNo"));
 	}
 
 	@Override
 	public void undoOffered() {
-		String offerer = getGame().getPlayer(getColour().getOtherColour()).getName();
-		CheckersPlugin.getInstance().getResponseHandler().expect(getName(), new UndoResponse(getGame(), offerer));
+		String offerer = getGame().getPlayer(getColour().getOtherColour()).getId();
+		CheckersPlugin.getInstance().getResponseHandler().expect(getBukkitPlayer(), new UndoResponse(getGame(), getColour()));
 		alert(Messages.getString("Offers.undoOfferedOther", offerer));
 		alert(Messages.getString("Offers.typeYesOrNo"));
 	}
