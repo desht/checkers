@@ -1,27 +1,21 @@
 package me.desht.checkers.listeners;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-
 import me.desht.checkers.CheckersPlugin;
 import me.desht.checkers.Messages;
 import me.desht.checkers.game.CheckersGame;
-import me.desht.checkers.game.CheckersGameManager;
 import me.desht.checkers.game.CheckersGame.GameState;
+import me.desht.checkers.game.CheckersGameManager;
 import me.desht.checkers.player.CheckersPlayer;
-import me.desht.checkers.util.CheckersUtils;
-import me.desht.dhutils.Duration;
-import me.desht.dhutils.LogUtils;
-import me.desht.dhutils.MessagePager;
-import me.desht.dhutils.MiscUtil;
-import me.desht.dhutils.PersistableLocation;
-
+import me.desht.dhutils.*;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 public class PlayerTracker extends CheckersBaseListener {
 
@@ -101,7 +95,7 @@ public class PlayerTracker extends CheckersBaseListener {
 	}
 
 	public long getPlayerLeftAt(String who) {
-		if (!CheckersUtils.isUUID(who)) return 0;
+		if (!MiscUtil.looksLikeUUID(who)) return 0;
 		UUID uuid = UUID.fromString(who);
 		return loggedOutAt.containsKey(uuid) ? loggedOutAt.get(uuid) : 0;
 	}

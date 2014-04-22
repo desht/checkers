@@ -49,8 +49,4 @@ public class CheckersUtils {
 
 		return String.format("%1$02d:%2$02d:%3$02d", hrs, mins, secs);
 	}
-
-	public static boolean isUUID(String s) {
-		return s.length() == 36 && s.charAt(8) == '-';
-	}
 }
