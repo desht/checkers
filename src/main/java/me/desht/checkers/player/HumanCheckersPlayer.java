@@ -22,6 +22,7 @@ import me.desht.dhutils.cuboid.Cuboid.CuboidDirection;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
 import java.util.UUID;
@@ -30,12 +31,20 @@ public class HumanCheckersPlayer extends CheckersPlayer {
 	private final UUID uuid;
 	private final String oldStyleName;
 	private int tcWarned = 0;
+	private String resultsName;
 
 	public HumanCheckersPlayer(String id, String displayName, CheckersGame game, PlayerColour colour) {
 		super(id, displayName, game, colour);
 		if (MiscUtil.looksLikeUUID(id)) {
 			uuid = UUID.fromString(id);
 			oldStyleName = null;
+			Bukkit.getScheduler().runTaskAsynchronously(CheckersPlugin.getInstance(), new Runnable() {
+				@Override
+				public void run() {
+					OfflinePlayer op = Bukkit.getOfflinePlayer(uuid);
+					setResultsName(op.getName());
+				}
+			});
 		} else {
 			CheckersGameManager.getManager().needUUIDMigration(game);
 			uuid = null;
@@ -49,6 +58,15 @@ public class HumanCheckersPlayer extends CheckersPlayer {
 
 	public String getOldStyleName() {
 		return oldStyleName;
+	}
+
+	private synchronized void setResultsName(String resultsName) {
+		this.resultsName = resultsName;
+	}
+
+	@Override
+	public synchronized String getResultsName() {
+		return resultsName;
 	}
 
 	@Override

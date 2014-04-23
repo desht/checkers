@@ -19,26 +19,13 @@ public class ResultEntry implements DatabaseSavable {
 	private final String pdnResult;
 
 	ResultEntry(CheckersGame game) {
-		playerWhite = getResultsName(game.getPlayer(PlayerColour.WHITE));
-		playerBlack = getResultsName(game.getPlayer(PlayerColour.BLACK));
+		playerWhite = game.getPlayer(PlayerColour.WHITE).getResultsName();
+		playerBlack = game.getPlayer(PlayerColour.BLACK).getResultsName();
 		gameName = game.getName();
 		startTime = game.getStarted();
 		endTime = game.getFinished();
 		result = game.getResult();
 		pdnResult = game.getPDNResult();
-	}
-
-	private String getResultsName(CheckersPlayer cp) {
-		// this isn't very pretty, but it's needed to preserve backwards compat
-		// with the existing database layout
-		if (cp.isHuman()) {
-			// should be safe to assume player is still online here
-			Player p = ((HumanCheckersPlayer) cp).getBukkitPlayer();
-			return p.getName();
-		} else {
-			// AI players use the internal ID, not the displayname
-			return cp.getId();
-		}
 	}
 
 	ResultEntry(String plw, String plb, String gn, long start, long end, String pdnRes, GameResult rt) {

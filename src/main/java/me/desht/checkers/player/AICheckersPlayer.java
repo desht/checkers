@@ -71,6 +71,11 @@ public class AICheckersPlayer extends CheckersPlayer {
 	}
 
 	@Override
+	public String getResultsName() {
+		return getId();
+	}
+
+	@Override
 	public void cleanup() {
 		ai.delete();
 	}

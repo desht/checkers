@@ -59,6 +59,8 @@ public abstract class CheckersPlayer {
 		return game;
 	}
 
+	public abstract String getResultsName();
+
 	public abstract void validateAffordability(String error);
 	public abstract void validateInvited(String error);
 
