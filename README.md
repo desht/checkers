@@ -1,10 +1,10 @@
 # Checkers
 
-Checkers is a Bukkit plugin that allows you to play Checkers (Draughts) on your CraftBukkit Minecraft server.
+Checkers is a Bukkit plugin for playing Checkers (Draughts) on your CraftBukkit (Minecraft) server.
  
 ## Installation and Usage
 
-Detailed documentation can be found in BukkitDev: http://dev.bukkit.org/server-mods/checkers
+Detailed documentation can be found in BukkitDev: http://dev.bukkit.org/bukkit-plugins/checkers
 
 ## Building
 
