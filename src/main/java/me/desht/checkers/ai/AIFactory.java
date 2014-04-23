@@ -57,7 +57,7 @@ public class AIFactory {
 
 		AIDefinition aiDef = getAIDefinition(aiName);
 		if (aiDef == null) {
-			throw new CheckersException(Messages.getString("AI.AInotFound"));
+			throw new CheckersException(Messages.getString("AI.AInotFound", aiName));
 		} else if (runningAIs.containsKey(aiDef.getName())) {
 			throw new CheckersException(Messages.getString("AI.AIbusy"));
 		}
@@ -129,7 +129,7 @@ public class AIFactory {
 	public AIDefinition getAIDefinition(String aiName, boolean force) {
 		AIDefinition def = getAIDefinition(aiName);
 		if (def == null && force) {
-			throw new CheckersException(Messages.getString("AI.AInotFound"));
+			throw new CheckersException(Messages.getString("AI.AInotFound", aiName));
 		}
 		return def;
 	}

@@ -210,7 +210,7 @@ AI:
   AIbusy: "AI is busy right now"
   AIdisabled: "AI games are disabled"
   AIloadError: "AI Loading Error"
-  AInotFound: "AI not found"
+  AInotFound: "No such player or AI: {0}"
   AIunexpectedException: "Unexpected Exception in AI: {0}"
   computer: "Computer"
   human: "Human"

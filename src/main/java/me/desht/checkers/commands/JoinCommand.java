@@ -11,6 +11,9 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class JoinCommand extends AbstractCheckersCommand {
 
 	public JoinCommand() {
@@ -31,12 +34,7 @@ public class JoinCommand extends AbstractCheckersCommand {
 		String gameName = null;
 		if (args.length >= 1) {
 			gameName = args[0];
-			CheckersGame game = gameManager.getGame(gameName);
-			if (game.getInvitedId().equals(player.getUniqueId())) {
-				playingAs = game.addPlayer(player.getUniqueId().toString(), player.getDisplayName());
-			} else {
-				throw new CheckersException(Messages.getString("Game.notInvited"));
-			}
+			playingAs = gameManager.getGame(gameName).addPlayer(player.getUniqueId().toString(), player.getDisplayName());
 		} else {
 			// find a game (or games) with an invitation for us
 			for (CheckersGame game : gameManager.listGames()) {
@@ -52,10 +50,29 @@ public class JoinCommand extends AbstractCheckersCommand {
 
 		CheckersGame game = gameManager.getGame(gameName);
 		gameManager.setCurrentGame(player, game);
-//		PlayerColour playingAs = game.getPlayer(player.getUniqueId().toString()).getColour();
 		MiscUtil.statusMessage(sender, Messages.getString("Game.joinedGame", game.getName(), playingAs.getDisplayColour()));
 
 		return true;
 	}
 
+	@Override
+	public List<String> onTabComplete(Plugin plugin, CommandSender sender, String[] args) {
+		if (args.length == 1 && sender instanceof Player) {
+			return getInvitedGameCompletions((Player) sender, args[0]);
+		} else {
+			showUsage(sender);
+			return noCompletions(sender);
+		}
+	}
+
+	private List<String> getInvitedGameCompletions(Player player, String prefix) {
+		List<String> res = new ArrayList<String>();
+
+		for (CheckersGame game : CheckersGameManager.getManager().listGames()) {
+			if (game.getName().startsWith(prefix) && game.isOpenInvite() || player.getUniqueId().equals(game.getInvitedId())) {
+				res.add(game.getName());
+			}
+		}
+		return getResult(res, player, true);
+	}
 }

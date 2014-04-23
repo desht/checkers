@@ -83,7 +83,8 @@ public class HumanCheckersPlayer extends CheckersPlayer {
 
 	@Override
 	public void validateInvited(String error) {
-		if (!getGame().isOpenInvite() && !uuid.equals(getGame().getInvitedId())) {
+		UUID invited = getGame().getInvitedId();
+		if (!getGame().isOpenInvite() && (invited == null || !invited.equals(uuid))) {
 			throw new CheckersException(Messages.getString(error));
 		}
 	}
