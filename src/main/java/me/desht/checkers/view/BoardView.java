@@ -168,12 +168,12 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 			if (game.getPosition().getMoveHistory().length > 0) {
 				getBoard().setLastMovedSquare(game.getPosition().getLastMove().getTo());
 			}
-			playerAdded(game, game.getPlayer(PlayerColour.BLACK));
-			playerAdded(game, game.getPlayer(PlayerColour.WHITE));
+//			playerAdded(game, game.getPlayer(PlayerColour.BLACK));
+//			playerAdded(game, game.getPlayer(PlayerColour.WHITE));
 		} else {
 			getBoard().reset();
-			getControlPanel().repaintControls();
 		}
+		getControlPanel().repaintControls();
 
 		save();
 	}
