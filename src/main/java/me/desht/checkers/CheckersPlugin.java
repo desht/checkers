@@ -294,7 +294,7 @@ public class CheckersPlugin extends JavaPlugin implements ConfigurationListener 
 
 	private void setupVault(PluginManager pm) {
 		Plugin vault =  pm.getPlugin("Vault");
-		if (vault != null && vault instanceof net.milkbowl.vault.Vault) {
+		if (vault != null && vault.isEnabled() && vault instanceof net.milkbowl.vault.Vault) {
 			Debugger.getInstance().debug("Loaded Vault v" + vault.getDescription().getVersion());
 			if (!setupEconomy()) {
 				LogUtils.warning("No economy plugin detected - game stakes not available");
@@ -315,7 +315,7 @@ public class CheckersPlugin extends JavaPlugin implements ConfigurationListener 
 
 	private void setupWorldEdit(PluginManager pm) {
 		Plugin p = pm.getPlugin("WorldEdit");
-		if (p != null && p instanceof WorldEditPlugin) {
+		if (p != null && p.isEnabled() && p instanceof WorldEditPlugin) {
 			worldEditPlugin = (WorldEditPlugin) p;
 			Debugger.getInstance().debug("WorldEdit plugin detected: board terrain saving enabled.");
 		} else {
@@ -326,7 +326,7 @@ public class CheckersPlugin extends JavaPlugin implements ConfigurationListener 
 	private void setupSMSIntegration(PluginManager pm) {
 		try {
 			Plugin p = pm.getPlugin("ScrollingMenuSign");
-			if (p != null && p instanceof ScrollingMenuSign) {
+			if (p != null && p.isEnabled() && p instanceof ScrollingMenuSign) {
 				sms = new SMSIntegration(this, (ScrollingMenuSign) p);
 				Debugger.getInstance().debug("ScrollingMenuSign plugin detected: Checkers menus created.");
 			} else {
@@ -340,7 +340,7 @@ public class CheckersPlugin extends JavaPlugin implements ConfigurationListener 
 
 	private void setupDynmap(PluginManager pm) {
 		Plugin p = pm.getPlugin("dynmap");
-		if (p != null) {
+		if (p != null && p.isEnabled()) {
 			dynmapIntegration = new DynmapIntegration(this, (DynmapAPI) p);
 			Debugger.getInstance().debug("dynmap plugin detected.  Boards and games will be labelled.");
 		} else {
