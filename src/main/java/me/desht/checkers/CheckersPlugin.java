@@ -65,7 +65,9 @@ import me.desht.dhutils.*;
 import me.desht.dhutils.commands.CommandManager;
 import me.desht.dhutils.nms.NMSHelper;
 import me.desht.dhutils.responsehandler.ResponseHandler;
+import me.desht.landslide.LandslidePlugin;
 import me.desht.scrollingmenusign.ScrollingMenuSign;
+import net.milkbowl.vault.Vault;
 import net.milkbowl.vault.economy.Economy;
 
 import org.bukkit.command.Command;
@@ -99,8 +101,9 @@ public class CheckersPlugin extends JavaPlugin implements ConfigurationListener 
 	private AIFactory aiFactory;
 	private SMSIntegration sms;
 	private DynmapIntegration dynmapIntegration;
+    private LandslideIntegration landslideIntegration;
 
-	@Override
+    @Override
 	public void onLoad() {
 		ConfigurationSerialization.registerClass(BoardView.class);
 		ConfigurationSerialization.registerClass(PersistableLocation.class);
@@ -151,6 +154,7 @@ public class CheckersPlugin extends JavaPlugin implements ConfigurationListener 
 		setupWorldEdit(pm);
 		setupSMSIntegration(pm);
 		setupDynmap(pm);
+        setupLandslide(pm);
 
 		GameRules.registerRulesets();
 
@@ -173,7 +177,7 @@ public class CheckersPlugin extends JavaPlugin implements ConfigurationListener 
 		tickTask.runTaskTimer(this, 20L, 20L);
 	}
 
-	private void registerCommands() {
+    private void registerCommands() {
 		cmds.registerCommand(new BoardSaveCommand());
 		cmds.registerCommand(new BoardSetCommand());
 		cmds.registerCommand(new CreateBoardCommand());
@@ -271,7 +275,11 @@ public class CheckersPlugin extends JavaPlugin implements ConfigurationListener 
 		return dynmapIntegration;
 	}
 
-	private void setupMetrics() {
+    public LandslideIntegration getLandslideIntegration() {
+        return landslideIntegration;
+    }
+
+    private void setupMetrics() {
 		if (!getConfig().getBoolean("mcstats")) {
 			return;
 		}
@@ -292,9 +300,16 @@ public class CheckersPlugin extends JavaPlugin implements ConfigurationListener 
 		}
 	}
 
+    private void setupLandslide(PluginManager pm) {
+        Plugin lsl = pm.getPlugin("Landslide");
+        if (lsl != null && lsl.isEnabled() && lsl instanceof LandslidePlugin) {
+            landslideIntegration = new LandslideIntegration(this);
+        }
+    }
+
 	private void setupVault(PluginManager pm) {
 		Plugin vault =  pm.getPlugin("Vault");
-		if (vault != null && vault.isEnabled() && vault instanceof net.milkbowl.vault.Vault) {
+		if (vault != null && vault.isEnabled() && vault instanceof Vault) {
 			Debugger.getInstance().debug("Loaded Vault v" + vault.getDescription().getVersion());
 			if (!setupEconomy()) {
 				LogUtils.warning("No economy plugin detected - game stakes not available");
