@@ -21,6 +21,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.*;
+import org.bukkit.material.MaterialData;
 import org.bukkit.util.Vector;
 
 import java.lang.ref.WeakReference;
@@ -244,8 +245,8 @@ public class FlightListener extends CheckersBaseListener {
 
 		for (BoardView bv : BoardViewManager.getManager().listBoardViews()) {
 			Cuboid c = bv.getBoard().getFullBoard();
-			MaterialWithData mat = bv.getBoard().getBoardStyle().getEnclosureMaterial();
-			if (BlockType.canPassThrough(mat.getId())) {
+			MaterialData mat = bv.getBoard().getBoardStyle().getEnclosureMaterial();
+			if (BlockType.canPassThrough(mat.getItemTypeId())) {
 				c = c.expand(CuboidDirection.Up, Math.max(5, (c.getSizeY() * above) / 100));
 				c = c.outset(CuboidDirection.Horizontal, Math.max(5, (c.getSizeX() * outside) / 100));
 			}

@@ -16,10 +16,10 @@ import me.desht.checkers.responses.SwapResponse;
 import me.desht.checkers.responses.UndoResponse;
 import me.desht.checkers.responses.YesNoResponse;
 import me.desht.checkers.util.CheckersUtils;
+import me.desht.checkers.util.EconomyUtil;
 import me.desht.checkers.view.BoardView;
 import me.desht.dhutils.MiscUtil;
 import me.desht.dhutils.cuboid.Cuboid.CuboidDirection;
-import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
@@ -38,13 +38,8 @@ public class HumanCheckersPlayer extends CheckersPlayer {
 		if (MiscUtil.looksLikeUUID(id)) {
 			uuid = UUID.fromString(id);
 			oldStyleName = null;
-			Bukkit.getScheduler().runTaskAsynchronously(CheckersPlugin.getInstance(), new Runnable() {
-				@Override
-				public void run() {
-					OfflinePlayer op = Bukkit.getOfflinePlayer(uuid);
-					setResultsName(op.getName());
-				}
-			});
+            OfflinePlayer op = Bukkit.getOfflinePlayer(uuid);
+            setResultsName(op.getName());
 		} else {
 			CheckersGameManager.getManager().needUUIDMigration(game);
 			uuid = null;
@@ -55,6 +50,10 @@ public class HumanCheckersPlayer extends CheckersPlayer {
 	public Player getBukkitPlayer() {
 		return uuid == null ? null : Bukkit.getPlayer(uuid);
 	}
+
+    public OfflinePlayer getOfflinePlayer() {
+        return Bukkit.getOfflinePlayer(uuid);
+    }
 
 	public String getOldStyleName() {
 		return oldStyleName;
@@ -75,9 +74,9 @@ public class HumanCheckersPlayer extends CheckersPlayer {
 			error = "Game.cantAffordToJoin";
 		}
 		double stake = getGame().getStake();
-		Economy economy = CheckersPlugin.getInstance().getEconomy();
-		if (economy != null && (getBukkitPlayer() == null || !economy.has(getBukkitPlayer().getName(), stake))) {
-			throw new CheckersException(Messages.getString(error, CheckersUtils.formatStakeStr(stake)));
+        OfflinePlayer player = getOfflinePlayer();
+        if (EconomyUtil.enabled() && !EconomyUtil.has(player, stake)) {
+			throw new CheckersException(Messages.getString(error, EconomyUtil.formatStakeStr(stake)));
 		}
 	}
 
@@ -163,15 +162,15 @@ public class HumanCheckersPlayer extends CheckersPlayer {
 
 	@Override
 	public void withdrawFunds(double amount) {
-		Economy economy = CheckersPlugin.getInstance().getEconomy();
-		economy.withdrawPlayer(getId(), amount);
-		alert(Messages.getString("Game.stakePaid", CheckersUtils.formatStakeStr(amount)));
+        OfflinePlayer player = getOfflinePlayer();
+        EconomyUtil.withdraw(player, amount);
+        alert(Messages.getString("Game.stakePaid", EconomyUtil.formatStakeStr(amount)));
 	}
 
 	@Override
 	public void depositFunds(double amount) {
-		Economy economy = CheckersPlugin.getInstance().getEconomy();
-		economy.depositPlayer(getId(), amount);
+        OfflinePlayer player = getOfflinePlayer();
+        EconomyUtil.deposit(player, amount);
 	}
 
 	@Override
@@ -220,7 +219,6 @@ public class HumanCheckersPlayer extends CheckersPlayer {
 	@Override
 	public void checkPendingAction() {
 		// nothing to do here
-
 	}
 
 	@Override

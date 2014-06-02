@@ -33,6 +33,7 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerAnimationEvent;
 import org.bukkit.event.player.PlayerAnimationType;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.material.MaterialData;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -117,8 +118,8 @@ public class PlayerListener extends CheckersBaseListener {
 
 		try {
 			if (event.getAnimationType() == PlayerAnimationType.ARM_SWING) {
-				Material wandMat = CheckersUtils.getWandMaterial();
-				if (wandMat == null || player.getItemInHand().getType() == wandMat) {
+				MaterialData wandMat = CheckersUtils.getWandMaterial();
+				if (wandMat == null || player.getItemInHand().isSimilar(wandMat.toItemStack())) {
 					targetBlock = player.getTargetBlock(transparent, 120);
 					Debugger.getInstance().debug(2, "Player " + player.getDisplayName() + " waved at block " + targetBlock);
 					Location loc = targetBlock.getLocation();
@@ -270,7 +271,7 @@ public class PlayerListener extends CheckersBaseListener {
 	private void teleportToPiece(Player player, BoardView bv, Location loc) {
 		Block b = loc.getBlock();
 		Block b1 = b.getRelative(BlockFace.UP);
-		boolean isSolid = !BlockType.canPassThrough(bv.getBoard().getBoardStyle().getEnclosureMaterial().getId());
+		boolean isSolid = !BlockType.canPassThrough(bv.getBoard().getBoardStyle().getEnclosureMaterial().getItemTypeId());
 		int max = isSolid ? bv.getBoard().getFullBoard().getUpperY() - 2 : loc.getWorld().getMaxHeight();
 		while (b.getType() != Material.AIR && b1.getType() != Material.AIR && b1.getLocation().getY() < max) {
 			b = b.getRelative(BlockFace.UP);

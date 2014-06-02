@@ -172,7 +172,7 @@ public class CheckersGameManager {
 		bv.setGame(game);
 		registerGame(game);
 		setCurrentGame(player, game);
-		game.setStake(player.getUniqueId().toString(), player.getName(), bv.getDefaultStake());
+		game.setStake(player, bv.getDefaultStake());
 
 		MiscUtil.statusMessage(player, Messages.getString("Game.gameCreated", game.getName(), bv.getName()));
 

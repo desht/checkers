@@ -5,6 +5,7 @@ import me.desht.checkers.game.CheckersGame;
 import me.desht.checkers.game.CheckersGame.GameState;
 import me.desht.checkers.util.CheckersUtils;
 
+import me.desht.checkers.util.EconomyUtil;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 
@@ -26,12 +27,12 @@ public class StakeButton extends AbstractSignButton {
 			stakeIncr = -stakeIncr;
 		}
 
-		getGame().adjustStake(event.getPlayer().getUniqueId().toString(), event.getPlayer().getName(), stakeIncr);
+		getGame().adjustStake(event.getPlayer(), stakeIncr);
 	}
 
 	@Override
 	public boolean isEnabled() {
-		return getGame() != null;
+		return getGame() != null && EconomyUtil.enabled();
 	}
 
 	@Override
@@ -47,7 +48,7 @@ public class StakeButton extends AbstractSignButton {
 
 		CheckersGame game = getGame();
 		double stake = game == null ? getView().getDefaultStake() : game.getStake();
-		String[] s =  CheckersUtils.formatStakeStr(stake).split(" ", 2);
+		String[] s =  EconomyUtil.formatStakeStr(stake).split(" ", 2);
 		res[2] = getIndicatorColour() + s[0];
 		res[3] = s.length > 1 ? getIndicatorColour() + s[1] : "";
 

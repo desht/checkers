@@ -16,6 +16,7 @@ import me.desht.dhutils.MiscUtil;
 import me.desht.dhutils.block.MaterialWithData;
 
 import org.bukkit.configuration.Configuration;
+import org.bukkit.material.MaterialData;
 
 public class BoardStyle implements Comparable<BoardStyle>, ConfigurationListener {
 	public static final String DEFAULT_BOARD_STYLE = "gw-small";
@@ -155,36 +156,36 @@ public class BoardStyle implements Comparable<BoardStyle>, ConfigurationListener
 		return (Integer) attributes.get(LIGHT_LEVEL);
 	}
 
-	public MaterialWithData getBlackSquareMaterial() {
-		return (MaterialWithData) attributes.get(BLACK_SQUARE);
+	public MaterialData getBlackSquareMaterial() {
+		return ((MaterialWithData) attributes.get(BLACK_SQUARE)).getMaterialData();
 	}
 
-	public MaterialWithData getWhiteSquareMaterial() {
-		return (MaterialWithData) attributes.get(WHITE_SQUARE);
+	public MaterialData getWhiteSquareMaterial() {
+		return ((MaterialWithData) attributes.get(WHITE_SQUARE)).getMaterialData();
 	}
 
-	public MaterialWithData getControlPanelMaterial() {
-		return (MaterialWithData) attributes.get(PANEL);
+	public MaterialData getControlPanelMaterial() {
+		return ((MaterialWithData) attributes.get(PANEL)).getMaterialData();
 	}
 
-	public MaterialWithData getEnclosureMaterial() {
-		return (MaterialWithData) attributes.get(ENCLOSURE);
+	public MaterialData getEnclosureMaterial() {
+		return ((MaterialWithData) attributes.get(ENCLOSURE)).getMaterialData();
 	}
 
-	public MaterialWithData getFrameMaterial() {
-		return (MaterialWithData) attributes.get(FRAME);
+	public MaterialData getFrameMaterial() {
+		return ((MaterialWithData) attributes.get(FRAME)).getMaterialData();
 	}
 
-	public MaterialWithData getStrutsMaterial() {
-		return (MaterialWithData) attributes.get(STRUTS);
+	public MaterialData getStrutsMaterial() {
+		return ((MaterialWithData) attributes.get(STRUTS)).getMaterialData();
 	}
 
-	public MaterialWithData getLastMoveHighlightMaterial() {
-		return (MaterialWithData) attributes.get(HIGHLIGHT_LASTMOVE);
+	public MaterialData getLastMoveHighlightMaterial() {
+		return ((MaterialWithData) attributes.get(HIGHLIGHT_LASTMOVE)).getMaterialData();
 	}
 
-	public MaterialWithData getSelectedHighlightMaterial() {
-		return (MaterialWithData) attributes.get(HIGHLIGHT_SELECTED);
+	public MaterialData getSelectedHighlightMaterial() {
+		return ((MaterialWithData) attributes.get(HIGHLIGHT_SELECTED)).getMaterialData();
 	}
 
 	public MaterialWithData getBlackPieceMaterial() {
@@ -196,7 +197,7 @@ public class BoardStyle implements Comparable<BoardStyle>, ConfigurationListener
 	}
 
 	@Override
-	public void onConfigurationValidate(ConfigurationManager configurationManager, String key, Object oldVal, Object newVal) {
+	public Object onConfigurationValidate(ConfigurationManager configurationManager, String key, Object oldVal, Object newVal) {
 		if (key.equals(LIGHT_LEVEL)) {
 			int level = (Integer) newVal;
 			CheckersValidate.isTrue(level >= 0 && level <= 15, "Light level must be in range 0-15");
@@ -204,7 +205,8 @@ public class BoardStyle implements Comparable<BoardStyle>, ConfigurationListener
 			MaterialWithData mat = (MaterialWithData) newVal;
 			CheckersValidate.isTrue(mat.getBukkitMaterial().isBlock(), key + ": " + mat + " is not a block material!");
 		}
-	}
+        return newVal;
+    }
 
 	@Override
 	public void onConfigurationChanged(ConfigurationManager configurationManager, String key, Object oldVal, Object newVal) {

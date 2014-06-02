@@ -22,6 +22,7 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Skull;
+import org.bukkit.material.MaterialData;
 
 public class CheckersBoard {
 	// the center of the A1 square (lower-left on the board)
@@ -391,7 +392,7 @@ public class CheckersBoard {
 				height *= 2;
 			}
 			c = c.expand(CuboidDirection.Up, height - 1);
-			c.fill(mat);
+			c.fill(mat.getMaterialData());
 			if (CheckersPlugin.getInstance().getDynmapIntegration() != null) {
 				CheckersPlugin.getInstance().getDynmapIntegration().triggerUpdate(c);
 			}
@@ -423,7 +424,7 @@ public class CheckersBoard {
 		}
 	}
 
-	private void highlightSquare(RowCol square, MaterialWithData mat) {
+	private void highlightSquare(RowCol square, MaterialData mat) {
 		if (square != null && square.getRow() >= 0 && square.getRow() < getSize() && square.getCol() >= 0 && square.getCol() < getSize()) {
 			Cuboid c = getSquare(square);
 			c.getFace(CuboidDirection.East).fill(mat);
@@ -459,7 +460,7 @@ public class CheckersBoard {
 
 	private void paintFrame(MassBlockUpdate mbu) {
 		int fw = boardStyle.getFrameWidth();
-		MaterialWithData fm = boardStyle.getFrameMaterial();
+		MaterialData fm = boardStyle.getFrameMaterial();
 		frameBoard.getFace(CuboidDirection.West).expand(CuboidDirection.East, fw - 1).fill(fm, mbu);
 		frameBoard.getFace(CuboidDirection.South).expand(CuboidDirection.North, fw - 1).fill(fm, mbu);
 		frameBoard.getFace(CuboidDirection.East).expand(CuboidDirection.West, fw - 1).fill(fm, mbu);
@@ -480,7 +481,7 @@ public class CheckersBoard {
 	}
 
 	private void paintStruts(MassBlockUpdate mbu) {
-		MaterialWithData struts = boardStyle.getStrutsMaterial();
+		MaterialData struts = boardStyle.getStrutsMaterial();
 
 		// vertical struts at the frame corners
 		Cuboid c = new Cuboid(frameBoard.getLowerNE()).shift(CuboidDirection.Up, 1).expand(CuboidDirection.Up, boardStyle.getHeight());

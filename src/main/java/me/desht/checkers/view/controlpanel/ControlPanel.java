@@ -22,6 +22,7 @@ import me.desht.dhutils.cuboid.Cuboid.CuboidDirection;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.material.MaterialData;
 
 public class ControlPanel {
 	private static final int PANEL_WIDTH = 8;
@@ -125,14 +126,14 @@ public class ControlPanel {
 	}
 
 	public void updateToMoveIndicator(PlayerColour toPlay) {
-		MaterialWithData mat = getView().getBoard().getBoardStyle().getControlPanelMaterial();
+		MaterialData mat = getView().getBoard().getBoardStyle().getControlPanelMaterial();
 		if (toPlay == PlayerColour.WHITE) {
-			mat = getView().getBoard().getBoardStyle().getWhitePieceMaterial();
+			mat = getView().getBoard().getBoardStyle().getWhitePieceMaterial().getMaterialData();
 		} else if (toPlay == PlayerColour.BLACK) {
-			mat = getView().getBoard().getBoardStyle().getBlackPieceMaterial();
+			mat = getView().getBoard().getBoardStyle().getBlackPieceMaterial().getMaterialData();
 		}
-		if (mat.getBukkitMaterial() == Material.SKULL) {
-			mat = MaterialWithData.get("WOOL:" + toPlay);
+		if (mat.getItemType() == Material.SKULL) {
+			mat = MaterialWithData.get("WOOL:" + toPlay).getMaterialData();
 		}
 		toMoveIndicator.fill(mat);
 	}
@@ -163,7 +164,7 @@ public class ControlPanel {
 	}
 
 	public void removeSigns() {
-		panelBlocks.shift(signDir.getDirection(), 1).fill(0, (byte)0);
+		panelBlocks.shift(signDir.getDirection(), 1).fill(new MaterialData(Material.AIR));
 	}
 
 	public Location getTeleportInDestination() {

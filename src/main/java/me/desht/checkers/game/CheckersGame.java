@@ -1,17 +1,6 @@
 package me.desht.checkers.game;
 
-import java.io.File;
-import java.util.*;
-import java.util.Map.Entry;
-
-import me.desht.checkers.CheckersException;
-import me.desht.checkers.CheckersPersistable;
-import me.desht.checkers.CheckersPlugin;
-import me.desht.checkers.CheckersValidate;
-import me.desht.checkers.DirectoryStructure;
-import me.desht.checkers.Messages;
-import me.desht.checkers.TimeControl;
-import me.desht.checkers.TwoPlayerClock;
+import me.desht.checkers.*;
 import me.desht.checkers.ai.CheckersAI;
 import me.desht.checkers.event.CheckersGameStateChangedEvent;
 import me.desht.checkers.model.*;
@@ -19,19 +8,21 @@ import me.desht.checkers.player.AICheckersPlayer;
 import me.desht.checkers.player.CheckersPlayer;
 import me.desht.checkers.player.HumanCheckersPlayer;
 import me.desht.checkers.results.Results;
-import me.desht.checkers.util.CheckersUtils;
+import me.desht.checkers.util.EconomyUtil;
 import me.desht.dhutils.Duration;
 import me.desht.dhutils.LogUtils;
 import me.desht.dhutils.MessagePager;
 import me.desht.dhutils.MiscUtil;
-import net.milkbowl.vault.economy.Economy;
-
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemoryConfiguration;
 import org.bukkit.entity.Player;
+
+import java.io.File;
+import java.util.*;
+import java.util.Map.Entry;
 
 public class CheckersGame implements CheckersPersistable {
 
@@ -237,7 +228,7 @@ public class CheckersGame implements CheckersPersistable {
 	}
 
 	public double getStake() {
-		if (CheckersPlugin.getInstance().getEconomy() == null) {
+		if (!EconomyUtil.enabled()) {
 			return 0.0;
 		} else {
 			return stake;
@@ -354,8 +345,8 @@ public class CheckersGame implements CheckersPersistable {
 		String rules = Messages.getString("Rules." + getPosition().getRules().getId() + ".label").replace(';', ' ');
 		res.add(bullet + Messages.getString("Game.gameDetail.rules", rules));
 		res.add(bullet +  Messages.getString("Game.gameDetail.halfMoves", getPosition().getPlyCount()));
-		if (CheckersPlugin.getInstance().getEconomy() != null) {
-			res.add(bullet + Messages.getString("Game.gameDetail.stake", CheckersUtils.formatStakeStr(getStake())));
+		if (EconomyUtil.enabled()) {
+			res.add(bullet + Messages.getString("Game.gameDetail.stake", EconomyUtil.formatStakeStr(getStake())));
 		}
 		res.add(bullet + (getPosition().getToMove() == PlayerColour.WHITE ?
 				Messages.getString("Game.gameDetail.whiteToPlay") : Messages.getString("Game.gameDetail.blackToPlay")));
@@ -436,7 +427,7 @@ public class CheckersGame implements CheckersPersistable {
 		if (invitee != null) {
 			alert(invitee, Messages.getString("Game.youAreInvited", inviter.getDisplayName()));
 			if (getStake() > 0.0) {
-				alert(invitee, Messages.getString("Game.gameHasStake", CheckersUtils.formatStakeStr(getStake())));
+				alert(invitee, Messages.getString("Game.gameHasStake", EconomyUtil.formatStakeStr(getStake())));
 			}
 			alert(invitee, Messages.getString("Game.joinPrompt"));
 			if (invitedId != null && !invitedId.equals(invitee.getUniqueId())) {
@@ -459,7 +450,7 @@ public class CheckersGame implements CheckersPersistable {
 
 		MiscUtil.broadcastMessage((Messages.getString("Game.openInviteCreated", inviter.getDisplayName())));
 		if (getStake() > 0.0) {
-			MiscUtil.broadcastMessage(Messages.getString("Game.gameHasStake", CheckersUtils.formatStakeStr(getStake())));
+			MiscUtil.broadcastMessage(Messages.getString("Game.gameHasStake", EconomyUtil.formatStakeStr(getStake())));
 		}
 		MiscUtil.broadcastMessage(Messages.getString("Game.joinPromptGlobal", getName()));
 		openInvite = true;
@@ -617,20 +608,19 @@ public class CheckersGame implements CheckersPersistable {
 		}
 	}
 
-	public void setStake(String playerId, String playerEconomyName, double newStake) {
-		Economy economy = CheckersPlugin.getInstance().getEconomy();
-		if (economy == null || !economy.isEnabled()) {
+	public void setStake(Player player, double newStake) {
+		if (!EconomyUtil.enabled()) {
 			return;
 		}
 
 		ensureGameInState(GameState.SETTING_UP);
-		ensurePlayerInGame(playerId);
+		ensurePlayerInGame(player.getUniqueId().toString());
 
 		if (newStake < 0.0) {
 			throw new CheckersException(Messages.getString("Game.noNegativeStakes"));
 		}
 
-		if (!economy.has(playerEconomyName, newStake)) {
+		if (!EconomyUtil.has(player, newStake)) {
 			throw new CheckersException(Messages.getString("Game.cantAffordStake"));
 		}
 
@@ -654,11 +644,10 @@ public class CheckersGame implements CheckersPersistable {
 		}
 	}
 
-	public void adjustStake(String playerId, String playerName, double adjustment) {
-		Economy economy = CheckersPlugin.getInstance().getEconomy();
-		if (economy == null || !economy.isEnabled()) {
-			return;
-		}
+	public void adjustStake(Player player, double adjustment) {
+        if (!EconomyUtil.enabled()) {
+            return;
+        }
 
 		double newStake = getStake() + adjustment;
 		double max = CheckersPlugin.getInstance().getConfig().getDouble("stake.max");
@@ -667,14 +656,14 @@ public class CheckersGame implements CheckersPersistable {
 			// allow stake to be adjusted down without throwing an exception
 			// could happen if global max stake was changed to something lower than
 			// a game's current stake setting
-			newStake = Math.min(max, economy.getBalance(playerId));
+			newStake = Math.min(max, EconomyUtil.getBalance(player));
 		}
-		if (!economy.has(playerName, newStake) && adjustment < 0.0) {
+		if (!EconomyUtil.has(player, newStake) && adjustment < 0.0) {
 			// similarly for the player's own balance
-			newStake = Math.min(max, economy.getBalance(playerId));
+			newStake = Math.min(max, EconomyUtil.getBalance(player));
 		}
 
-		setStake(playerId, playerName, newStake);
+		setStake(player, newStake);
 	}
 
 	public void offerDraw(String playerName) {
@@ -861,14 +850,14 @@ public class CheckersGame implements CheckersPersistable {
 			CheckersPlayer losingPlayer  = getPlayer(winner.getOtherColour());
 			double winnings = stake * losingPlayer.getPayoutMultiplier();
 			winningPlayer.depositFunds(winnings);
-			winningPlayer.alert(Messages.getString("Game.stakeWon", CheckersUtils.formatStakeStr(winnings)));
-			losingPlayer.alert(Messages.getString("Game.stakeLost", CheckersUtils.formatStakeStr(stake)));
+			winningPlayer.alert(Messages.getString("Game.stakeWon", EconomyUtil.formatStakeStr(winnings)));
+			losingPlayer.alert(Messages.getString("Game.stakeLost", EconomyUtil.formatStakeStr(stake)));
 			break;
 		default:
 			// draw or abandoned; return original stakes
 			getPlayer(PlayerColour.WHITE).depositFunds(stake);
 			getPlayer(PlayerColour.BLACK).depositFunds(stake);
-			alert(Messages.getString("Game.stakeReturned", CheckersUtils.formatStakeStr(stake)));
+			alert(Messages.getString("Game.stakeReturned", EconomyUtil.formatStakeStr(stake)));
 			break;
 		}
 

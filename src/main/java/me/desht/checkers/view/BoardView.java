@@ -1,12 +1,5 @@
 package me.desht.checkers.view;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
 import me.desht.checkers.*;
 import me.desht.checkers.game.CheckersGame;
 import me.desht.checkers.game.CheckersGame.GameState;
@@ -14,23 +7,16 @@ import me.desht.checkers.game.GameListener;
 import me.desht.checkers.model.*;
 import me.desht.checkers.model.rules.GameRules;
 import me.desht.checkers.player.CheckersPlayer;
-import me.desht.checkers.util.CheckersUtils;
+import me.desht.checkers.util.EconomyUtil;
 import me.desht.checkers.util.TerrainBackup;
 import me.desht.checkers.view.controlpanel.ControlPanel;
 import me.desht.checkers.view.controlpanel.StakeButton;
 import me.desht.checkers.view.controlpanel.TimeControlButton;
-import me.desht.dhutils.AttributeCollection;
-import me.desht.dhutils.ConfigurationListener;
-import me.desht.dhutils.ConfigurationManager;
-import me.desht.dhutils.LogUtils;
-import me.desht.dhutils.MessagePager;
-import me.desht.dhutils.MiscUtil;
-import me.desht.dhutils.PersistableLocation;
+import me.desht.dhutils.*;
 import me.desht.dhutils.block.CraftMassBlockUpdate;
 import me.desht.dhutils.block.MassBlockUpdate;
 import me.desht.dhutils.cuboid.Cuboid;
 import me.desht.dhutils.cuboid.Cuboid.CuboidDirection;
-
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -38,6 +24,13 @@ import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemoryConfiguration;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 public class BoardView implements PositionListener, ConfigurationListener, CheckersPersistable, ConfigurationSerializable, GameListener {
 	private static final String BOARD_STYLE = "boardstyle";
@@ -323,7 +316,7 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 		res.add(bullet + Messages.getString("Board.boardDetail.height", style.getHeight()));
 		res.add(bullet + Messages.getString("Board.boardDetail.lightLevel", style.getLightLevel()));
 		String lockStakeStr = getLockStake() ? Messages.getString("Board.boardDetail.locked") : "";
-		res.add(bullet + Messages.getString("Board.boardDetail.defaultStake", CheckersUtils.formatStakeStr(getDefaultStake()), lockStakeStr));
+		res.add(bullet + Messages.getString("Board.boardDetail.defaultStake", EconomyUtil.formatStakeStr(getDefaultStake()), lockStakeStr));
 		String lockTcStr = getLockTcSpec() ? Messages.getString("Board.boardDetail.locked") : "";
 		res.add(bullet + Messages.getString("Board.boardDetail.defaultTimeControl", getDefaultTcSpec(), lockTcStr));
 		String dest = hasTeleportOutDestination() ? MiscUtil.formatLocation(getTeleportOutDestination()) : "-";
@@ -363,12 +356,13 @@ public class BoardView implements PositionListener, ConfigurationListener, Check
 	}
 
 	@Override
-	public void onConfigurationValidate(ConfigurationManager configurationManager, String key, Object oldVal,
-			Object newVal) {
+	public Object onConfigurationValidate(ConfigurationManager configurationManager, String key, Object oldVal,
+                                          Object newVal) {
 		if (key.equals(DEFAULT_TC) && !newVal.toString().isEmpty()) {
 			new TimeControl(newVal.toString());		// force validation of the spec
 		}
-	}
+        return newVal;
+    }
 
 	@Override
 	public void onConfigurationChanged(ConfigurationManager configurationManager, String key, Object oldVal, Object newVal) {

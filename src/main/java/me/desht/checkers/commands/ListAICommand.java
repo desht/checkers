@@ -6,6 +6,7 @@ import java.util.List;
 import me.desht.checkers.CheckersPlugin;
 import me.desht.checkers.Messages;
 import me.desht.checkers.ai.AIFactory.AIDefinition;
+import me.desht.checkers.util.EconomyUtil;
 import me.desht.dhutils.MessagePager;
 
 import org.bukkit.command.CommandSender;
@@ -32,7 +33,7 @@ public class ListAICommand extends AbstractCheckersCommand {
 				if (!aiDef.isEnabled())
 					continue;
 				String line = Messages.getString("AI.AIList", aiDef.getName(), aiDef.getImplClassName(), aiDef.getComment());
-				if (cPlugin.getEconomy() != null) {
+				if (EconomyUtil.enabled()) {
 					line = line + ", " + Messages.getString("AI.AIpayout", (int) (aiDef.getPayoutMultiplier() * 100));
 				}
 				lines.add(MessagePager.BULLET +  line);

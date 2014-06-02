@@ -6,6 +6,7 @@ import me.desht.checkers.Messages;
 import me.desht.checkers.game.CheckersGame;
 import me.desht.checkers.game.CheckersGameManager;
 import me.desht.checkers.util.CheckersUtils;
+import me.desht.checkers.util.EconomyUtil;
 import me.desht.dhutils.MiscUtil;
 
 import org.bukkit.command.CommandSender;
@@ -21,18 +22,18 @@ public class StakeCommand extends AbstractCheckersCommand {
 
 	@Override
 	public boolean execute(Plugin plugin, CommandSender sender, String[] args) {
-		notFromConsole(sender);
-		if (((CheckersPlugin) plugin).getEconomy() == null) {
-			return true;
-		}
+		if (!EconomyUtil.enabled()) {
+            return true;
+        }
+        notFromConsole(sender);
 
 		Player player = (Player) sender;
 		String stakeStr = args[0];
 		try {
 			CheckersGame game = CheckersGameManager.getManager().getCurrentGame((Player) sender, true);
 			double amount = Double.parseDouble(stakeStr);
-			game.setStake(player.getUniqueId().toString(), player.getName(), amount);
-			MiscUtil.statusMessage(sender, Messages.getString("Game.stakeChanged", CheckersUtils.formatStakeStr(amount)));
+			game.setStake(player, amount);
+			MiscUtil.statusMessage(sender, Messages.getString("Game.stakeChanged", EconomyUtil.formatStakeStr(amount)));
 		} catch (NumberFormatException e) {
 			throw new CheckersException(Messages.getString("Misc.invalidNumeric", stakeStr));
 		}
