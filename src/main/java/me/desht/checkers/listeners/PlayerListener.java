@@ -33,6 +33,7 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerAnimationEvent;
 import org.bukkit.event.player.PlayerAnimationType;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.MaterialData;
 
 import java.util.HashMap;
@@ -102,6 +103,18 @@ public class PlayerListener extends CheckersBaseListener {
 		}
 	}
 
+    private boolean holdingRightItem(ItemStack stack) {
+        MaterialData wandMat = CheckersUtils.getWandMaterial();
+        if (wandMat == null) {
+            return true;
+        } else if (wandMat.getItemType() == Material.AIR) {
+            return stack == null || stack.getType() == Material.AIR;
+        } else {
+            return wandMat.getItemType() == stack.getType() &&
+                    (stack.getType().getMaxDurability() > 0 || stack.getDurability() == wandMat.getData());
+        }
+    }
+
 	@EventHandler
 	public void onPlayerAnimation(PlayerAnimationEvent event) {
 		Player player = event.getPlayer();
@@ -118,8 +131,7 @@ public class PlayerListener extends CheckersBaseListener {
 
 		try {
 			if (event.getAnimationType() == PlayerAnimationType.ARM_SWING) {
-				MaterialData wandMat = CheckersUtils.getWandMaterial();
-				if (wandMat == null || player.getItemInHand().isSimilar(wandMat.toItemStack())) {
+				if (holdingRightItem(player.getItemInHand())) {
 					targetBlock = player.getTargetBlock(transparent, 120);
 					Debugger.getInstance().debug(2, "Player " + player.getDisplayName() + " waved at block " + targetBlock);
 					Location loc = targetBlock.getLocation();
