@@ -7,14 +7,14 @@ import me.desht.dhutils.MessagePager;
 import org.bukkit.event.player.PlayerInteractEvent;
 
 public class BoardInfoButton extends AbstractSignButton {
-	
+
 	public BoardInfoButton(ControlPanel panel) {
 		super(panel, "boardInfoBtn", "list.board", 0, 2);
 	}
-	
+
 	@Override
 	public void execute(PlayerInteractEvent event) {
-		MessagePager pager = MessagePager.getPager(event.getPlayer()).clear();
+		MessagePager pager = MessagePager.getPager(event.getPlayer()).clear().setParseColours(true);
 		List<String> l = getView().getBoardDetail();
 		pager.add(l);
 		pager.showPage();
