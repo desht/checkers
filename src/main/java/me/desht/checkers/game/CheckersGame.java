@@ -243,7 +243,7 @@ public class CheckersGame implements CheckersPersistable {
 		if (newState == GameState.RUNNING) {
 			CheckersValidate.isTrue(this.state == GameState.SETTING_UP, "invalid state transition " + state + "->" + newState);
 			started = lastMoved = System.currentTimeMillis();
-			clock.setActive(PlayerColour.BLACK);
+			clock.setActive(getPosition().getRules().getWhoMovesFirst());
 		} else if (newState == GameState.FINISHED) {
 			CheckersValidate.isTrue(this.state == GameState.RUNNING, "invalid state transition " + state + "->" + newState);
 			finished = System.currentTimeMillis();
